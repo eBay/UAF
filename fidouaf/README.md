@@ -1,7 +1,7 @@
 # FIDO UAF Demo Server
 [FIDO Specification](http://fidoalliance.org/specifications/download)
 
-This code is to demo the how the implementation of the FIDO UAF protocol can be used.
+This code is to demo how the implementation of the FIDO UAF protocol can be used.
 ## UAF Server Endpoints
 ### UAF Operations
 - Registration
