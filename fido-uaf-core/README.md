@@ -26,4 +26,4 @@ org.ebayopensource.fido.uaf.crypto.Notary;
 
 # References
 - [FAQ](FAQ.md)
-- [LICENCE](LICENCE.md)
+- [LICENSE](LICENSE.md)
