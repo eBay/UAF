@@ -1,3 +1,4 @@
+[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/eBay/UAF)
 # UAF - Universal Authentication Framework
 
 [UAF Architectural Overview](https://fidoalliance.org/wp-content/uploads/html/fido-uaf-overview-v1.0-ps-20141208.html)
