@@ -1,5 +1,7 @@
 # UAF - Universal Authentication Framework
 
+[![Join the chat at https://gitter.im/eBay/UAF](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/eBay/UAF?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 [UAF Architectural Overview](https://fidoalliance.org/wp-content/uploads/html/fido-uaf-overview-v1.0-ps-20141208.html)
 
 ## Vision
