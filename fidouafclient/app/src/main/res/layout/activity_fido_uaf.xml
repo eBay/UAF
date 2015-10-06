@@ -1,0 +1,84 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#ffffff"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context=".MainActivity">
+
+
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <ImageView
+            android:id="@+id/imageButtonPinAuthRequest"
+            android:layout_width="wrap_content"
+            android:layout_height="60dp"
+            android:layout_alignTop="@+id/imageSeparator2"
+
+            android:contentDescription="AuthRequest"
+            android:onClick="proceed"
+            android:src="@drawable/s_proceed" />
+
+        <TextView
+
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="25dp"
+            android:text="Consent" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/textViewOperation"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/linearLayout"
+        android:layout_marginTop="22dp"
+        android:text="UAF Operation" />
+
+    <ScrollView
+        android:id="@+id/scrollView1"
+        android:layout_width="fill_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/textViewOperation"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="24dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="25dp"
+            android:orientation="vertical">
+<!--
+            <ImageView
+                android:id="@+id/imageButtonBack"
+                android:layout_width="fill_parent"
+                android:layout_height="25dp"
+                android:contentDescription="AuthRequest"
+                android:onClick="back"
+                android:src="@drawable/back" />
+-->
+            <TextView
+                android:id="@+id/textViewOpMsg"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="25dp"
+                android:text="" />
+
+
+
+        </LinearLayout>
+    </ScrollView>
+
+
+</RelativeLayout>

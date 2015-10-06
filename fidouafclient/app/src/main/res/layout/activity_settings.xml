@@ -1,0 +1,201 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="info.gazers.log.RegisterActivity" >
+
+    <ImageView
+        android:id="@+id/imageButtonRegRequest"
+        android:layout_width="wrap_content"
+        android:layout_height="60dp"
+        android:contentDescription="RegRequest"
+        android:onClick="save"
+        android:src="@drawable/check" />
+
+    <ImageView
+        android:id="@+id/imageSeparator1"
+        android:layout_width="wrap_content"
+        android:layout_height="60dp"
+        android:layout_toRightOf="@+id/imageButtonRegRequest"
+        android:contentDescription=""
+        android:src="@drawable/separator" />
+
+    <ImageView
+        android:id="@+id/imageButtonRefresh"
+        android:layout_width="wrap_content"
+        android:layout_height="60dp"
+        android:layout_toRightOf="@id/imageSeparator1"
+        android:contentDescription="Reset"
+        android:onClick="reset"
+        android:src="@drawable/reset" />
+
+    <ImageView
+        android:id="@+id/imageSeparator2"
+        android:layout_width="wrap_content"
+        android:layout_height="60dp"
+        android:layout_toRightOf="@+id/imageButtonRefresh"
+        android:contentDescription=""
+        android:src="@drawable/separator" />
+
+    <ImageView
+        android:id="@+id/imageButtonBackHome"
+        android:layout_width="wrap_content"
+        android:layout_height="60dp"
+        android:layout_toRightOf="@id/imageSeparator2"
+        android:contentDescription="AuthRequest"
+        android:onClick="back"
+        android:src="@drawable/back" />
+
+    <ScrollView
+        android:id="@+id/scrollView1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/imageSeparator1" >
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:scrollbars="vertical" >
+
+            <!-- Message center -->
+
+            <TextView
+                android:id="@+id/settingsMsgs"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:text="" />
+
+            <!-- Field -->
+            
+            <TextView
+                android:id="@+id/textUsername"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:text="Username" />
+
+            <EditText
+                android:id="@+id/username"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="1dp"
+                android:ems="10"
+                android:inputType="text"
+                android:textSize="9sp" />
+
+            <TextView
+                android:id="@+id/textServer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:text="Server Endpoint" />
+
+            <EditText
+                android:id="@+id/server"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="1dp"
+                android:ems="10"
+                android:inputType="text"
+                android:textSize="9sp" />
+
+            <!-- Field -->
+
+            <TextView
+                android:id="@+id/textRegRequestEndpoint"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:text="Reg Op Request Endpoint" />
+
+            <EditText
+                android:id="@+id/regRequestEndpoint"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="1dp"
+                android:ems="10"
+                android:inputType="text"
+                android:textSize="9sp" />
+
+            <!-- Field -->
+
+            <TextView
+                android:id="@+id/textRegResponseEndpoint"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:text="Reg Op Response Endpoint" />
+
+            <EditText
+                android:id="@+id/regResponseEndpoint"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="1dp"
+                android:ems="10"
+                android:inputType="text"
+                android:textSize="9sp" />
+
+            <!-- Field -->
+
+            <TextView
+                android:id="@+id/textAuthRequestEndpoint"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:text="Auth Op Request Endpoint" />
+
+            <EditText
+                android:id="@+id/authRequestEndpoint"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="1dp"
+                android:ems="10"
+                android:inputType="text"
+                android:textSize="9sp" />
+
+            <!-- Field -->
+
+            <TextView
+                android:id="@+id/textAuthResponseEndpoint"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:text="Auth Op Response Endpoint" />
+
+            <EditText
+                android:id="@+id/authResponseEndpoint"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="1dp"
+                android:ems="10"
+                android:inputType="text"
+                android:textSize="9sp" />
+
+            <!-- Field -->
+
+            <TextView
+                android:id="@+id/textDeregEndpoint"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:text="Dereg Op Request Endpoint" />
+
+            <EditText
+                android:id="@+id/deregEndpoint"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="1dp"
+                android:ems="10"
+                android:inputType="text"
+                android:textSize="9sp" />
+        </LinearLayout>
+    </ScrollView>
+
+</RelativeLayout>

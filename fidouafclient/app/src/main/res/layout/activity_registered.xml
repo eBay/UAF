@@ -1,0 +1,157 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#ffffff"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context=".MainActivity" >
+
+
+
+    <ScrollView
+        android:id="@+id/scrollView1"
+        android:layout_width="fill_parent"
+        android:layout_height="350dp"
+        android:layout_marginBottom="10dp"
+        android:layout_marginTop="10dp"
+        android:scrollbars="vertical"
+        android:layout_below="@+id/linearLayout" >
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent">
+        <TextView
+            android:id="@+id/textViewTitle"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="20dp"
+            android:text="" />
+        <TextView
+            android:id="@+id/textViewMsg"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="20dp"
+            android:text="" />
+        </LinearLayout>
+
+    </ScrollView>
+
+
+
+    <TextView
+        android:id="@+id/textUsernameLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/name"
+        android:layout_below="@+id/scrollView1"
+        />
+
+    <TextView
+        android:id="@+id/textUsername"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
+        android:text=""
+        android:layout_below="@+id/scrollView1"
+        android:layout_toRightOf="@+id/textUsernameLabel"
+        />
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="80dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:layout_alignParentRight="true"
+        android:id="@+id/linearLayout3">
+
+    <ImageView
+        android:id="@+id/imageButtonDereg"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:contentDescription="AuthRequest"
+        android:onClick="dereg"
+        android:src="@drawable/s_deregister"
+
+
+         />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text="dereg"
+            android:id="@+id/textDeregLabel"
+            />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="80dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_alignParentTop="true"
+        android:id="@+id/linearLayout">
+
+        <ImageView
+            android:id="@+id/imageButtonAuthRequest"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:contentDescription="AuthRequest"
+            android:onClick="authRequest"
+            android:src="@drawable/s_authenticate"
+            android:layout_above="@+id/textAuthenticateLable"
+            android:layout_alignLeft="@+id/textAuthenticateLable"
+            android:layout_alignStart="@+id/textAuthenticateLable" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text="authenticate"
+            android:id="@+id/textAuthenticateLable"
+             />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="80dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_toRightOf="@id/linearLayout"
+        android:id="@+id/linearLayoutTrx">
+
+        <ImageView
+            android:id="@+id/imageButtonTrxRequest"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:contentDescription="AuthRequest"
+            android:onClick="trxRequest"
+            android:src="@drawable/s_authenticate"
+            android:layout_above="@+id/textAuthenticateLable"
+            android:layout_alignLeft="@+id/textAuthenticateLable"
+            android:layout_alignStart="@+id/textAuthenticateLable" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text="transaction"
+            android:id="@+id/textTrxLabel"
+            />
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/imageSeparator3"
+        android:layout_width="wrap_content"
+        android:layout_height="60dp"
+        android:layout_toRightOf="@+id/linearLayout"
+        android:contentDescription=""
+        android:src="@drawable/separator"
+        />
+</RelativeLayout>

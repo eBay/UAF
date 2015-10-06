@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="org.ebayopensource.fidouafclient"
+    android:versionCode="1"
+    android:versionName="1.0" >
+
+    <uses-sdk
+        android:minSdkVersion="8"
+        android:targetSdkVersion="18" />
+
+<!--     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="org.fidoalliance.org.ebayopensource.fido.uaf.permissions.FIDO_CLIENT" /> -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="org.fidoalliance.uaf.permissions.FIDO_CLIENT"/>
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+    <uses-permission android:name="com.sec.android.fido.uaf.asm.permissions.FIDO_UAF_ASM"/>
+
+<!--     <permission
+        android:name="org.fidoalliance.org.ebayopensource.fido.uaf.permissions.ACT_AS_WEB_BROWSER"
+        android:label="Act as a browser for FIDO registrations."
+        android:protectionLevel="dangerous" /> -->
+
+    <application
+        android:name="org.ebayopensource.fidouafclient.util.ApplicationContextProvider"
+        android:allowBackup="true"
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@style/AppTheme" >
+        <activity
+            android:name="org.ebayopensource.fidouafclient.MainActivity"
+            android:label="@string/app_name" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="org.ebayopensource.fidouafclient.SettingsActivity"
+            android:label="@string/app_name" >
+            <intent-filter>
+                <action android:name="org.ebayopensource.fidouafclient.SettingsActivity" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="org.ebayopensource.fidouafclient.ExampleFidoUafActivity"
+            android:label="@string/app_name" >
+            <intent-filter>
+                <action android:name="org.ebayopensource.fidouafclient.ExampleFidoUafActivity" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="org.fidoalliance.intent.FIDO_OPERATION" />
+
+                <data android:mimeType="application/fido.uaf_client+json" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>

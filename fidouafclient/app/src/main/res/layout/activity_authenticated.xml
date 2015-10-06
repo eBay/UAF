@@ -1,0 +1,135 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#ffffff"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context=".MainActivity" >
+
+
+
+    <ScrollView
+        android:id="@+id/scrollView1"
+        android:layout_width="fill_parent"
+        android:layout_height="50dp"
+        android:scrollbars="vertical"
+        android:layout_below="@+id/linearLayout" >
+
+    </ScrollView>
+
+    <TextView
+        android:id="@+id/textUsername"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/name"
+        android:layout_below="@+id/scrollView1"
+        />
+
+    <TextView
+        android:id="@+id/textToken"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/token"
+        android:layout_below="@+id/textUsername"
+        />
+
+    <LinearLayout
+        android:layout_width="80dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_alignParentTop="true"
+        android:id="@+id/linearLayout">
+
+        <ImageView
+            android:id="@+id/imageButtonAuthRequest"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:contentDescription="AuthRequest"
+            android:onClick="authRequest"
+            android:src="@drawable/authenticate"
+            android:layout_above="@+id/textAuthenticateLable"
+            android:layout_alignLeft="@+id/textAuthenticateLable"
+            android:layout_alignStart="@+id/textAuthenticateLable" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text="authenticate"
+            android:id="@+id/textAuthenticateLabel"
+            />
+    </LinearLayout>
+
+
+    <ImageView
+        android:id="@+id/imageSeparator3"
+        android:layout_width="wrap_content"
+        android:layout_height="60dp"
+        android:layout_toRightOf="@+id/linearLayout"
+        android:contentDescription=""
+        android:src="@drawable/separator"
+        />
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="80dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:layout_toRightOf="@id/imageSeparator3"
+        android:id="@+id/linearLayout3">
+
+    <ImageView
+        android:id="@+id/imageButtonDereg"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:contentDescription="AuthRequest"
+        android:onClick="dereg"
+        android:src="@drawable/deregister"
+         />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text="dereg"
+            android:id="@+id/textDeregLabel"
+            />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="80dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_below="@+id/textToken"
+        android:id="@+id/linearLayout5">
+
+        <ImageView
+            android:id="@+id/imageButtonPost"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:contentDescription="Post"
+            android:onClick="authRequest"
+            android:src="@drawable/authenticate"
+            />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text="post"
+            android:id="@+id/textPostLabel"
+            />
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="fill_parent"
+        android:layout_height="100dp"
+        android:id="@+id/scrollView"
+        android:layout_below="@+id/linearLayout5"
+         />
+</RelativeLayout>
