@@ -31,4 +31,4 @@ The code presented here is divided into three groups:
 
 1. [fido-uaf-core](fido-uaf-core/README.md) - UAF protocol implementation
 2. [fidouaf](fidouaf/README.md) - UAF server, a Jersey service application for demoing UAF protocol implementation use
-3. RP Client App - Android relying party client app for demoing UAF server
+3. [RP Client App](fidouafclient) - Android relying party client app for demoing UAF server
