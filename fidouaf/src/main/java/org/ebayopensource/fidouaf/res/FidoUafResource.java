@@ -28,11 +28,14 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import org.apache.commons.codec.binary.Base64;
 import org.ebayopensource.fido.uaf.msg.AuthenticationRequest;
 import org.ebayopensource.fido.uaf.msg.AuthenticationResponse;
 import org.ebayopensource.fido.uaf.msg.Operation;
+import org.ebayopensource.fido.uaf.msg.OperationHeader;
 import org.ebayopensource.fido.uaf.msg.RegistrationRequest;
 import org.ebayopensource.fido.uaf.msg.RegistrationResponse;
+import org.ebayopensource.fido.uaf.msg.Transaction;
 import org.ebayopensource.fido.uaf.msg.Version;
 import org.ebayopensource.fido.uaf.storage.AuthenticatorRecord;
 import org.ebayopensource.fido.uaf.storage.DuplicateKeyException;
@@ -62,8 +65,8 @@ public class FidoUafResource {
 	@GET
 	@Path("/stats")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Map<String, Object> getStats() {
-		return Dash.getInstance().stats;
+	public String getStats() {
+		return gson.toJson(Dash.getInstance().stats);
 	}
 
 	@GET
@@ -92,6 +95,16 @@ public class FidoUafResource {
 		Dash.getInstance().history.add(regReq);
 		return regReq;
 	}
+	
+	@GET
+	@Path("/public/regRequest/{username}/{appId}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public String getRegReqForAppId(@PathParam("username") String username, 
+			@PathParam("appId") String appId) {
+		RegistrationRequest[] regReq = getRegisReqPublic(username);
+		setAppId(appId, regReq[0].header);
+		return gson.toJson(regReq);
+	}
 
 	@GET
 	@Path("/public/regRequest")
@@ -108,7 +121,9 @@ public class FidoUafResource {
 	private String[] getAllowedAaids() {
 		String[] ret = { "EBA0#0001", "0015#0001", "0012#0002", "0010#0001",
 				"4e4e#0001", "5143#0001", "0011#0701", "0013#0001",
-				"0014#0000", "0014#0001", "53EC#C002" };
+				"0014#0000", "0014#0001", "53EC#C002", "DAB8#8001",
+				"DAB8#0011", "DAB8#8011", "5143#0111", "5143#0120",
+				"4746#F816", "53EC#3801" };
 		return ret;
 	}
 
@@ -120,7 +135,8 @@ public class FidoUafResource {
 		Dash.getInstance().stats.put(Dash.LAST_REG_REQ, timestamp);
 		String[] trustedIds = { "https://www.head2toes.org",
 				"android:apk-key-hash:Df+2X53Z0UscvUu6obxC3rIfFyk",
-				"android:apk-key-hash:bE0f1WtRJrZv/C0y9CM73bAUqiI" };
+				"android:apk-key-hash:bE0f1WtRJrZv/C0y9CM73bAUqiI",
+				"https://openidconnect.ebay.com" };
 		Facets facets = new Facets();
 		facets.trustedFacets = new TrustedFacets[1];
 		TrustedFacets trusted = new TrustedFacets();
@@ -177,7 +193,61 @@ public class FidoUafResource {
 	@GET
 	@Path("/public/authRequest")
 	@Produces(MediaType.APPLICATION_JSON)
-	public AuthenticationRequest[] getAuthReq() {
+	public String getAuthReq() {
+		return gson.toJson(getAuthReqObj());
+	}
+
+	@GET
+	@Path("/public/authRequest/{appId}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public String getAuthForAppIdReq(@PathParam("appId") String appId) {
+		AuthenticationRequest[] authReqObj = getAuthReqObj();
+		setAppId(appId, authReqObj[0].header);
+		
+		return gson.toJson(authReqObj);
+	}
+
+	private void setAppId(String appId, OperationHeader header) {
+		if (appId == null || appId.isEmpty()){
+			return;
+		}
+		String decodedAppId = new String (Base64.decodeBase64(appId));
+		Facets facets = facets();
+		if (facets == null || facets.trustedFacets == null || facets.trustedFacets.length == 0
+				 || facets.trustedFacets[0] == null || facets.trustedFacets[0].ids == null){
+			return;
+		}
+		String[] ids = facets.trustedFacets[0].ids;
+		for (int i = 0; i < ids.length; i++) {
+			
+			if (decodedAppId.equals(ids[i])){
+				header.appID = decodedAppId;
+				break;
+			}
+		}
+	}
+
+	@GET
+	@Path("/public/authRequest/{appId}/{trxContent}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public String getAuthTrxReq(@PathParam("appId") String appId,
+			@PathParam("trxContent") String trxContent) {
+		AuthenticationRequest[] authReqObj = getAuthReqObj();
+		setAppId(appId, authReqObj[0].header);
+		setTransaction(trxContent, authReqObj);
+		
+		return gson.toJson(authReqObj);
+	}
+
+	private void setTransaction(String trxContent, AuthenticationRequest[] authReqObj) {
+		authReqObj[0].transaction = new Transaction[1];
+		Transaction t = new Transaction();
+		t.content = trxContent;
+		t.contentType = MediaType.TEXT_PLAIN;
+		authReqObj[0].transaction[0] = t;
+	}
+
+	public AuthenticationRequest[] getAuthReqObj() {
 		AuthenticationRequest[] ret = new AuthenticationRequest[1];
 		ret[0] = new FetchRequest(getAppId(), getAllowedAaids())
 				.getAuthenticationRequest();
@@ -202,7 +272,6 @@ public class FidoUafResource {
 		return result;
 	}
 
-
 	@POST
 	@Path("/public/uafRegRequest")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -226,7 +295,7 @@ public class FidoUafResource {
 	@Produces(MediaType.APPLICATION_JSON)
 	public ReturnUAFAuthenticationRequest GetUAFAuthenticationRequest(
 			String payload) {
-		AuthenticationRequest[] result = getAuthReq();
+		AuthenticationRequest[] result = getAuthReqObj();
 		ReturnUAFAuthenticationRequest uafReq = null;
 		if (result != null) {
 			uafReq = new ReturnUAFAuthenticationRequest();
@@ -351,7 +420,7 @@ public class FidoUafResource {
 			}
 			uafReq = gson.toJson(uafRegReq);
 		} else if (req.op.name().equals("Auth")) {
-			AuthenticationRequest[] result = getAuthReq();
+			AuthenticationRequest[] result = getAuthReqObj();
 			ReturnUAFAuthenticationRequest uafAuthReq = null;
 			if (result != null) {
 				uafAuthReq = new ReturnUAFAuthenticationRequest();
