@@ -1,25 +1,25 @@
 package org.ebayopensource.fidouafclient.util;
 
 public class Endpoints {
-	
+
 	public static final String SERVER =
-	//"http://openidconnect.ebay.com";
-	"http://www.head2toes.org";
+	"http://openidconnect.ebay.com";
+	//"http://www.head2toes.org";
 	public static final String GET_AUTH_REQUEST = "/fidouaf/v1/public/authRequest";
 	public static final String POST_AUTH_RESPONSE = "/fidouaf/v1/public/authResponse";
 	public static final String POST_DEREG_RESPONSE = "/fidouaf/v1/public/deregRequest";
 	public static final String GET_REG_REQUEST = "/fidouaf/v1/public/regRequest/";
 	public static final String POST_REG_RESPONSE = "/fidouaf/v1/public/regResponse";
-	
-	
+
+
 	private static void check() {
 		String serverEndpoint = Preferences.getSettingsParam("serverEndpoint");
 		if (serverEndpoint!=null && serverEndpoint.length() == 0){
 			setDefaults();
 		}
-		
+
 	}
-	
+
 	public static String getServer() {
 		check();
 		return Preferences.getSettingsParam("serverEndpoint");
@@ -54,7 +54,7 @@ public class Endpoints {
 		check();
 		return getServer()+Preferences.getSettingsParam("regReg");
 	}
-	
+
 	//Path
 	public static String getAuthResponsePath() {
 		check();
@@ -84,7 +84,7 @@ public class Endpoints {
 		check();
 		return Preferences.getSettingsParam("regReg");
 	}
-	
+
 	public static void setDefaults (){
 		Preferences.setSettingsParam("serverEndpoint", SERVER);
 		Preferences.setSettingsParam("authReg", GET_AUTH_REQUEST);
