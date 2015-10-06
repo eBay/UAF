@@ -18,19 +18,13 @@ package org.ebayopensource.fido.uaf.ops;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
-import java.security.cert.X509Certificate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.codec.binary.Base64;
-import org.bouncycastle.jce.interfaces.ECPublicKey;
-import org.ebayopensource.fido.uaf.crypto.Asn1;
-import org.ebayopensource.fido.uaf.crypto.KeyCodec;
-import org.ebayopensource.fido.uaf.crypto.NamedCurve;
+import org.ebayopensource.fido.uaf.crypto.CertificateValidator;
+import org.ebayopensource.fido.uaf.crypto.CertificateValidatorImpl;
 import org.ebayopensource.fido.uaf.crypto.Notary;
-import org.ebayopensource.fido.uaf.crypto.RSA;
-import org.ebayopensource.fido.uaf.crypto.SHA;
-import org.ebayopensource.fido.uaf.crypto.X509;
 import org.ebayopensource.fido.uaf.msg.AuthenticatorRegistrationAssertion;
 import org.ebayopensource.fido.uaf.msg.FinalChallengeParams;
 import org.ebayopensource.fido.uaf.msg.RegistrationResponse;
@@ -51,16 +45,24 @@ public class RegistrationResponseProcessing {
 	private long serverDataExpiryInMs = 5 * 60 * 1000;
 	private Notary notary = null;
 	private Gson gson = new Gson();
+	private CertificateValidator certificateValidator;
 
 	public RegistrationResponseProcessing() {
-
+		this.certificateValidator = new CertificateValidatorImpl();
 	}
 
 	public RegistrationResponseProcessing(long serverDataExpiryInMs,
 			Notary notary) {
 		this.serverDataExpiryInMs = serverDataExpiryInMs;
 		this.notary = notary;
+		this.certificateValidator = new CertificateValidatorImpl();
+	}
 
+	public RegistrationResponseProcessing(long serverDataExpiryInMs,
+			Notary notary, CertificateValidator certificateValidator) {
+		this.serverDataExpiryInMs = serverDataExpiryInMs;
+		this.notary = notary;
+		this.certificateValidator = certificateValidator;
 	}
 
 	public RegistrationRecord[] processResponse(RegistrationResponse response)
@@ -90,7 +92,12 @@ public class RegistrationResponseProcessing {
 		try {
 			Tags tags = parser
 					.parse(authenticatorRegistrationAssertion.assertion);
-			verifyAttestationSignature(tags);
+			try {
+				verifyAttestationSignature(tags, record);
+			} catch (Exception e) {
+				record.attestVerifiedStatus = "NOT_VERIFIED";
+			}
+
 			AuthenticatorRecord authRecord = new AuthenticatorRecord();
 			authRecord.AAID = new String(tags.getTags().get(
 					TagsEnum.TAG_AAID.id).value);
@@ -117,13 +124,10 @@ public class RegistrationResponseProcessing {
 		return record;
 	}
 
-	private void verifyAttestationSignature(Tags tags)
+	private void verifyAttestationSignature(Tags tags, RegistrationRecord record)
 			throws NoSuchAlgorithmException, IOException, Exception {
-		X509Certificate x509Certificate = X509.parseDer(tags.getTags().get(
-				TagsEnum.TAG_ATTESTATION_CERT.id).value);
-		logger.info(" : Attestation Cert : " + x509Certificate);
-		String sigAlgOID = x509Certificate.getSigAlgName();
-		verifyIfCertIsAllowed(x509Certificate);
+		byte[] certBytes = tags.getTags().get(TagsEnum.TAG_ATTESTATION_CERT.id).value;
+		record.attestCert = Base64.encodeBase64URLSafeString(certBytes);
 
 		Tag krd = tags.getTags().get(TagsEnum.TAG_UAFV1_KRD.id);
 		Tag signature = tags.getTags().get(TagsEnum.TAG_SIGNATURE.id);
@@ -134,38 +138,17 @@ public class RegistrationResponseProcessing {
 				2);
 		System.arraycopy(krd.value, 0, signedBytes, 4, krd.value.length);
 
-		if (sigAlgOID.contains("RSA")) {
-			if (RSA.verify(x509Certificate, signedBytes, signature.value)) {
-				logger.info(" : Attestation Cert : RSA Signature match");
-				return;
-			} else {
-				throw new RuntimeException(
-						"Attestation cert is not matching with signature and signed data for RSA pub key");
-			}
-		}
+		record.attestDataToSign = Base64.encodeBase64URLSafeString(signedBytes);
+		record.attestSignature = Base64
+				.encodeBase64URLSafeString(signature.value);
+		record.attestVerifiedStatus = "FAILED_VALIDATION_ATTEMPT";
 
-		boolean isValid = false;
-		if (signature.value.length == 64) {
-			isValid = NamedCurve.verify(KeyCodec
-					.getKeyAsRawBytes((ECPublicKey) x509Certificate
-							.getPublicKey()), SHA.sha(signedBytes, "SHA-256"),
-					Asn1.transformRawSignature(signature.value));
+		if (certificateValidator.validate(certBytes, signedBytes,
+				signature.value)) {
+			record.attestVerifiedStatus = "VALID";
 		} else {
-			isValid = NamedCurve.verify(KeyCodec
-					.getKeyAsRawBytes((ECPublicKey) x509Certificate
-							.getPublicKey()), SHA.sha(signedBytes, "SHA-256"),
-					Asn1.decodeToBigIntegerArray(signature.value));
+			record.attestVerifiedStatus = "NOT_VERIFIED";
 		}
-		if (!isValid) {
-			throw new RuntimeException(
-					"Attestation cert is not matching with signature and signed data");
-		}
-		logger.info(" : Attestation Cert : Signature match");
-	}
-
-	private void verifyIfCertIsAllowed(X509Certificate x509Certificate) {
-		// TODO implement check against the list of trusted certs
-
 	}
 
 	private String getAuthenticatorVersion(Tags tags) {

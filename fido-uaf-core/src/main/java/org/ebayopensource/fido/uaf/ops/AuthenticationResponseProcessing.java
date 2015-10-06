@@ -164,6 +164,27 @@ public class AuthenticationResponseProcessing {
 		// dataForSigning, Asn1.decodeToBigIntegerArray(signature.value));
 
 		byte[] decodeBase64 = Base64.decodeBase64(pubKey);
+		if (algAndEncoding == AlgAndEncodingEnum.UAF_ALG_SIGN_SECP256K1_ECDSA_SHA256_DER) {
+			ECPublicKey decodedPub = (ECPublicKey) KeyCodec.getPubKeyFromCurve(
+					decodeBase64, "secp256k1");
+			return NamedCurve.verifyUsingSecp256k1(
+					KeyCodec.getKeyAsRawBytes(decodedPub),
+					SHA.sha(dataForSigning, "SHA-256"),
+					Asn1.decodeToBigIntegerArray(signature.value));
+		}
+		if (algAndEncoding == AlgAndEncodingEnum.UAF_ALG_SIGN_SECP256R1_ECDSA_SHA256_DER) {
+			if (decodeBase64.length>65){
+				return NamedCurve.verify(KeyCodec.getKeyAsRawBytes(pubKey),
+						SHA.sha(dataForSigning, "SHA-256"),
+						Asn1.decodeToBigIntegerArray(signature.value));
+			} else {
+				ECPublicKey decodedPub = (ECPublicKey) KeyCodec.getPubKeyFromCurve(
+						decodeBase64, "secp256r1");
+				return NamedCurve.verify(KeyCodec.getKeyAsRawBytes(decodedPub),
+							SHA.sha(dataForSigning, "SHA-256"),
+							Asn1.decodeToBigIntegerArray(signature.value));
+			}
+		}
 		if (signature.value.length == 64) {
 			ECPublicKey decodedPub = (ECPublicKey) KeyCodec.getPubKeyFromCurve(
 					decodeBase64, "secp256r1");

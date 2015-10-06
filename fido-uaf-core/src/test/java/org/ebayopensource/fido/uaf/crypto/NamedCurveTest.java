@@ -91,10 +91,13 @@ public class NamedCurveTest {
 	public void signatureAndPubKey() throws InvalidKeySpecException,
 			NoSuchAlgorithmException, NoSuchProviderException, IOException,
 			Exception {
-		String signatureB64 = "MEUCIQCw-7e95D8hqCC2fxw1ChrCBZ13ZDAtwpDV8f2DQx7G2wIgN0kTb0FShW5fzMHni3sge6PtZM2RMc8Hx-tp0B_2PXg=";
-		String pubKeyB64 = "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEKJFyB4AHNtBlqc555yF_Xg9m7SvkfrllBYDirfJdu0XK6zq6ieurgjHzrhuCNbrFFDmu3_wNfb--BQvh7kgedA==";
-		String dataForSigningStr = "BD6OAA==";
-		byte[] dataForSigning = Base64.decodeBase64(dataForSigningStr);
+//		String signatureB64 = "MEUCIQCw-7e95D8hqCC2fxw1ChrCBZ13ZDAtwpDV8f2DQx7G2wIgN0kTb0FShW5fzMHni3sge6PtZM2RMc8Hx-tp0B_2PXg=";
+//		String pubKeyB64 = "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEKJFyB4AHNtBlqc555yF_Xg9m7SvkfrllBYDirfJdu0XK6zq6ieurgjHzrhuCNbrFFDmu3_wNfb--BQvh7kgedA==";
+//		String dataForSigningStr = "BD6OAA==";
+		String signatureB64 = "MEYCIQCQwRfcpxCPjqhg00JEcaSVU3VpG_X4vNO0oRHBOBvEyQIhALFn0S_nZcj3ynUgo8FirS7Ke2UDkRXCDSmuKIVrcUgx";
+		String pubKeyB64 = "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEIeVW7JZYG31LXlWdz2ShKr5YH-Ms-L2lZvVXxTUzTyX3Cenl9_T1VRUa-oBfzn4FTpI16HzET-mhvoomuRcttw";
+		String dataForSigningStr = "BD6OAAsuCQBEQUI4IzgwMTEOLgUAAQABAgAPLiAAbFLbBK0MSSBEPYNO853JoMXlLw4T6yXp4FLPtP5aBnwKLiAA3WTfNdfUxBvSyweKIaDZNtaAlDRQ5-B4DBDcE5y7O0QQLgAACS4gAAHDA1An8EYamydS_Q8tJGT5Q4NDqtJ6PHUCbMOJ0v-qDS4EAAAAAAA";
+		byte[] dataForSigning = SHA.sha(Base64.decodeBase64(dataForSigningStr), "SHA-256");
 
 		assertTrue(NamedCurve
 				.verify(KeyCodec.getKeyAsRawBytes(pubKeyB64), dataForSigning,

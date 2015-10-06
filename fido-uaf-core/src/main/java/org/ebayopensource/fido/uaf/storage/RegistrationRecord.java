@@ -27,4 +27,8 @@ public class RegistrationRecord {
 	public String deviceId;
 	public String timeStamp;
 	public String status;
+	public String attestCert;
+	public String attestDataToSign;
+	public String attestSignature;
+	public String attestVerifiedStatus;
 }

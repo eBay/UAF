@@ -20,6 +20,7 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
 import java.security.Provider;
 import java.security.Signature;
 import java.security.SignatureException;
@@ -37,11 +38,33 @@ public class RSA {
 			byte[] signedDate, byte[] sig) throws SignatureException,
 			InvalidKeyException, NoSuchAlgorithmException,
 			NoSuchProviderException, InvalidAlgorithmParameterException {
+		Signature signature = Signature.getInstance("SHA256withRSA", BC);
+		signature.initVerify(x509Certificate);
+		signature.update(signedDate);
+		signature.update(SHA.sha(signedDate, "SHA-256"));
+		return signature.verify(sig);
+	}
+	
+	public static byte[] sign(PrivateKey privateKey,
+			byte[] signedDate) throws SignatureException,
+			InvalidKeyException, NoSuchAlgorithmException,
+			NoSuchProviderException, InvalidAlgorithmParameterException {
+		Signature signature = Signature.getInstance("SHA256withRSA", BC);
+		signature.initSign(privateKey);
+		signature.update(signedDate);
+		return signature.sign();
+	}
+	
+	public static boolean verifyPSS(X509Certificate x509Certificate,
+			byte[] signedDate, byte[] sig) throws SignatureException,
+			InvalidKeyException, NoSuchAlgorithmException,
+			NoSuchProviderException, InvalidAlgorithmParameterException {
 		Signature signature = Signature.getInstance("RAWRSASSA-PSS", BC);
 		signature.setParameter(new PSSParameterSpec("SHA-256", "MGF1",
 				new MGF1ParameterSpec("SHA-256"), 32, 1));
 		signature.initVerify(x509Certificate.getPublicKey());
-		signature.update(SHA.sha(signedDate, "SHA-256"));
+		signature.update(signedDate);
+		//signature.update(SHA.sha(signedDate, "SHA-256"));
 		return signature.verify(sig);
 	}
 

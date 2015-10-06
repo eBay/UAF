@@ -19,6 +19,6 @@ package org.ebayopensource.fido.uaf.msg;
 public class AuthenticationRequest {
 	public OperationHeader header;
 	public String challenge;
-	//public Transaction[] transaction;
+	public Transaction[] transaction;
 	public Policy policy;
 }

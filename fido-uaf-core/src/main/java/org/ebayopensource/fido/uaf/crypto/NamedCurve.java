@@ -83,6 +83,19 @@ public class NamedCurve {
 
 		return signer.verifySignature(dataForSigning, rs[0].abs(), rs[1].abs());
 	}
+	
+	public static boolean verifyUsingSecp256k1(byte[] pub, byte[] dataForSigning,
+			BigInteger[] rs) throws Exception {
+		ECDSASigner signer = new ECDSASigner();
+		X9ECParameters params = SECNamedCurves.getByName("secp256k1");
+		ECDomainParameters ecParams = new ECDomainParameters(params.getCurve(),
+				params.getG(), params.getN(), params.getH());
+		ECPublicKeyParameters pubKeyParams = new ECPublicKeyParameters(ecParams
+				.getCurve().decodePoint(pub), ecParams);
+		signer.init(false, pubKeyParams);
+
+		return signer.verifySignature(dataForSigning, rs[0].abs(), rs[1].abs());
+	}
 
 	public static boolean verify(PublicKey pub, byte[] dataForSigning,
 			byte[] signature) throws NoSuchAlgorithmException,
