@@ -8,18 +8,10 @@
         android:minSdkVersion="8"
         android:targetSdkVersion="18" />
 
-<!--     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="org.fidoalliance.org.ebayopensource.fido.uaf.permissions.FIDO_CLIENT" /> -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="org.fidoalliance.uaf.permissions.FIDO_CLIENT"/>
     <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
-    <uses-permission android:name="com.sec.android.fido.uaf.asm.permissions.FIDO_UAF_ASM"/>
-
-<!--     <permission
-        android:name="org.fidoalliance.org.ebayopensource.fido.uaf.permissions.ACT_AS_WEB_BROWSER"
-        android:label="Act as a browser for FIDO registrations."
-        android:protectionLevel="dangerous" /> -->
 
     <application
         android:name="org.ebayopensource.fidouafclient.util.ApplicationContextProvider"
