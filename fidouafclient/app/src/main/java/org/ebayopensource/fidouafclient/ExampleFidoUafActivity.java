@@ -118,6 +118,9 @@ public class ExampleFidoUafActivity extends Activity {
 			startActivity(new Intent(
 					"org.ebayopensource.fidouafclient.SettingsActivity"));
 		}
+		if (id == R.id.action_save_message) {
+			SaveMessageDialog.show(this, uafMsg);
+		}
 		return super.onOptionsItemSelected(item);
 	}
 

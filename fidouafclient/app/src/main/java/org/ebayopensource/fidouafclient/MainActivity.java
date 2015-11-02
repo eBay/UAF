@@ -338,6 +338,9 @@ public class MainActivity extends Activity {
         if (id == R.id.action_discover) {
             info(this.getWindow().getCurrentFocus());
         }
+        if (id == R.id.action_save_message) {
+            SaveMessageDialog.show(this, msg);
+        }
         return super.onOptionsItemSelected(item);
     }
 
