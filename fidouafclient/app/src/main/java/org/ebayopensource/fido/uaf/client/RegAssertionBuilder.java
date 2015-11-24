@@ -157,12 +157,6 @@ public class RegAssertionBuilder {
 		byteout.write(encodeInt(length));
 		byteout.write(value);
 
-		byteout.write(encodeInt(TagsEnum.TAG_AUTHENTICATOR_NONCE.id));
-		value = SHA.sha256(BCrypt.gensalt()).getBytes();
-		length = value.length;
-		byteout.write(encodeInt(length));
-		byteout.write(value);
-
 		return byteout.toByteArray();
 	}
 
