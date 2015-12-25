@@ -1,0 +1,4 @@
+// fido uaf core library
+include ':fido-uaf-core'
+// fido uaf demo server
+include ':fidouaf'
