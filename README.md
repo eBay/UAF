@@ -3,6 +3,9 @@
 
 [UAF Architectural Overview](https://fidoalliance.org/wp-content/uploads/html/fido-uaf-overview-v1.0-ps-20141208.html)
 
+[News & Release Notes](RELEASE.md)
+Last update on 2016.01.16
+
 ## Vision
 The main goal is the passwordless authentication experience
 

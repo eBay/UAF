@@ -25,6 +25,8 @@ import org.json.JSONObject;
 
 import com.google.gson.Gson;
 
+import android.app.KeyguardManager;
+import android.content.Context;
 import android.os.Bundle;
 import android.app.Activity;
 import android.content.Intent;
@@ -41,10 +43,13 @@ public class ExampleFidoUafActivity extends Activity {
 	private TextView uafMsg;
 	private Reg regOp = new Reg();
 	private Auth authOp = new Auth();
+	private KeyguardManager keyguardManager;
+	private int REQUEST_CODE_CONFIRM_DEVICE_CREDENTIALS = 1;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		keyguardManager = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
 		Bundle extras = this.getIntent().getExtras();
 		setContentView(R.layout.activity_fido_uaf);
 		operation = (TextView)findViewById(R.id.textViewOperation);
@@ -87,7 +92,23 @@ public class ExampleFidoUafActivity extends Activity {
 
 
 	public void proceed(View view) {
-		finishWithResult();
+		Intent intent = keyguardManager.createConfirmDeviceCredentialIntent("UAF","Confirm Identity");
+		if (intent != null) {
+			startActivityForResult(intent, REQUEST_CODE_CONFIRM_DEVICE_CREDENTIALS);
+		}
+
+	}
+
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if (requestCode == REQUEST_CODE_CONFIRM_DEVICE_CREDENTIALS) {
+			// Challenge completed, proceed with using cipher
+			if (resultCode == RESULT_OK) {
+				finishWithResult();
+			} else {
+				// The user canceled or didn’t complete the lock screen
+				// operation. Go to error/cancellation flow.
+			}
+		}
 	}
 	
 	public void back(View view) {
