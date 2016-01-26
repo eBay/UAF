@@ -39,7 +39,7 @@ public class TlvAssertionParser {
 			while (bytes.available() > 0) {
 				t = new Tag();
 				t.id = UnsignedUtil.read_UAFV1_UINT16(bytes);
-				t.lenght = UnsignedUtil.read_UAFV1_UINT16(bytes);
+				t.length = UnsignedUtil.read_UAFV1_UINT16(bytes);
 
 				if (t.id == TagsEnum.TAG_UAFV1_AUTH_ASSERTION.id) {
 					// ret.add(t);
@@ -77,7 +77,7 @@ public class TlvAssertionParser {
 				} else if (t.id == TagsEnum.TAG_FINAL_CHALLENGE.id) {
 					addTagAndValue(bytes, ret, t);
 				} else if (t.id == TagsEnum.TAG_TRANSACTION_CONTENT_HASH.id) {
-					if (t.lenght > 0) {
+					if (t.length > 0) {
 						addTagAndValue(bytes, ret, t);
 					} else {
 						// Length of Transaction Content Hash. This length is 0
@@ -127,7 +127,7 @@ public class TlvAssertionParser {
 	}
 
 	private void addTagAndValue(ByteInputStream bytes, Tags ret, Tag t) {
-		t.value = bytes.read(t.lenght);
+		t.value = bytes.read(t.length);
 		ret.add(t);
 	}
 }

@@ -210,7 +210,7 @@ public class AuthenticationResponseProcessing {
 	private byte[] getDataForSigning(Tag signedData) throws IOException {
 		ByteArrayOutputStream byteout = new ByteArrayOutputStream();
 		byteout.write(encodeInt(signedData.id));
-		byteout.write(encodeInt(signedData.lenght));
+		byteout.write(encodeInt(signedData.length));
 		byteout.write(signedData.value);
 		return byteout.toByteArray();
 	}
