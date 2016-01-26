@@ -82,7 +82,7 @@ public class X509Test {
 		
 		byte[] signedBytes = new byte[krd.value.length+4];
 		System.arraycopy(UnsignedUtil.encodeInt(krd.id), 0, signedBytes, 0, 2);
-		System.arraycopy(UnsignedUtil.encodeInt(krd.lenght), 0, signedBytes, 2, 2);
+		System.arraycopy(UnsignedUtil.encodeInt(krd.length), 0, signedBytes, 2, 2);
 		System.arraycopy(krd.value, 0, signedBytes, 4, krd.value.length);
 		
 		KeyPair keyPair = KeyCodec.getKeyPair();

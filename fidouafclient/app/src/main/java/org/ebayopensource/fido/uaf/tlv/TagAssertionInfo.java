@@ -32,10 +32,10 @@ public class TagAssertionInfo {
 		if (t.id != TagsEnum.TAG_ASSERTION_INFO.id){
 			throw new InvalidArgumentException ("Not TAG_ASSERTION_INFO tag"); 
 		}
-		if (t.lenght != 5 && t.lenght != 7){
-			throw new InvalidArgumentException ("Unrecognized tag structure. Lenght="+t.lenght); 
+		if (t.length != 5 && t.length != 7){
+			throw new InvalidArgumentException ("Unrecognized tag structure. Length="+t.length); 
 		}
-		if (t.lenght == 7){
+		if (t.length == 7){
 			isReg = true;
 		}
 		parse ();

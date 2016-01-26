@@ -41,11 +41,11 @@ public class TestData {
 		pub = pubArg;
 		priv = privArg;
 		int signedDataId = TagsEnum.TAG_UAFV1_SIGNED_DATA.id;
-		int signedDataLenght = 200;
+		int signedDataLength = 200;
 		dataForSigning[0] = (byte) (signedDataId & 0x00ff);
 		dataForSigning[1] = (byte) (signedDataId & 0xff00);
-		dataForSigning[2] = (byte) (signedDataLenght & 0x00ff);
-		dataForSigning[3] = (byte) (signedDataLenght & 0xff00);
+		dataForSigning[2] = (byte) (signedDataLength & 0x00ff);
+		dataForSigning[3] = (byte) (signedDataLength & 0xff00);
 		//signature = NamedCurve.sign(priv, dataForSigning);
 		rsSignature = NamedCurve.signAndFromatToRS(priv,
 				SHA.sha(dataForSigning, "SHA-1"));

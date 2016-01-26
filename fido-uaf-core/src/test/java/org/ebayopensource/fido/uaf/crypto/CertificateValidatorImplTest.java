@@ -86,7 +86,7 @@ public class CertificateValidatorImplTest {
 	private byte[] getSignedData (Tag t){
 		byte[] signedBytes = new byte[t.value.length + 4];
 		System.arraycopy(UnsignedUtil.encodeInt(t.id), 0, signedBytes, 0, 2);
-		System.arraycopy(UnsignedUtil.encodeInt(t.lenght), 0, signedBytes, 2,
+		System.arraycopy(UnsignedUtil.encodeInt(t.length), 0, signedBytes, 2,
 				2);
 		System.arraycopy(t.value, 0, signedBytes, 4, t.value.length);
 		return signedBytes;

@@ -21,7 +21,7 @@ import org.apache.commons.codec.binary.Base64;
 public class Tag {
 	public int statusId = 0x00;
 	public int id;
-	public int lenght;
+	public int length;
 	public byte[] value;
 
 	public String toString() {
