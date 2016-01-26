@@ -101,6 +101,8 @@ public class AuthenticationResponseProcessing {
 			String pubKey = registrationRecord.PublicKey;
 			if (algAndEncoding == AlgAndEncodingEnum.UAF_ALG_SIGN_RSASSA_PSS_SHA256_DER) {
 				// TODO Implement RSA signature check
+				authRecord.status = "FAILED_ALGORITHM_NOT_IMPLEMENTED";
+				return authRecord;
 			} else {
 				try {
 					if (!verifySignature(signnedData, signature, pubKey,
