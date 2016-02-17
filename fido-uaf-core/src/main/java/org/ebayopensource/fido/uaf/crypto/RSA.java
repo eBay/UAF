@@ -22,9 +22,11 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.Provider;
+import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
 import java.security.spec.MGF1ParameterSpec;
 import java.security.spec.PSSParameterSpec;
 
@@ -46,25 +48,36 @@ public class RSA {
 	}
 	
 	public static byte[] sign(PrivateKey privateKey,
-			byte[] signedDate) throws SignatureException,
+			byte[] signedData) throws SignatureException,
 			InvalidKeyException, NoSuchAlgorithmException,
 			NoSuchProviderException, InvalidAlgorithmParameterException {
 		Signature signature = Signature.getInstance("SHA256withRSA", BC);
 		signature.initSign(privateKey);
-		signature.update(signedDate);
+		signature.update(signedData);
 		return signature.sign();
 	}
 	
-	public static boolean verifyPSS(X509Certificate x509Certificate,
-			byte[] signedDate, byte[] sig) throws SignatureException,
+	public static byte[] signPSS(PrivateKey privateKey,
+			byte[] signedData) throws SignatureException,
 			InvalidKeyException, NoSuchAlgorithmException,
 			NoSuchProviderException, InvalidAlgorithmParameterException {
-		Signature signature = Signature.getInstance("RAWRSASSA-PSS", BC);
+		Signature signature = Signature.getInstance("SHA256withRSA/PSS", BC);
 		signature.setParameter(new PSSParameterSpec("SHA-256", "MGF1",
 				new MGF1ParameterSpec("SHA-256"), 32, 1));
-		signature.initVerify(x509Certificate.getPublicKey());
-		signature.update(signedDate);
-		//signature.update(SHA.sha(signedDate, "SHA-256"));
+		signature.initSign(privateKey);
+		signature.update(signedData);
+		return signature.sign();
+	}
+	
+	public static boolean verifyPSS(PublicKey publicKey,
+			byte[] signedData, byte[] sig) throws SignatureException,
+			InvalidKeyException, NoSuchAlgorithmException,
+			NoSuchProviderException, InvalidAlgorithmParameterException, InvalidKeySpecException {
+		Signature signature = Signature.getInstance("SHA256withRSA/PSS", BC);
+		signature.setParameter(new PSSParameterSpec("SHA-256", "MGF1",
+				new MGF1ParameterSpec("SHA-256"), 32, 1));
+		signature.initVerify(publicKey);
+		signature.update(signedData);
 		return signature.verify(sig);
 	}
 
