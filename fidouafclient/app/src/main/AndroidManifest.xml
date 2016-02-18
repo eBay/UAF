@@ -38,10 +38,10 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="org.ebayopensource.fidouafclient.ExampleFidoUafActivity"
-            android:label="@string/app_name" >
+            android:name=".FidoUafClientActivity"
+            android:label="@string/uaf_client" >
             <intent-filter>
-                <action android:name="org.ebayopensource.fidouafclient.ExampleFidoUafActivity" />
+                <action android:name="org.ebayopensource.fidouafclient.FidoUafClientActivity" />
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>

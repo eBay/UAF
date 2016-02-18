@@ -19,30 +19,18 @@ package org.ebayopensource.fidouafclient.curl;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-
-import javax.net.ssl.HostnameVerifier;
-
-import org.apache.http.Header;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.conn.scheme.Scheme;
-import org.apache.http.conn.scheme.SchemeRegistry;
-import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.conn.ssl.X509HostnameVerifier;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.SingleClientConnManager;
-
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import android.os.AsyncTask;
 
 public class Curl {
 
-	public static String toStr(HttpResponse response) {
+	public static String toStr(HttpURLConnection response) {
+
 		String result = "";
 		try {
-			InputStream in = response.getEntity().getContent();
+			InputStream in = response.getInputStream();
 			BufferedReader reader = new BufferedReader(
 					new InputStreamReader(in));
 			StringBuilder str = new StringBuilder();
@@ -90,23 +78,26 @@ public class Curl {
 		return get(url,null);
 	}
 
-	public static String get(String url, String[] header) {
+	public static String get(String urlStr, String[] header) {
 		String ret = "";
 		try {
 
-			HttpClient httpClient = getClient(url);
+			URL url = new URL(urlStr);
+			HttpURLConnection connection = (HttpURLConnection)url.openConnection();
 
-			HttpGet request = new HttpGet(url);
 			try {
 				if (header != null){
 					for (String h : header){
 						String[] split = h.split(":");
-						request.addHeader(split[0], split[1]);
+						connection.setRequestProperty(split[0], split[1]);
 					}
 				}
-				HttpResponse response = httpClient.execute(request);
-				ret = Curl.toStr(response);
-				Header[] headers = response.getAllHeaders();
+				connection.setRequestMethod("GET");
+				connection.setDoInput(true);
+				connection.setDoInput(true);
+				connection.connect();
+
+				ret = Curl.toStr(connection);
 
 			} catch (Exception ex) {
 				ex.printStackTrace();
@@ -124,24 +115,32 @@ public class Curl {
 		return post (url, header.split(" "), data);
 	}
 	
-	public static String post(String url, String[] header, String data) {
+	public static String post(String urlStr, String[] header, String data) {
 		String ret = "";
 		try {
 
-			HttpClient httpClient = getClient(url);
+			URL url = new URL(urlStr);
+			HttpURLConnection connection = (HttpURLConnection)url.openConnection();
 
-			HttpPost request = new HttpPost(url);
 			if (header != null){
 				for (String h : header){
 					String[] split = h.split(":");
-					request.addHeader(split[0], split[1]);
+					connection.setRequestProperty(split[0], split[1]);
 				}
 			}
-			request.setEntity(new StringEntity(data));
+			connection.setRequestProperty("Content-Length", String.valueOf(data.length()));
+			connection.setRequestMethod("POST");
+			connection.setDoInput(true);
+			connection.setDoInput(true);
+			connection.connect();
+
+			OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream());
+
+			writer.write(data);
+			writer.flush();
+
 			try {
-				HttpResponse response = httpClient.execute(request);
-				ret = Curl.toStr(response);
-				Header[] headers = response.getAllHeaders();
+				ret = Curl.toStr(connection);
 
 			} catch (Exception ex) {
 				ex.printStackTrace();
@@ -153,29 +152,6 @@ public class Curl {
 		}
 
 		return ret;
-	}
-
-	private static HttpClient getClient(String url) {
-		HttpClient httpClient = new DefaultHttpClient();
-		if (url.toLowerCase().startsWith("https")) {
-			httpClient = createHttpsClient();
-		}
-		return httpClient;
-	}
-
-	private static HttpClient createHttpsClient() {
-		HostnameVerifier hostnameVerifier = org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER;
-		SchemeRegistry registry = new SchemeRegistry();
-		SSLSocketFactory socketFactory = SSLSocketFactory.getSocketFactory();
-		socketFactory
-				.setHostnameVerifier((X509HostnameVerifier) hostnameVerifier);
-		registry.register(new Scheme("https", socketFactory, 443));
-		HttpClient client = new DefaultHttpClient();
-		SingleClientConnManager mgr = new SingleClientConnManager(
-				client.getParams(), registry);
-		DefaultHttpClient httpClient = new DefaultHttpClient(mgr,
-				client.getParams());
-		return httpClient;
 	}
 
 }

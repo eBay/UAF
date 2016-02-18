@@ -16,7 +16,8 @@
 
 package org.ebayopensource.fido.uaf.crypto;
 
-import org.apache.commons.codec.binary.Base64;
+import android.util.Base64;
+
 import org.spongycastle.crypto.params.RSAKeyParameters;
 import org.spongycastle.crypto.params.RSAPrivateCrtKeyParameters;
 import org.spongycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
@@ -92,7 +93,7 @@ public class KeyCodec {
 		}
 	
 	public static byte[] getKeyAsRawBytes (String base64EncodedPubKey) throws InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException, IOException {
-		return getKeyAsRawBytes((BCECPublicKey)getPubKey(Base64.decodeBase64(base64EncodedPubKey)));
+		return getKeyAsRawBytes((BCECPublicKey)getPubKey(Base64.decode(base64EncodedPubKey, Base64.DEFAULT)));
 	}
   
      /**

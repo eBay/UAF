@@ -2,6 +2,7 @@
 <resources>
 
     <string name="app_name">Martin - UAF Test RP App</string>
+    <string name="uaf_client">Martin - UAF Client</string>
     <string name="action_settings">Settings</string>
     <string name="action_discover">Discover</string>
     <string name="action_save_message">Save message</string>

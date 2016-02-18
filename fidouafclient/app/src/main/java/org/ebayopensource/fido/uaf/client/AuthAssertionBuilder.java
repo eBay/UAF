@@ -31,9 +31,11 @@ import org.spongycastle.jce.interfaces.ECPublicKey;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.Signature;
 import java.util.logging.Logger;
 
 public class AuthAssertionBuilder {
@@ -139,6 +141,26 @@ public class AuthAssertionBuilder {
 	}
 
 	private byte[] getSignature(byte[] dataForSigning) throws Exception {
+		return getSignatureRsa(dataForSigning);
+	}
+
+	private byte[] getSignatureRsa(byte[] dataForSigning) throws Exception {
+
+		KeyStore ks = KeyStore.getInstance("AndroidKeyStore");
+		ks.load(null);
+
+		PrivateKey privateKey = (PrivateKey) ks.getKey("key1", null);
+		PublicKey publicKey = ks.getCertificate("key1").getPublicKey();
+
+		Signature s = Signature.getInstance("SHA256withRSA/PSS");
+		s.initSign(privateKey);
+		s.update(dataForSigning);
+		byte[] signature = s.sign();
+
+		return signature;
+	}
+
+	private byte[] getSignatureEc(byte[] dataForSigning) throws Exception {
 
 //		PublicKey pub = KeyCodec.getPubKey(Base64
 //				.decodeBase64(TestData.TEST_PUB_KEY));

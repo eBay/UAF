@@ -25,8 +25,10 @@ import org.json.JSONObject;
 
 import com.google.gson.Gson;
 
+import android.annotation.TargetApi;
 import android.app.KeyguardManager;
 import android.content.Context;
+import android.os.Build;
 import android.os.Bundle;
 import android.app.Activity;
 import android.content.Intent;
@@ -35,7 +37,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
-public class ExampleFidoUafActivity extends Activity {
+public class FidoUafClientActivity extends Activity {
 
 	private Logger logger = Logger.getLogger(this.getClass().getName());
 	private Gson gson = new Gson();
@@ -80,7 +82,7 @@ public class ExampleFidoUafActivity extends Activity {
 		String msg = "";
 		String inMsg = extract(inUafOperationMsg);
 		if (inMsg.contains("\"Reg\"")) {
-			msg = regOp.register(inMsg);
+			msg = regOp.register(inMsg, getBaseContext());
 		} else if (inMsg.contains("\"Auth\"")) {
 			msg = authOp.auth(inMsg);
 		} else if (inMsg.contains("\"Dereg\"")) {
@@ -90,11 +92,15 @@ public class ExampleFidoUafActivity extends Activity {
 	}
 
 
-
+//	@TargetApi ((Build.VERSION_CODES.LOLLIPOP))
 	public void proceed(View view) {
-		Intent intent = keyguardManager.createConfirmDeviceCredentialIntent("UAF","Confirm Identity");
-		if (intent != null) {
-			startActivityForResult(intent, REQUEST_CODE_CONFIRM_DEVICE_CREDENTIALS);
+		if (keyguardManager.isKeyguardSecure()) {
+			Intent intent = keyguardManager.createConfirmDeviceCredentialIntent("UAF", "Confirm Identity");
+			if (intent != null) {
+				startActivityForResult(intent, REQUEST_CODE_CONFIRM_DEVICE_CREDENTIALS);
+			}
+		} else {
+			finishWithResult();
 		}
 
 	}

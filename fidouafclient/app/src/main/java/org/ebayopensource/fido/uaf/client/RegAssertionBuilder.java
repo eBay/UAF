@@ -165,6 +165,14 @@ public class RegAssertionBuilder {
 	}
 
 	private byte[] getPubKeyId() throws InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException, IOException {
+		return getPubKeyIdRsa();
+	}
+
+	private byte[] getPubKeyIdRsa (){
+		return this.keyPair.getPublic().getEncoded();
+	}
+
+	private byte[] getPubKeyIdEc () throws InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException, IOException {
 		return KeyCodec.getKeyAsRawBytes((BCECPublicKey)this.keyPair.getPublic());
 	}
 
