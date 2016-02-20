@@ -42,8 +42,11 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.logging.Logger;
 
 import org.apache.commons.codec.binary.Base64;
+import org.bouncycastle.asn1.pkcs.RSAPublicKey;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.crypto.params.RSAKeyParameters;
 import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters;
+import org.bouncycastle.crypto.util.SubjectPublicKeyInfoFactory;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.ECPointUtil;
@@ -69,7 +72,7 @@ public class KeyCodec {
 		g.initialize(ecGenSpec, new SecureRandom());
 		return g.generateKeyPair();
 	}
-
+	
 	public static KeyPair getRSAKeyPair()
 			throws InvalidAlgorithmParameterException,
 			NoSuchAlgorithmException, NoSuchProviderException {
@@ -77,7 +80,7 @@ public class KeyCodec {
 		g.initialize(2048);
 		return g.generateKeyPair();
 	}
-
+	
 	static public RSAKeyParameters generatePrivateKeyParameter(RSAPrivateKey key) {
 		if (key instanceof RSAPrivateCrtKey) {
 			RSAPrivateCrtKey k = (RSAPrivateCrtKey) key;
@@ -91,7 +94,7 @@ public class KeyCodec {
 					k.getPrivateExponent());
 		}
 	}
-
+	
 	public static byte[] getKeyAsRawBytes(String base64EncodedPubKey)
 			throws InvalidKeySpecException, NoSuchAlgorithmException,
 			NoSuchProviderException, IOException {
@@ -208,6 +211,18 @@ public class KeyCodec {
 		ECPublicKeySpec pubKeySpec = new ECPublicKeySpec(point, params);
 		ECPublicKey pk = (ECPublicKey) kf.generatePublic(pubKeySpec);
 		return pk;
+	}
+	
+	public static PublicKey getRSAPublicKey(byte[] encodedPubKey) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+		PublicKey publicKey = 
+			    KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(encodedPubKey));
+		return publicKey;
+		
+//		RSAPublicKey pubKey8 = RSAPublicKey.getInstance(encodedPubKey);
+//		SubjectPublicKeyInfo info = SubjectPublicKeyInfoFactory.createSubjectPublicKeyInfo(new RSAKeyParameters(false, pubKey8.getModulus(), pubKey8.getPublicExponent()));
+//		X509EncodedKeySpec spec = new X509EncodedKeySpec(info.getEncoded());
+//		KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+//		return keyFactory.generatePublic(spec);
 	}
 
 	/**

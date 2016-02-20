@@ -18,6 +18,7 @@ package org.ebayopensource.fido.uaf.client;
 
 import android.util.Base64;
 
+import org.ebayopensource.fido.uaf.crypto.RSA;
 import org.ebayopensource.fidouafclient.util.Preferences;
 import org.ebayopensource.fido.uaf.crypto.Asn1;
 import org.ebayopensource.fido.uaf.crypto.BCrypt;
@@ -36,6 +37,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
+import java.security.spec.MGF1ParameterSpec;
+import java.security.spec.PSSParameterSpec;
 import java.util.logging.Logger;
 
 public class AuthAssertionBuilder {
@@ -93,7 +96,8 @@ public class AuthAssertionBuilder {
 
 		byteout.write(encodeInt(TagsEnum.TAG_ASSERTION_INFO.id));
 		//2 bytes - vendor; 1 byte Authentication Mode; 2 bytes Sig Alg 
-		value = new byte[] { 0x00, 0x00, 0x01, 0x01, 0x00 };
+		//value = new byte[] { 0x00, 0x00, 0x01, 0x01, 0x00 };
+		value = new byte[] { 0x00, 0x00, 0x01, 0x03, 0x00 }; //RSA
 		length = value.length;
 		byteout.write(encodeInt(length));
 		byteout.write(value);
@@ -144,6 +148,34 @@ public class AuthAssertionBuilder {
 		return getSignatureRsa(dataForSigning);
 	}
 
+	private byte[] getSignatureRsaPss(byte[] dataForSigning) throws Exception {
+
+		KeyStore ks = KeyStore.getInstance("AndroidKeyStore");
+		ks.load(null);
+
+		PrivateKey privateKey = (PrivateKey) ks.getKey("key1", null);
+		PublicKey publicKey = ks.getCertificate("key1").getPublicKey();
+
+		byte[] signature = null;
+		try {
+			Signature s = Signature.getInstance("SHA256withRSA/PSS");
+
+			s.setParameter(new PSSParameterSpec("SHA-256", "MGF1", MGF1ParameterSpec.SHA256, 32,1));
+			s.initSign(privateKey);
+
+			s.update(SHA.sha(dataForSigning, "SHA-256"));
+			signature = s.sign();
+
+			s.initVerify(publicKey);
+			s.update(SHA.sha(dataForSigning, "SHA-256"));
+
+			boolean isMatching = s.verify(signature);
+		}catch(Exception e){
+			logger.info("e="+e);
+		}
+		return signature;
+	}
+
 	private byte[] getSignatureRsa(byte[] dataForSigning) throws Exception {
 
 		KeyStore ks = KeyStore.getInstance("AndroidKeyStore");
@@ -152,11 +184,24 @@ public class AuthAssertionBuilder {
 		PrivateKey privateKey = (PrivateKey) ks.getKey("key1", null);
 		PublicKey publicKey = ks.getCertificate("key1").getPublicKey();
 
-		Signature s = Signature.getInstance("SHA256withRSA/PSS");
-		s.initSign(privateKey);
-		s.update(dataForSigning);
-		byte[] signature = s.sign();
+		byte[] signature = null;
+		try {
+//			Signature s = Signature.getInstance("SHA256withRSA/PSS");
+			Signature s = Signature.getInstance("SHA256withRSA");
 
+//			s.setParameter(new PSSParameterSpec("SHA-256", "MGF1", MGF1ParameterSpec.SHA256, 32,1));
+			s.initSign(privateKey);
+
+			s.update(SHA.sha(dataForSigning, "SHA-256"));
+			signature = s.sign();
+
+			s.initVerify(publicKey);
+			s.update(SHA.sha(dataForSigning, "SHA-256"));
+
+			boolean isMatching = s.verify(signature);
+		}catch(Exception e){
+			logger.info("e="+e);
+		}
 		return signature;
 	}
 

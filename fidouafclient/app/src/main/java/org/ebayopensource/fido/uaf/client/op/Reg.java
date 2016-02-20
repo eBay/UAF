@@ -61,7 +61,10 @@ public class Reg {
 	try {
 		KeyPair keyPair = KeyCodec.getKeyPair();
 		try {
-			keyPair = genRsaPssKeys(context);
+			keyPair =
+//					gen2kRsaKeys(context); //Not allow to set MGF spec
+//					genRsaPssKeys(context);
+				genRsaKeys(context); //Works - Pland RSAwithSHA256
 		} catch (Exception e){
 			logger.info("Switched to RSA/PSS");
 		}
@@ -107,9 +110,6 @@ public class Reg {
 	public KeyPair genRsaKeys (Context context) throws Exception{
 		KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance(
 				"RSA", "AndroidKeyStore");
-//		keyPairGenerator.initialize(
-//				new PSSParameterSpec ("SHA-256", "MGF1", MGF1ParameterSpec.SHA256, 20,1)
-//		);
 
 		Calendar start = Calendar.getInstance();
 		Calendar end = Calendar.getInstance();
@@ -117,7 +117,7 @@ public class Reg {
 
 		keyPairGenerator.initialize(
 				new KeyPairGeneratorSpec.Builder(context)
-						.setAlias("keyPair")
+						.setAlias("key1")
 						.setSubject(new X500Principal("CN=myKey"))
 						.setSerialNumber(BigInteger.valueOf(1337))
 						.setStartDate(start.getTime())
@@ -127,7 +127,6 @@ public class Reg {
 
 		KeyPair keyPair = keyPairGenerator.generateKeyPair();
 		Signature signature =
-//				Signature.getInstance("SHA256withRSAandMGF1");
 				Signature.getInstance("SHA256withRSA");
 
 		byte[] plain = "hello, PSS.".getBytes();
@@ -173,6 +172,49 @@ public class Reg {
 
 		byte[] data = "SomeDataToSign".getBytes();
 		Signature s = Signature.getInstance("SHA256withRSA/PSS");
+		s.initSign(privateKey);
+		s.update(data);
+		byte[] signature = s.sign();
+
+
+		s.initVerify(publicKey);
+		s.update(data);
+
+		boolean isMatching = s.verify(signature);
+
+		return keyPair;
+	}
+
+	@TargetApi(Build.VERSION_CODES.M)
+	public KeyPair gen2kRsaKeys (Context context) throws Exception{
+		KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance(
+				KeyProperties.KEY_ALGORITHM_RSA, "AndroidKeyStore");
+		PSSParameterSpec spec = new PSSParameterSpec("SHA-256", "MGF1", new MGF1ParameterSpec("SHA-256"), 32, 1);
+		keyPairGenerator.initialize(new KeyGenParameterSpec.Builder(
+				"key1",
+				KeyProperties.PURPOSE_SIGN | KeyProperties.PURPOSE_VERIFY)
+//				.setAlgorithmParameterSpec(spec1)
+				.setDigests(KeyProperties.DIGEST_SHA256)
+				.setKeySize(2048)
+				.setSignaturePaddings(KeyProperties.SIGNATURE_PADDING_RSA_PSS)
+				.build()
+		);
+		KeyPair keyPair = keyPairGenerator.generateKeyPair();
+
+		KeyStore ks = KeyStore.getInstance("AndroidKeyStore");
+
+		// Weird artifact of Java API.  If you don't have an InputStream to load, you still need
+		// to call "load", or it'll crash.
+		ks.load(null);
+
+		PrivateKey privateKey = (PrivateKey) ks.getKey("key1", null);
+		PublicKey publicKey = ks.getCertificate("key1").getPublicKey();
+
+		byte[] data = "SomeDataToSign".getBytes();
+		Signature s = Signature.getInstance("SHA256withRSA/PSS");
+		s.setParameter(spec);
+
+//		s.setParameter(spec1);
 		s.initSign(privateKey);
 		s.update(data);
 		byte[] signature = s.sign();
