@@ -42,7 +42,7 @@ public class RSA {
 			NoSuchProviderException, InvalidAlgorithmParameterException {
 		Signature signature = Signature.getInstance("SHA256withRSA", BC);
 		signature.initVerify(x509Certificate);
-		signature.update(signedDate);
+//		signature.update(signedDate);
 		signature.update(SHA.sha(signedDate, "SHA-256"));
 		return signature.verify(sig);
 	}
@@ -69,13 +69,23 @@ public class RSA {
 		return signature.sign();
 	}
 	
+	public static boolean verifySHA256withRSA(PublicKey publicKey,
+			byte[] signedData, byte[] sig) throws SignatureException,
+			InvalidKeyException, NoSuchAlgorithmException,
+			NoSuchProviderException, InvalidAlgorithmParameterException, InvalidKeySpecException {
+		Signature signature = Signature.getInstance("SHA256withRSA", BC);
+		signature.initVerify(publicKey);
+		signature.update(signedData);
+		return signature.verify(sig);
+	}
+	
 	public static boolean verifyPSS(PublicKey publicKey,
 			byte[] signedData, byte[] sig) throws SignatureException,
 			InvalidKeyException, NoSuchAlgorithmException,
 			NoSuchProviderException, InvalidAlgorithmParameterException, InvalidKeySpecException {
 		Signature signature = Signature.getInstance("SHA256withRSA", BC);
-//		signature.setParameter(new PSSParameterSpec("SHA-256", "MGF1",
-//				new MGF1ParameterSpec("SHA-256"), 32, 1));
+		signature.setParameter(new PSSParameterSpec("SHA-256", "MGF1",
+				new MGF1ParameterSpec("SHA-256"), 32, 1));
 		signature.initVerify(publicKey);
 		signature.update(signedData);
 		return signature.verify(sig);

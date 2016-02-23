@@ -14,25 +14,24 @@
  * limitations under the License.
  */
 
-package org.ebayopensource.fido.uaf.tlv;
+package org.ebayopensource.fidouaf.marvin.client.tlv;
 
-public enum AlgAndEncodingEnum {
-	
-	UAF_ALG_SIGN_SECP256R1_ECDSA_SHA256_RAW (0x01),
-	UAF_ALG_SIGN_SECP256R1_ECDSA_SHA256_DER (0x02),
-	UAF_ALG_SIGN_RSASSA_PSS_SHA256_RAW(0x03),
-	UAF_ALG_SIGN_RSASSA_PSS_SHA256_DER (0x04),
-	UAF_ALG_SIGN_RSA_SHA256_RAW(0x05),
-	UAF_ALG_KEY_ECC_X962_RAW (0x100),
-	UAF_ALG_KEY_ECC_X962_DER (0x101),
-	UAF_ALG_KEY_RSA_2048_PSS_RAW(0x102),
-	UAF_ALG_KEY_RSA_2048_PSS_DER(0x103),
-	UAF_ALG_SIGN_SECP256K1_ECDSA_SHA256_DER (0x06)
-	;
-	
-	public final int id;
 
-	AlgAndEncodingEnum (int id){
-		this.id = id;
+import android.util.Base64;
+
+public class Tag {
+	public int statusId = 0x00;
+	public int id;
+	public int length;
+	public byte[] value;
+	
+	public String toString (){
+		String ret = "Tag id:"+id;
+		ret = ret + " Tag name: " + TagsEnum.get(id);
+		if (value != null){
+			ret = ret + " Tag value:"+ Base64.encodeToString(value, Base64.URL_SAFE);
+		}
+		return ret;
 	}
+
 }

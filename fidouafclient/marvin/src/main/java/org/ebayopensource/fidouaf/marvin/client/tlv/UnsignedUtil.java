@@ -14,25 +14,23 @@
  * limitations under the License.
  */
 
-package org.ebayopensource.fido.uaf.tlv;
+package org.ebayopensource.fidouaf.marvin.client.tlv;
 
-public enum AlgAndEncodingEnum {
-	
-	UAF_ALG_SIGN_SECP256R1_ECDSA_SHA256_RAW (0x01),
-	UAF_ALG_SIGN_SECP256R1_ECDSA_SHA256_DER (0x02),
-	UAF_ALG_SIGN_RSASSA_PSS_SHA256_RAW(0x03),
-	UAF_ALG_SIGN_RSASSA_PSS_SHA256_DER (0x04),
-	UAF_ALG_SIGN_RSA_SHA256_RAW(0x05),
-	UAF_ALG_KEY_ECC_X962_RAW (0x100),
-	UAF_ALG_KEY_ECC_X962_DER (0x101),
-	UAF_ALG_KEY_RSA_2048_PSS_RAW(0x102),
-	UAF_ALG_KEY_RSA_2048_PSS_DER(0x103),
-	UAF_ALG_SIGN_SECP256K1_ECDSA_SHA256_DER (0x06)
-	;
-	
-	public final int id;
+import java.io.IOException;
 
-	AlgAndEncodingEnum (int id){
-		this.id = id;
+public class UnsignedUtil {
+	
+	public static int read_UAFV1_UINT16(ByteInputStream bytes) throws IOException {
+		int a = bytes.readUnsignedByte();
+		int b = bytes.readUnsignedByte();
+		return a + b * 256;
+	}
+	
+	public static byte[] encodeInt(int id) {
+			
+			byte[] bytes = new byte[2];
+			bytes[0] = (byte)(id&0x00ff);
+			bytes[1] = (byte)((id&0xff00)>>8);
+			return bytes;
 	}
 }
