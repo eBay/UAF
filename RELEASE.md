@@ -29,6 +29,9 @@ Signature for UAF Auth operation
 - [Android 6](https://github.com/eBay/UAF/blob/f_android_uaf_client/fidouafclient/marvin/src/main/java/org/ebayopensource/fidouaf/marvin/client/AuthAssertionBuilder.java#L205)
 - [Android 5](https://github.com/eBay/UAF/blob/f_android_uaf_client/fidouafclient/marvin/src/main/java/org/ebayopensource/fidouaf/marvin/client/AuthAssertionBuilder.java#L183)
 
+KeyguardManager example:
+- [Android 5](https://github.com/eBay/UAF/blob/f_android_uaf_client/fidouafclient/marvin/src/main/java/org/ebayopensource/fidouaf/marvin/FidoUafOpActivity.java#L97)
+
 Hope to hear your feedback and comments!
 
 Cheers,
