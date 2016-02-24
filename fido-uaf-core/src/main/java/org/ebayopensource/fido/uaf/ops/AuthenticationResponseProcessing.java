@@ -164,7 +164,7 @@ public class AuthenticationResponseProcessing {
 
 		byte[] decodeBase64 = Base64.decodeBase64(pubKey);
 		
-		if(algAndEncoding == AlgAndEncodingEnum.UAF_ALG_SIGN_SECP256R1_ECDSA_SHA256_DER) {
+		if(algAndEncoding == AlgAndEncodingEnum.UAF_ALG_SIGN_SECP256R1_ECDSA_SHA256_RAW) {
 			try {
 				
 				return NamedCurve.verify(KeyCodec.getPubKey(decodeBase64), 
@@ -181,7 +181,7 @@ public class AuthenticationResponseProcessing {
 					SHA.sha(dataForSigning, "SHA-256"), 
 					signature.value);
 		} else if(algAndEncoding == AlgAndEncodingEnum.UAF_ALG_SIGN_RSA_SHA256_RAW) {
-			PublicKey publicKey = KeyCodec.getRSAPublicKey(decodeBase64);
+			PublicKey publicKey = KeyCodec.getPlainRSAPublicKey(decodeBase64);
 			return RSA.verifySHA256withRSA(publicKey, 
 					SHA.sha(dataForSigning, "SHA-256"), 
 					signature.value);

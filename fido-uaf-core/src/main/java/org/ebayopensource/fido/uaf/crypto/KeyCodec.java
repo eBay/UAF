@@ -214,15 +214,21 @@ public class KeyCodec {
 	}
 	
 	public static PublicKey getRSAPublicKey(byte[] encodedPubKey) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+//		PublicKey publicKey = 
+//			    KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(encodedPubKey));
+//		return publicKey;
+		
+		RSAPublicKey pubKey8 = RSAPublicKey.getInstance(encodedPubKey);
+		SubjectPublicKeyInfo info = SubjectPublicKeyInfoFactory.createSubjectPublicKeyInfo(new RSAKeyParameters(false, pubKey8.getModulus(), pubKey8.getPublicExponent()));
+		X509EncodedKeySpec spec = new X509EncodedKeySpec(info.getEncoded());
+		KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+		return keyFactory.generatePublic(spec);
+	}
+	
+	public static PublicKey getPlainRSAPublicKey(byte[] encodedPubKey) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
 		PublicKey publicKey = 
 			    KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(encodedPubKey));
 		return publicKey;
-		
-//		RSAPublicKey pubKey8 = RSAPublicKey.getInstance(encodedPubKey);
-//		SubjectPublicKeyInfo info = SubjectPublicKeyInfoFactory.createSubjectPublicKeyInfo(new RSAKeyParameters(false, pubKey8.getModulus(), pubKey8.getPublicExponent()));
-//		X509EncodedKeySpec spec = new X509EncodedKeySpec(info.getEncoded());
-//		KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-//		return keyFactory.generatePublic(spec);
 	}
 
 	/**

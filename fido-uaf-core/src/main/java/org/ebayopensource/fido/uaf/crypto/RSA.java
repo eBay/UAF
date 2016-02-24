@@ -83,7 +83,7 @@ public class RSA {
 			byte[] signedData, byte[] sig) throws SignatureException,
 			InvalidKeyException, NoSuchAlgorithmException,
 			NoSuchProviderException, InvalidAlgorithmParameterException, InvalidKeySpecException {
-		Signature signature = Signature.getInstance("SHA256withRSA", BC);
+		Signature signature = Signature.getInstance("SHA256withRSA/PSS", BC);
 		signature.setParameter(new PSSParameterSpec("SHA-256", "MGF1",
 				new MGF1ParameterSpec("SHA-256"), 32, 1));
 		signature.initVerify(publicKey);

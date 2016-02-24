@@ -94,7 +94,7 @@ public class AuthAssertionBuilder {
 		byteout.write(encodeInt(TagsEnum.TAG_ASSERTION_INFO.id));
 		//2 bytes - vendor; 1 byte Authentication Mode; 2 bytes Sig Alg 
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-			value = new byte[]{0x00, 0x00, 0x01, 0x02, 0x00}; //EC DER
+			value = new byte[]{0x00, 0x00, 0x01, 0x01, 0x00}; //EC RAW
 		} else {
 			value = new byte[] { 0x00, 0x00, 0x01, 0x05, 0x00 }; //Plain RSA
 		}
