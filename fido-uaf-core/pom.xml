@@ -83,14 +83,4 @@
 			</plugin>
 		</plugins>
 	</build>
-	<distributionManagement>
-		<repository>
-			<id>raptor.releases</id>
-			<url>http://ebaycentral/content/repositories/releases/</url>
-		</repository>
-		<snapshotRepository>
-			<id>raptor.snapshots</id>
-			<url>http://ebaycentral/content/repositories/snapshots/</url>
-		</snapshotRepository>
-	</distributionManagement>
 </project>
