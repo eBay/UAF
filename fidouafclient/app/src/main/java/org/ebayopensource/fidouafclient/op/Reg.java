@@ -38,17 +38,22 @@ import com.google.gson.GsonBuilder;
 public class Reg {
 	
 	private Gson gson = new GsonBuilder().disableHtmlEscaping().create();
-	
+
 	public String getUafMsgRegRequest (String username, String appId){
 		String msg = "{\"uafProtocolMessage\":\"";
 		try {
 			String serverResponse = getRegRequest(username);
 			JSONArray reg = new JSONArray(serverResponse);
-			((JSONObject)reg.get(0)).getJSONObject("header").put("appID", appId);
-			//((JSONObject)reg.get(0)).getJSONObject("header").put("appID", "android:apk-key-hash:bE0f1WtRJrZv/C0y9CM73bAUqiI");
-			JSONObject uafMsg = new JSONObject();
-			uafMsg.put("uafProtocolMessage", reg.toString());
-			return uafMsg.toString();
+			String urlFacetIds = ((JSONObject) reg.get(0)).getJSONObject("header").getString("appID");
+			String trustedFacets = this.getTrustedFacets(urlFacetIds);
+			boolean appIdIsATrustedFacet = trustedFacets.toLowerCase().contains(appId.toLowerCase());
+			if (appIdIsATrustedFacet) {
+				((JSONObject) reg.get(0)).getJSONObject("header").put("appID", appId);
+				//((JSONObject)reg.get(0)).getJSONObject("header").put("appID", "android:apk-key-hash:bE0f1WtRJrZv/C0y9CM73bAUqiI");
+				JSONObject uafMsg = new JSONObject();
+				uafMsg.put("uafProtocolMessage", reg.toString());
+				return uafMsg.toString();
+			}
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -62,7 +67,11 @@ public class Reg {
 		msg = msg + "}";
 		return msg;
 	}
-	
+
+	public String getTrustedFacets(String url){
+		return Curl.getInSeparateThread(url);
+	}
+
 	public String getRegRequest (String username){
 		String url = Endpoints.getRegRequestEndpoint()+username;
 		return Curl.getInSeparateThread(url);
