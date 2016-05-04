@@ -114,23 +114,17 @@ public class Reg {
      * @return true if appID list contains facetId (current Android application's signature).
      */
 	public boolean processTrustedFacetsList(TrustedFacetsList trustedFacetsList, Version version, String facetId){
-		List<String> result = new ArrayList<String>();
 		for (TrustedFacets trustedFacets: trustedFacetsList.getTrustedFacets()){
 			// select the one with the version matching that of the protocol message version
-			if ((trustedFacets.getVersion().minor == version.minor)
-					&& (trustedFacets.getVersion().major == version.major)) {
+			if ((trustedFacets.getVersion().minor >= version.minor)
+					&& (trustedFacets.getVersion().major <= version.major)) {
 				//The scheme of URLs in ids MUST identify either an application identity
 				// (e.g. using the apk:, ios: or similar scheme) or an https: Web Origin [RFC6454].
 				for (String id : trustedFacets.getIds()) {
-					if (id.startsWith("android:apk-key-hash:")) {
-						result.add(id);
+					if (id.equals(facetId)) {
+						return true;
 					}
 				}
-			}
-		}
-		for (String facet : result){
-			if (facet.equals(facetId)){
-				return true;
 			}
 		}
 		return false;
