@@ -129,7 +129,7 @@ public class MainActivity extends Activity {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        String regRequest = reg.getUafMsgRegRequest(username, facetID);
+        String regRequest = reg.getUafMsgRegRequest(username, facetID, this);
         title.setText("{regRequest}" + regRequest);
 
         Bundle data = new Bundle();
