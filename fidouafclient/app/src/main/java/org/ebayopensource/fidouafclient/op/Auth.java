@@ -28,10 +28,9 @@ import org.ebayopensource.fido.uaf.msg.Version;
 import org.ebayopensource.fido.uaf.msg.asm.ASMRequest;
 import org.ebayopensource.fido.uaf.msg.asm.Request;
 import org.ebayopensource.fido.uaf.msg.asm.obj.AuthenticateIn;
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.content.Context;
 import android.util.Base64;
 
 import com.google.gson.Gson;
@@ -53,62 +52,13 @@ public class Auth {
 		return ret;
 	}
 	
-	public String getUafMsgRequest (boolean isTrx){
-		String msg = "{\"uafProtocolMessage\":\"";
-		try {
-			String serverResponse = getAuthRequest();
-			JSONArray authReq = new JSONArray(serverResponse);
-			((JSONObject)authReq.get(0)).getJSONObject("header").put("appID", "android:apk-key-hash:bE0f1WtRJrZv/C0y9CM73bAUqiI");
-			if (isTrx) {
-				((JSONObject) authReq.get(0)).put("transaction", getTransaction());
-			}
-			JSONObject uafMsg = new JSONObject();
-			uafMsg.put("uafProtocolMessage", authReq.toString());
-			return uafMsg.toString();
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-		msg = msg + "\"}";
-		return msg;
-	}
-
-	private JSONArray getTransaction (){
-		JSONArray ret = new JSONArray();
-		JSONObject trx = new JSONObject();
-
-		try {
-			trx.put("contentType", "text/plain");
-			trx.put("content", Base64.encodeToString("Authentication".getBytes(),Base64.URL_SAFE));
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-
-		ret.put(trx);
-		return ret;
+	public String getUafMsgRequest (String facetId, Context context, boolean isTrx){
+		String serverResponse = getAuthRequest();
+		return OpUtils.getUafRequest(serverResponse,facetId,context,isTrx);
 	}
 	
 	public String clientSendResponse (String uafMessage){
-		StringBuffer res = new StringBuffer();
-		String decoded = null;
-		try {
-			JSONObject json = new JSONObject (uafMessage);
-			decoded = json.getString("uafProtocolMessage").replace("\\", "");
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-		
-		res.append("#uafMessageOut");
-		res.append("\n");
-		res.append(decoded);
-		String headerStr = "Content-Type:Application/json Accept:Application/json";
-		res.append("\n");
-		res.append("\n");
-		res.append("\n");
-		res.append("#ServerResponse");
-		res.append("\n");
-		String serverResponse = Curl.postInSeparateThread(Endpoints.getAuthResponseEndpoint(), headerStr , decoded);
-		res.append(serverResponse);
-		return res.toString();
+		return  OpUtils.clientSendRegResponse(uafMessage,Endpoints.getAuthResponseEndpoint());
 	}
 
 	private String getAuthRequest() {

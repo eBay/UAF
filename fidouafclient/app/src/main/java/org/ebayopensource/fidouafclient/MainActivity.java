@@ -26,6 +26,7 @@ import java.util.logging.Logger;
 import org.ebayopensource.fidouafclient.curl.Curl;
 import org.ebayopensource.fidouafclient.op.Auth;
 import org.ebayopensource.fidouafclient.op.Dereg;
+import org.ebayopensource.fidouafclient.op.OpUtils;
 import org.ebayopensource.fidouafclient.op.Reg;
 import org.ebayopensource.fidouafclient.util.Endpoints;
 import org.ebayopensource.fidouafclient.util.Preferences;
@@ -96,7 +97,7 @@ public class MainActivity extends Activity {
 //		i.setType("application/fido.uaf_asm+json");
 
         Bundle data = new Bundle();
-        data.putString("message", reg.getEmptyUafMsgRegRequest());
+        data.putString("message", OpUtils.getEmptyUafMsgRegRequest());
         data.putString("UAFIntentType", UAFIntentType.DISCOVER.name());
         i.putExtras(data);
 //		i.setComponent(new ComponentName(queryIntentActivities.get(0).activityInfo.packageName, queryIntentActivities.get(0).activityInfo.name));
@@ -175,7 +176,13 @@ public class MainActivity extends Activity {
 
     public void authRequest(View view) {
         title.setText("Authentication operation executed");
-        String authRequest = auth.getUafMsgRequest(false);
+        String facetID = "";
+        try {
+            facetID = getFacetID(this.getPackageManager().getPackageInfo(this.getPackageName(), this.getPackageManager().GET_SIGNATURES));
+        } catch (NameNotFoundException e) {
+            e.printStackTrace();
+        }
+        String authRequest = auth.getUafMsgRequest(facetID,this,false);
         Intent i = new Intent("org.fidoalliance.intent.FIDO_OPERATION");
         i.addCategory("android.intent.category.DEFAULT");
         i.setType("application/fido.uaf_client+json");
@@ -189,7 +196,13 @@ public class MainActivity extends Activity {
 
     public void trxRequest(View view) {
         title.setText("Authentication operation executed");
-        String authRequest = auth.getUafMsgRequest(true);
+        String facetID = "";
+        try {
+            facetID = getFacetID(this.getPackageManager().getPackageInfo(this.getPackageName(), this.getPackageManager().GET_SIGNATURES));
+        } catch (NameNotFoundException e) {
+            e.printStackTrace();
+        }
+        String authRequest = auth.getUafMsgRequest(facetID,this,true);
         Intent i = new Intent("org.fidoalliance.intent.FIDO_OPERATION");
         i.addCategory("android.intent.category.DEFAULT");
         i.setType("application/fido.uaf_client+json");
