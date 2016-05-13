@@ -53,6 +53,9 @@ public abstract class OpUtils {
                     // Begin to fetch the Trusted Facet List using the HTTP GET method
                     String trustedFacetsJson = getTrustedFacets(appID);
                     TrustedFacetsList trustedFacets = (new Gson()).fromJson(trustedFacetsJson, TrustedFacetsList.class);
+                    if (trustedFacets.getTrustedFacets() == null){
+                        return getEmptyUafMsgRegRequest();
+                    }
                     // After processing the trustedFacets entry of the correct version and removing
                     // any invalid entries, if the caller's FacetID matches one listed in ids,
                     // the operation is allowed.
