@@ -20,7 +20,9 @@ import android.app.Activity;
 import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Browser;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
@@ -31,6 +33,8 @@ import org.ebayopensource.fidouaf.marvin.client.op.Auth;
 import org.ebayopensource.fidouaf.marvin.client.op.Reg;
 import org.json.JSONObject;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -53,13 +57,47 @@ public class FidoUafOpActivity extends Activity {
 		setContentView(R.layout.activity_fido_uaf_consent);
 		operation = (TextView)findViewById(R.id.marvinTextViewOperation);
 		uafMsg = (TextView)findViewById(R.id.marvinTextViewOpMsg);
-		operation.setText(extras.getString("UAFIntentType"));
-		uafMsg.setText(extras.getString("message"));
+		if (extras != null) {
+			operation.setText(extras.getString("UAFIntentType"));
+			uafMsg.setText(extras.getString("message"));
+		}
+		Uri data = this.getIntent().getData();
+		if (data != null) {
+			String path = getPath(data.toString());
+			Map<String, String> map = parse(path);
+			operation.setText(map.get("UAFIntentType"));
+			uafMsg.setText(map.get("message"));
+		}
+	}
+
+	private String getPath (String uri){
+		String path = "";
+		String[] arr = uri.split("\\?");
+		if (arr != null && arr.length == 2){
+			path = arr[1];
+		}
+		return path;
+	}
+
+	private Map<String,String> parse (String path){
+		Map<String,String> ret = new HashMap<>();
+		if (ret != null) {
+			String[] nvPairs = path.split("&");
+			if (nvPairs != null) {
+				for (String nv : nvPairs) {
+					String[] arr = nv.split("=");
+					if (arr != null && arr.length == 2) {
+						ret.put(arr[0], arr[1]);
+					}
+				}
+			}
+		}
+		return ret;
 	}
 	
 	private void finishWithResult(){
 	    Bundle data = new Bundle();
-		String inMsg = this.getIntent().getExtras().getString("message");
+		String inMsg = getInMsg();
 		String msg = "";
 		try {
 			if (inMsg != null && inMsg.length()>0) {
@@ -75,6 +113,27 @@ public class FidoUafOpActivity extends Activity {
 	    intent.putExtras(data);
 	    setResult(RESULT_OK, intent);
 	    finish();
+	}
+
+	private String getInMsg (){
+		String ret = "";
+		Intent i = this.getIntent();
+		if (i.getExtras() != null) {
+			ret = i.getExtras().getString("message");
+		}
+		if (i.getData() != null) {
+			ret = parse(getPath(i.getData().toString())).get("message");
+			Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.head2toes.org#message="+ret));
+			browserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			browserIntent.setPackage("com.android.browser");
+			browserIntent.putExtra(Browser.EXTRA_APPLICATION_ID, "com.android.browser");
+			//setResult(RESULT_OK, browserIntent);
+			//finish();
+			this.startActivity(browserIntent);
+			setResult(RESULT_OK);
+			finish();
+		}
+		return ret;
 	}
 
 	private String processOp (String inUafOperationMsg) throws Exception{
