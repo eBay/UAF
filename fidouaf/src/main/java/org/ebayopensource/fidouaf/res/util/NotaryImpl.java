@@ -20,6 +20,7 @@ import org.ebayopensource.fido.uaf.crypto.Notary;
 import org.ebayopensource.fido.uaf.crypto.SHA;
 import org.ebayopensource.fido.uaf.crypto.HMAC;
 import org.apache.commons.codec.binary.Base64;
+import java.security.MessageDigest;
 
 import java.util.logging.Logger;
 
