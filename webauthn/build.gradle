@@ -1,0 +1,17 @@
+apply plugin: 'war'
+apply plugin: 'maven'
+
+sourceCompatibility = 1.6
+targetCompatibility = 1.6
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	compile 'com.sun.jersey:jersey-server:1.8'
+	compile 'com.sun.jersey:jersey-json:1.8'
+	compile project(':fido-uaf-core')
+
+	testCompile 'junit:junit:4.12'
+}
