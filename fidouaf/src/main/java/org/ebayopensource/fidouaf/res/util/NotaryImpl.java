@@ -18,9 +18,18 @@ package org.ebayopensource.fidouaf.res.util;
 
 import org.ebayopensource.fido.uaf.crypto.Notary;
 import org.ebayopensource.fido.uaf.crypto.SHA;
+import org.ebayopensource.fido.uaf.crypto.HMAC;
+import org.apache.commons.codec.binary.Base64;
 
+import java.util.logging.Logger;
+
+/**
+ * This is just en example implementation. You should implement this class based on your operational environment.
+ */
 public class NotaryImpl implements Notary {
 
+	private Logger logger = Logger.getLogger(this.getClass().getName());
+	private String hmacSecret = "HMAC-is-just-one-way";
 	private static Notary instance = new NotaryImpl();
 
 	private NotaryImpl() {
@@ -32,11 +41,23 @@ public class NotaryImpl implements Notary {
 	}
 
 	public String sign(String signData) {
-		return SHA.sha256(signData);
+		try {
+			return Base64.encodeBase64URLSafeString(HMAC.sign(signData, hmacSecret));
+		} catch (InvalidKeyException | NoSuchAlgorithmException
+				| InvalidKeySpecException | UnsupportedEncodingException e) {
+			logger.info(e.toString());
+		}
+		return null;
 	}
 
 	public boolean verify(String signData, String signature) {
-		return signature.equals(SHA.sha256(signData));
+		try {
+			return MessageDigest.isEqual(Base64.decodeBase64(signature), HMAC.sign(signData, hmacSecret));
+		} catch (InvalidKeyException | NoSuchAlgorithmException
+				| InvalidKeySpecException | UnsupportedEncodingException e) {
+			logger.info(e.toString());
+		}
+		return false;
 	}
 
 }
