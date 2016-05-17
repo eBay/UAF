@@ -27,25 +27,28 @@ public class DeregRequestProcessor {
 	private Gson gson = new Gson();
 
 	public String process(String payload) {
-		try {
-			DeregistrationRequest[] deregFromJson = gson.fromJson(payload,
-					DeregistrationRequest[].class);
-			DeregistrationRequest deregRequest = deregFromJson[0];
-			Dash.getInstance().stats.put(Dash.LAST_DEREG_REQ, deregFromJson);
-			AuthenticatorRecord authRecord = new AuthenticatorRecord();
-			for (DeregisterAuthenticator authenticator : deregRequest.authenticators) {
-				authRecord.AAID = authenticator.aaid;
-				authRecord.KeyID = authenticator.keyID;
-				try {
-					String Key = authRecord.toString();
-					StorageImpl.getInstance().deleteRegistrationRecord(Key);
-				} catch (Exception e) {
-					return "Failure: Problem in deleting record from local DB";
+		if (!payload.isEmpty()) {
+			try {
+				DeregistrationRequest[] deregFromJson = gson.fromJson(payload,
+						DeregistrationRequest[].class);
+				DeregistrationRequest deregRequest = deregFromJson[0];
+				Dash.getInstance().stats.put(Dash.LAST_DEREG_REQ, deregFromJson);
+				AuthenticatorRecord authRecord = new AuthenticatorRecord();
+				for (DeregisterAuthenticator authenticator : deregRequest.authenticators) {
+					authRecord.AAID = authenticator.aaid;
+					authRecord.KeyID = authenticator.keyID;
+					try {
+						String Key = authRecord.toString();
+						StorageImpl.getInstance().deleteRegistrationRecord(Key);
+					} catch (Exception e) {
+						return "Failure: Problem in deleting record from local DB";
+					}
 				}
+			} catch (Exception e) {
+				return "Failure: problem processing deregistration request";
 			}
-		} catch (Exception e) {
-			return "Failure: problem processing deregistration request";
+			return "Success";
 		}
-		return "Success";
+		return "Failure: problem processing deregistration request";
 	}
 }
