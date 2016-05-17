@@ -20,7 +20,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -29,6 +28,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.UriInfo;
 
 import org.apache.commons.codec.binary.Base64;
 import org.ebayopensource.fido.uaf.msg.AuthenticationRequest;
@@ -89,14 +89,14 @@ public class FidoUafResource {
 	@Path("/public/regRequest/{username}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public RegistrationRequest[] getRegisReqPublic(
-			@PathParam("username") String username, @Context HttpServletRequest httpServletRequest) {
+			@PathParam("username") String username) {
 
-		return regReqPublic(username,httpServletRequest);
+		return regReqPublic(username);
 	}
 
-	private RegistrationRequest[] regReqPublic(String username, HttpServletRequest httpServletRequest){
+	private RegistrationRequest[] regReqPublic(String username){
 		RegistrationRequest[] regReq = new RegistrationRequest[1];
-		regReq[0] = new FetchRequest(getAppId(httpServletRequest), getAllowedAaids())
+		regReq[0] = new FetchRequest(getAppId(), getAllowedAaids())
 				.getRegistrationRequest(username);
 		Dash.getInstance().stats.put(Dash.LAST_REG_REQ, regReq);
 		Dash.getInstance().history.add(regReq);
@@ -107,8 +107,8 @@ public class FidoUafResource {
 	@Path("/public/regRequest/{username}/{appId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public String getRegReqForAppId(@PathParam("username") String username, 
-			@PathParam("appId") String appId, @Context HttpServletRequest httpServletRequest) {
-		RegistrationRequest[] regReq = getRegisReqPublic(username,httpServletRequest);
+			@PathParam("appId") String appId) {
+		RegistrationRequest[] regReq = getRegisReqPublic(username);
 		setAppId(appId, regReq[0].header);
 		return gson.toJson(regReq);
 	}
@@ -116,8 +116,8 @@ public class FidoUafResource {
 	@GET
 	@Path("/public/regRequest")
 	@Produces(MediaType.APPLICATION_JSON)
-	public RegistrationRequest[] postRegisReqPublic(String username, @Context HttpServletRequest httpServletRequest) {
-		return regReqPublic(username,httpServletRequest);
+	public RegistrationRequest[] postRegisReqPublic(String username) {
+		return regReqPublic(username);
 	}
 
 	/**
@@ -162,6 +162,7 @@ public class FidoUafResource {
 		String[] trustedIds = { "https://www.head2toes.org",
 				"android:apk-key-hash:Df+2X53Z0UscvUu6obxC3rIfFyk",
 				"android:apk-key-hash:bE0f1WtRJrZv/C0y9CM73bAUqiI",
+				"android:apk-key-hash:Lir5oIjf552K/XN4bTul0VS3GfM",
 				"https://openidconnect.ebay.com" };
 		Facets facets = new Facets();
 		facets.trustedFacets = new TrustedFacets[1];
@@ -178,14 +179,11 @@ public class FidoUafResource {
 	 * i.e. list of FacetIDs related to this AppID.
 	 * @return a URL pointing to the TrustedFacets
 	 */
-	private String getAppId(HttpServletRequest httpServletRequest) {
+	@Context UriInfo uriInfo;
+	private String getAppId() {
 		// You can get it dynamically.
 		// It only works if your server is not behind a reverse proxy
-		StringBuffer url = httpServletRequest.getRequestURL();
-		String uri = httpServletRequest.getRequestURI();
-		String hostname = url.substring(0,url.indexOf(uri));
-		String endpoint = "/fidouaf/v1/public/uaf/facets";
-		return hostname + endpoint;
+		return uriInfo.getBaseUri() + "v1/public/uaf/facets";
 		// Or you can define it statically
 //		return "https://www.head2toes.org/fidouaf/v1/public/uaf/facets";
 	}
@@ -238,15 +236,15 @@ public class FidoUafResource {
 	@GET
 	@Path("/public/authRequest")
 	@Produces(MediaType.APPLICATION_JSON)
-	public String getAuthReq(@Context HttpServletRequest httpServletRequest) {
-		return gson.toJson(getAuthReqObj(httpServletRequest));
+	public String getAuthReq() {
+		return gson.toJson(getAuthReqObj());
 	}
 
 	@GET
 	@Path("/public/authRequest/{appId}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public String getAuthForAppIdReq(@PathParam("appId") String appId, @Context HttpServletRequest httpServletRequest) {
-		AuthenticationRequest[] authReqObj = getAuthReqObj(httpServletRequest);
+	public String getAuthForAppIdReq(@PathParam("appId") String appId) {
+		AuthenticationRequest[] authReqObj = getAuthReqObj();
 		setAppId(appId, authReqObj[0].header);
 		
 		return gson.toJson(authReqObj);
@@ -276,8 +274,8 @@ public class FidoUafResource {
 	@Path("/public/authRequest/{appId}/{trxContent}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public String getAuthTrxReq(@PathParam("appId") String appId,
-			@PathParam("trxContent") String trxContent, @Context HttpServletRequest httpServletRequest) {
-		AuthenticationRequest[] authReqObj = getAuthReqObj(httpServletRequest);
+			@PathParam("trxContent") String trxContent) {
+		AuthenticationRequest[] authReqObj = getAuthReqObj();
 		setAppId(appId, authReqObj[0].header);
 		setTransaction(trxContent, authReqObj);
 		
@@ -292,9 +290,9 @@ public class FidoUafResource {
 		authReqObj[0].transaction[0] = t;
 	}
 
-	public AuthenticationRequest[] getAuthReqObj(HttpServletRequest httpServletRequest) {
+	public AuthenticationRequest[] getAuthReqObj() {
 		AuthenticationRequest[] ret = new AuthenticationRequest[1];
-		ret[0] = new FetchRequest(getAppId(httpServletRequest), getAllowedAaids())
+		ret[0] = new FetchRequest(getAppId(), getAllowedAaids())
 				.getAuthenticationRequest();
 		Dash.getInstance().stats.put(Dash.LAST_AUTH_REQ, ret);
 		Dash.getInstance().history.add(ret);
@@ -324,8 +322,8 @@ public class FidoUafResource {
 	@Path("/public/uafRegRequest")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public ReturnUAFRegistrationRequest GetUAFRegistrationRequest(String payload, @Context HttpServletRequest httpServletRequest) {
-		RegistrationRequest[] result = getRegisReqPublic("iafuser01",httpServletRequest);
+	public ReturnUAFRegistrationRequest GetUAFRegistrationRequest(String payload) {
+		RegistrationRequest[] result = getRegisReqPublic("iafuser01");
 		ReturnUAFRegistrationRequest uafReq = null;
 		if (result != null) {
 			uafReq = new ReturnUAFRegistrationRequest();
@@ -342,8 +340,8 @@ public class FidoUafResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public ReturnUAFAuthenticationRequest GetUAFAuthenticationRequest(
-			String payload, @Context HttpServletRequest httpServletRequest) {
-		AuthenticationRequest[] result = getAuthReqObj(httpServletRequest);
+			String payload) {
+		AuthenticationRequest[] result = getAuthReqObj();
 		ReturnUAFAuthenticationRequest uafReq = null;
 		if (result != null) {
 			uafReq = new ReturnUAFAuthenticationRequest();
@@ -461,14 +459,14 @@ public class FidoUafResource {
 	@Path("/public/uafRequest")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public String GetUAFRequest(String payload, @Context HttpServletRequest httpServletRequest) {
+	public String GetUAFRequest(String payload) {
 		String uafReq = null;
 		if (!payload.isEmpty()) {
 			Gson gson = new Gson();
 			GetUAFRequest req = gson.fromJson(payload, GetUAFRequest.class);
 
 			if (req.op.name().equals("Reg")) {
-				RegistrationRequest[] result = getRegisReqPublic("iafuser01", httpServletRequest);
+				RegistrationRequest[] result = getRegisReqPublic("iafuser01");
 				ReturnUAFRegistrationRequest uafRegReq = null;
 				if (result != null) {
 					uafRegReq = new ReturnUAFRegistrationRequest();
@@ -479,7 +477,7 @@ public class FidoUafResource {
 				}
 				uafReq = gson.toJson(uafRegReq);
 			} else if (req.op.name().equals("Auth")) {
-				AuthenticationRequest[] result = getAuthReqObj(httpServletRequest);
+				AuthenticationRequest[] result = getAuthReqObj();
 				ReturnUAFAuthenticationRequest uafAuthReq = null;
 				if (result != null) {
 					uafAuthReq = new ReturnUAFAuthenticationRequest();
