@@ -43,8 +43,7 @@ public class NotaryImpl implements Notary {
 	public String sign(String signData) {
 		try {
 			return Base64.encodeBase64URLSafeString(HMAC.sign(signData, hmacSecret));
-		} catch (InvalidKeyException | NoSuchAlgorithmException
-				| InvalidKeySpecException | UnsupportedEncodingException e) {
+		} catch (Exception e) {
 			logger.info(e.toString());
 		}
 		return null;
@@ -53,8 +52,7 @@ public class NotaryImpl implements Notary {
 	public boolean verify(String signData, String signature) {
 		try {
 			return MessageDigest.isEqual(Base64.decodeBase64(signature), HMAC.sign(signData, hmacSecret));
-		} catch (InvalidKeyException | NoSuchAlgorithmException
-				| InvalidKeySpecException | UnsupportedEncodingException e) {
+		} catch (Exception e) {
 			logger.info(e.toString());
 		}
 		return false;
