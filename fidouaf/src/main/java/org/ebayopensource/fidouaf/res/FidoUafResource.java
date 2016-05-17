@@ -26,7 +26,9 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.UriInfo;
 
 import org.apache.commons.codec.binary.Base64;
 import org.ebayopensource.fido.uaf.msg.AuthenticationRequest;
@@ -88,6 +90,11 @@ public class FidoUafResource {
 	@Produces(MediaType.APPLICATION_JSON)
 	public RegistrationRequest[] getRegisReqPublic(
 			@PathParam("username") String username) {
+
+		return regReqPublic(username);
+	}
+
+	private RegistrationRequest[] regReqPublic(String username){
 		RegistrationRequest[] regReq = new RegistrationRequest[1];
 		regReq[0] = new FetchRequest(getAppId(), getAllowedAaids())
 				.getRegistrationRequest(username);
@@ -110,14 +117,19 @@ public class FidoUafResource {
 	@Path("/public/regRequest")
 	@Produces(MediaType.APPLICATION_JSON)
 	public RegistrationRequest[] postRegisReqPublic(String username) {
-		RegistrationRequest[] regReq = new RegistrationRequest[1];
-		regReq[0] = new FetchRequest(getAppId(), getAllowedAaids())
-				.getRegistrationRequest(username);
-		Dash.getInstance().stats.put(Dash.LAST_REG_REQ, regReq);
-		Dash.getInstance().history.add(regReq);
-		return regReq;
+		return regReqPublic(username);
 	}
 
+	/**
+	 * List of allowed AAID - Authenticator Attestation ID.
+	 * Authenticator Attestation ID / AAID.
+	 * A unique identifier assigned to a model, class or batch of FIDO Authenticators
+	 * that all share the same characteristics, and which a Relying Party can use
+	 * to look up an Attestation Public Key and Authenticator Metadata for the device.
+	 * The first 4 characters of the AAID are the vendorID.
+	 *
+	 * @return  list of allowed AAID - Authenticator Attestation ID.
+	 */
 	private String[] getAllowedAaids() {
 		String[] ret = { "EBA0#0001", "0015#0001", "0012#0002", "0010#0001",
 				"4e4e#0001", "5143#0001", "0011#0701", "0013#0001",
@@ -127,6 +139,20 @@ public class FidoUafResource {
 		return ret;
 	}
 
+	/**
+	 * List of trusted Application Facet ID.
+	 * An (application) facet is how an application is implemented on various
+	 * platforms. For example, the application MyBank may have an Android app,
+	 * an iOS app, and a Web app. These are all facets of the MyBank application.
+	 *
+	 * A platform-specific identifier (URI) for an application facet.
+	 * For Web applications, the facet id is the RFC6454 origin [RFC6454].
+	 * For Android applications, the facet id is the URI
+	 * android:apk-key-hash:<hash-of-apk-signing-cert>
+	 * For iOS, the facet id is the URI ios:bundle-id:<ios-bundle-id-of-app>.
+	 *
+	 * @return List of trusted Application Facet ID.
+	 */
 	@GET
 	@Path("/public/uaf/facets")
 	@Produces("application/fido.trusted-apps+json")
@@ -136,6 +162,7 @@ public class FidoUafResource {
 		String[] trustedIds = { "https://www.head2toes.org",
 				"android:apk-key-hash:Df+2X53Z0UscvUu6obxC3rIfFyk",
 				"android:apk-key-hash:bE0f1WtRJrZv/C0y9CM73bAUqiI",
+				"android:apk-key-hash:Lir5oIjf552K/XN4bTul0VS3GfM",
 				"https://openidconnect.ebay.com" };
 		Facets facets = new Facets();
 		facets.trustedFacets = new TrustedFacets[1];
@@ -146,8 +173,19 @@ public class FidoUafResource {
 		return facets;
 	}
 
+	/**
+	 * The AppID is an identifier for a set of different Facets of a relying
+	 * party's application. The AppID is a URL pointing to the TrustedFacets,
+	 * i.e. list of FacetIDs related to this AppID.
+	 * @return a URL pointing to the TrustedFacets
+	 */
+	@Context UriInfo uriInfo;
 	private String getAppId() {
-		return "https://www.head2toes.org/fidouaf/v1/public/uaf/facets";
+		// You can get it dynamically.
+		// It only works if your server is not behind a reverse proxy
+		return uriInfo.getBaseUri() + "v1/public/uaf/facets";
+		// Or you can define it statically
+//		return "https://www.head2toes.org/fidouaf/v1/public/uaf/facets";
 	}
 
 	@POST
@@ -156,27 +194,32 @@ public class FidoUafResource {
 	@Produces(MediaType.APPLICATION_JSON)
 	public RegistrationRecord[] processRegResponse(String payload) {
 		RegistrationRecord[] result = null;
-		Gson gson = new Gson();
+		if (! payload.isEmpty()) {
+			RegistrationResponse[] fromJson = (new Gson()).fromJson(payload,
+					RegistrationResponse[].class);
+			Dash.getInstance().stats.put(Dash.LAST_REG_RES, fromJson);
+			Dash.getInstance().history.add(fromJson);
 
-		RegistrationResponse[] fromJson = gson.fromJson(payload,
-				RegistrationResponse[].class);
-		Dash.getInstance().stats.put(Dash.LAST_REG_RES, fromJson);
-		Dash.getInstance().history.add(fromJson);
-
-		RegistrationResponse registrationResponse = fromJson[0];
-		result = new ProcessResponse().processRegResponse(registrationResponse);
-		if (result[0].status.equals("SUCCESS")) {
-			try {
-				StorageImpl.getInstance().store(result);
-			} catch (DuplicateKeyException e) {
-				result = new RegistrationRecord[1];
-				result[0] = new RegistrationRecord();
-				result[0].status = "Error: Duplicate Key";
-			} catch (SystemErrorException e1) {
-				result = new RegistrationRecord[1];
-				result[0] = new RegistrationRecord();
-				result[0].status = "Error: Data couldn't be stored in DB";
+			RegistrationResponse registrationResponse = fromJson[0];
+			result = new ProcessResponse().processRegResponse(registrationResponse);
+			if (result[0].status.equals("SUCCESS")) {
+				try {
+					StorageImpl.getInstance().store(result);
+				} catch (DuplicateKeyException e) {
+					result = new RegistrationRecord[1];
+					result[0] = new RegistrationRecord();
+					result[0].status = "Error: Duplicate Key";
+				} catch (SystemErrorException e1) {
+					result = new RegistrationRecord[1];
+					result[0] = new RegistrationRecord();
+					result[0].status = "Error: Data couldn't be stored in DB";
+				}
 			}
+		}else{
+			//TODO Could be interesting refactor this method (and its callers) and modify return type to javax.ws.rs.core.Response and send Response.Status.PRECONDITION_FAILED error code.
+			result = new RegistrationRecord[1];
+			result[0] = new RegistrationRecord();
+			result[0].status = "Error: payload could not be empty";
 		}
 		return result;
 	}
@@ -261,15 +304,18 @@ public class FidoUafResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public AuthenticatorRecord[] processAuthResponse(String payload) {
-		Dash.getInstance().stats.put(Dash.LAST_AUTH_RES, payload);
-		Gson gson = new Gson();
-		AuthenticationResponse[] authResp = gson.fromJson(payload,
-				AuthenticationResponse[].class);
-		Dash.getInstance().stats.put(Dash.LAST_AUTH_RES, authResp);
-		Dash.getInstance().history.add(authResp);
-		AuthenticatorRecord[] result = new ProcessResponse()
-				.processAuthResponse(authResp[0]);
-		return result;
+		if (!payload.isEmpty()) {
+			Dash.getInstance().stats.put(Dash.LAST_AUTH_RES, payload);
+			Gson gson = new Gson();
+			AuthenticationResponse[] authResp = gson.fromJson(payload,
+					AuthenticationResponse[].class);
+			Dash.getInstance().stats.put(Dash.LAST_AUTH_RES, authResp);
+			Dash.getInstance().history.add(authResp);
+			AuthenticatorRecord[] result = new ProcessResponse()
+					.processAuthResponse(authResp[0]);
+			return result;
+		}
+		return new AuthenticatorRecord[0];
 	}
 
 	@POST
@@ -338,154 +384,13 @@ public class FidoUafResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public ServerResponse UAFAuthResponse(String payload) {
-		String findOp = payload;
-		findOp = findOp.substring(findOp.indexOf("op") + 6,
-				findOp.indexOf(",", findOp.indexOf("op")) - 1);
-		System.out.println("findOp=" + findOp);
-
-		AuthenticatorRecord[] result = processAuthResponse(payload);
 		ServerResponse servResp = new ServerResponse();
-		if (result[0].status.equals("SUCCESS")) {
-			servResp.statusCode = 1200;
-			servResp.Description = "OK. Operation completed";
-		} else if (result[0].status.equals("FAILED_SIGNATURE_NOT_VALID")
-				|| result[0].status.equals("FAILED_SIGNATURE_VERIFICATION")
-				|| result[0].status.equals("FAILED_ASSERTION_VERIFICATION")) {
-			servResp.statusCode = 1496;
-			servResp.Description = result[0].status;
-		} else if (result[0].status.equals("INVALID_SERVER_DATA_EXPIRED")
-				|| result[0].status
-						.equals("INVALID_SERVER_DATA_SIGNATURE_NO_MATCH")
-				|| result[0].status.equals("INVALID_SERVER_DATA_CHECK_FAILED")) {
-			servResp.statusCode = 1491;
-			servResp.Description = result[0].status;
-		} else {
-			servResp.statusCode = 1500;
-			servResp.Description = result[0].status;
-		}
+		if (!payload.isEmpty()) {
+			String findOp = payload;
+			findOp = findOp.substring(findOp.indexOf("op") + 6,
+					findOp.indexOf(",", findOp.indexOf("op")) - 1);
+			System.out.println("findOp=" + findOp);
 
-		return servResp;
-	}
-
-	@POST
-	@Path("/public/uafRegResponse")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	public ServerResponse UAFRegResponse(String payload) {
-		String findOp = payload;
-		findOp = findOp.substring(findOp.indexOf("op") + 6,
-				findOp.indexOf(",", findOp.indexOf("op")) - 1);
-		System.out.println("findOp=" + findOp);
-
-		RegistrationRecord[] result = processRegResponse(payload);
-		ServerResponse servResp = new ServerResponse();
-		if (result[0].status.equals("SUCCESS")) {
-			servResp.statusCode = 1200;
-			servResp.Description = "OK. Operation completed";
-		} else if (result[0].status.equals("ASSERTIONS_CHECK_FAILED")) {
-			servResp.statusCode = 1496;
-			servResp.Description = result[0].status;
-		} else if (result[0].status.equals("INVALID_SERVER_DATA_EXPIRED")
-				|| result[0].status
-						.equals("INVALID_SERVER_DATA_SIGNATURE_NO_MATCH")
-				|| result[0].status.equals("INVALID_SERVER_DATA_CHECK_FAILED")) {
-			servResp.statusCode = 1491;
-			servResp.Description = result[0].status;
-		} else {
-			servResp.statusCode = 1500;
-			servResp.Description = result[0].status;
-		}
-
-		return servResp;
-	}
-
-	@POST
-	@Path("/public/uafRequest")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	public String GetUAFRequest(String payload) {
-		String uafReq = null;
-		Gson gson = new Gson();
-		GetUAFRequest req = gson.fromJson(payload, GetUAFRequest.class);
-
-		if (req.op.name().equals("Reg")) {
-			RegistrationRequest[] result = getRegisReqPublic("iafuser01");
-			ReturnUAFRegistrationRequest uafRegReq = null;
-			if (result != null) {
-				uafRegReq = new ReturnUAFRegistrationRequest();
-				uafRegReq.statusCode = 1200;
-				uafRegReq.uafRequest = result;
-				uafRegReq.op = Operation.Reg;
-				uafRegReq.lifetimeMillis = 5 * 60 * 1000;
-			}
-			uafReq = gson.toJson(uafRegReq);
-		} else if (req.op.name().equals("Auth")) {
-			AuthenticationRequest[] result = getAuthReqObj();
-			ReturnUAFAuthenticationRequest uafAuthReq = null;
-			if (result != null) {
-				uafAuthReq = new ReturnUAFAuthenticationRequest();
-				uafAuthReq.statusCode = 1200;
-				uafAuthReq.uafRequest = result;
-				uafAuthReq.op = Operation.Auth;
-				uafAuthReq.lifetimeMillis = 5 * 60 * 1000;
-			}
-			uafReq = gson.toJson(uafAuthReq);
-		} else if (req.op.name().equals("Dereg")) {
-			String result = deregRequestPublic(payload);
-			ReturnUAFDeregistrationRequest uafDeregReq = new ReturnUAFDeregistrationRequest();
-			if (result.equalsIgnoreCase("Success")) {
-				uafDeregReq.statusCode = 1200;
-			} else if (result
-					.equalsIgnoreCase("Failure: Problem in deleting record from local DB")) {
-				uafDeregReq.statusCode = 1404;
-			} else if (result
-					.equalsIgnoreCase("Failure: problem processing deregistration request")) {
-				uafDeregReq.statusCode = 1491;
-			} else {
-				uafDeregReq.statusCode = 1500;
-
-			}
-			uafDeregReq.uafRequest = null;
-			uafDeregReq.op = Operation.Dereg;
-			uafDeregReq.lifetimeMillis = 0;
-			uafReq = gson.toJson(uafDeregReq);
-		}
-		return uafReq;
-	}
-
-	@POST
-	@Path("/public/uafResponse")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	public ServerResponse UAFResponse(String payload) {
-		String findOp = payload;
-		findOp = findOp.substring(findOp.indexOf("op") + 6,
-				findOp.indexOf(",", findOp.indexOf("op")) - 1);
-		System.out.println("findOp=" + findOp);
-
-		ServerResponse servResp = new ServerResponse();
-
-		if (findOp.equals("Reg")) {
-			RegistrationRecord[] result = processRegResponse(payload);
-
-			if (result[0].status.equals("SUCCESS")) {
-				servResp.statusCode = 1200;
-				servResp.Description = "OK. Operation completed";
-			} else if (result[0].status.equals("ASSERTIONS_CHECK_FAILED")) {
-				servResp.statusCode = 1496;
-				servResp.Description = result[0].status;
-			} else if (result[0].status.equals("INVALID_SERVER_DATA_EXPIRED")
-					|| result[0].status
-							.equals("INVALID_SERVER_DATA_SIGNATURE_NO_MATCH")
-					|| result[0].status
-							.equals("INVALID_SERVER_DATA_CHECK_FAILED")) {
-				servResp.statusCode = 1491;
-				servResp.Description = result[0].status;
-			} else {
-				servResp.statusCode = 1500;
-				servResp.Description = result[0].status;
-			}
-		} else if (findOp.equals("Auth")) {
 			AuthenticatorRecord[] result = processAuthResponse(payload);
 
 			if (result[0].status.equals("SUCCESS")) {
@@ -498,15 +403,171 @@ public class FidoUafResource {
 				servResp.Description = result[0].status;
 			} else if (result[0].status.equals("INVALID_SERVER_DATA_EXPIRED")
 					|| result[0].status
-							.equals("INVALID_SERVER_DATA_SIGNATURE_NO_MATCH")
-					|| result[0].status
-							.equals("INVALID_SERVER_DATA_CHECK_FAILED")) {
+					.equals("INVALID_SERVER_DATA_SIGNATURE_NO_MATCH")
+					|| result[0].status.equals("INVALID_SERVER_DATA_CHECK_FAILED")) {
 				servResp.statusCode = 1491;
 				servResp.Description = result[0].status;
 			} else {
 				servResp.statusCode = 1500;
 				servResp.Description = result[0].status;
 			}
+		}else{
+			servResp.Description = "Error: payload is empty";
+		}
+
+		return servResp;
+	}
+
+	@POST
+	@Path("/public/uafRegResponse")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public ServerResponse UAFRegResponse(String payload) {
+		ServerResponse servResp = new ServerResponse();
+		if (!payload.isEmpty()) {
+			String findOp = payload;
+			findOp = findOp.substring(findOp.indexOf("op") + 6,
+					findOp.indexOf(",", findOp.indexOf("op")) - 1);
+			System.out.println("findOp=" + findOp);
+
+			RegistrationRecord[] result = processRegResponse(payload);
+
+			if (result[0].status.equals("SUCCESS")) {
+				servResp.statusCode = 1200;
+				servResp.Description = "OK. Operation completed";
+			} else if (result[0].status.equals("ASSERTIONS_CHECK_FAILED")) {
+				servResp.statusCode = 1496;
+				servResp.Description = result[0].status;
+			} else if (result[0].status.equals("INVALID_SERVER_DATA_EXPIRED")
+					|| result[0].status
+					.equals("INVALID_SERVER_DATA_SIGNATURE_NO_MATCH")
+					|| result[0].status.equals("INVALID_SERVER_DATA_CHECK_FAILED")) {
+				servResp.statusCode = 1491;
+				servResp.Description = result[0].status;
+			} else {
+				servResp.statusCode = 1500;
+				servResp.Description = result[0].status;
+			}
+		}else{
+			servResp.Description = "Error: payload is empty";
+		}
+
+		return servResp;
+	}
+
+	@POST
+	@Path("/public/uafRequest")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public String GetUAFRequest(String payload) {
+		String uafReq = null;
+		if (!payload.isEmpty()) {
+			Gson gson = new Gson();
+			GetUAFRequest req = gson.fromJson(payload, GetUAFRequest.class);
+
+			if (req.op.name().equals("Reg")) {
+				RegistrationRequest[] result = getRegisReqPublic("iafuser01");
+				ReturnUAFRegistrationRequest uafRegReq = null;
+				if (result != null) {
+					uafRegReq = new ReturnUAFRegistrationRequest();
+					uafRegReq.statusCode = 1200;
+					uafRegReq.uafRequest = result;
+					uafRegReq.op = Operation.Reg;
+					uafRegReq.lifetimeMillis = 5 * 60 * 1000;
+				}
+				uafReq = gson.toJson(uafRegReq);
+			} else if (req.op.name().equals("Auth")) {
+				AuthenticationRequest[] result = getAuthReqObj();
+				ReturnUAFAuthenticationRequest uafAuthReq = null;
+				if (result != null) {
+					uafAuthReq = new ReturnUAFAuthenticationRequest();
+					uafAuthReq.statusCode = 1200;
+					uafAuthReq.uafRequest = result;
+					uafAuthReq.op = Operation.Auth;
+					uafAuthReq.lifetimeMillis = 5 * 60 * 1000;
+				}
+				uafReq = gson.toJson(uafAuthReq);
+			} else if (req.op.name().equals("Dereg")) {
+				String result = deregRequestPublic(payload);
+				ReturnUAFDeregistrationRequest uafDeregReq = new ReturnUAFDeregistrationRequest();
+				if (result.equalsIgnoreCase("Success")) {
+					uafDeregReq.statusCode = 1200;
+				} else if (result
+						.equalsIgnoreCase("Failure: Problem in deleting record from local DB")) {
+					uafDeregReq.statusCode = 1404;
+				} else if (result
+						.equalsIgnoreCase("Failure: problem processing deregistration request")) {
+					uafDeregReq.statusCode = 1491;
+				} else {
+					uafDeregReq.statusCode = 1500;
+
+				}
+				uafDeregReq.uafRequest = null;
+				uafDeregReq.op = Operation.Dereg;
+				uafDeregReq.lifetimeMillis = 0;
+				uafReq = gson.toJson(uafDeregReq);
+			}
+		}
+		return uafReq;
+	}
+
+	@POST
+	@Path("/public/uafResponse")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public ServerResponse UAFResponse(String payload) {
+		ServerResponse servResp = new ServerResponse();
+		if (!payload.isEmpty()) {
+			String findOp = payload;
+			findOp = findOp.substring(findOp.indexOf("op") + 6,
+					findOp.indexOf(",", findOp.indexOf("op")) - 1);
+			System.out.println("findOp=" + findOp);
+
+			if (findOp.equals("Reg")) {
+				RegistrationRecord[] result = processRegResponse(payload);
+
+				if (result[0].status.equals("SUCCESS")) {
+					servResp.statusCode = 1200;
+					servResp.Description = "OK. Operation completed";
+				} else if (result[0].status.equals("ASSERTIONS_CHECK_FAILED")) {
+					servResp.statusCode = 1496;
+					servResp.Description = result[0].status;
+				} else if (result[0].status.equals("INVALID_SERVER_DATA_EXPIRED")
+						|| result[0].status
+						.equals("INVALID_SERVER_DATA_SIGNATURE_NO_MATCH")
+						|| result[0].status
+						.equals("INVALID_SERVER_DATA_CHECK_FAILED")) {
+					servResp.statusCode = 1491;
+					servResp.Description = result[0].status;
+				} else {
+					servResp.statusCode = 1500;
+					servResp.Description = result[0].status;
+				}
+			} else if (findOp.equals("Auth")) {
+				AuthenticatorRecord[] result = processAuthResponse(payload);
+
+				if (result[0].status.equals("SUCCESS")) {
+					servResp.statusCode = 1200;
+					servResp.Description = "OK. Operation completed";
+				} else if (result[0].status.equals("FAILED_SIGNATURE_NOT_VALID")
+						|| result[0].status.equals("FAILED_SIGNATURE_VERIFICATION")
+						|| result[0].status.equals("FAILED_ASSERTION_VERIFICATION")) {
+					servResp.statusCode = 1496;
+					servResp.Description = result[0].status;
+				} else if (result[0].status.equals("INVALID_SERVER_DATA_EXPIRED")
+						|| result[0].status
+						.equals("INVALID_SERVER_DATA_SIGNATURE_NO_MATCH")
+						|| result[0].status
+						.equals("INVALID_SERVER_DATA_CHECK_FAILED")) {
+					servResp.statusCode = 1491;
+					servResp.Description = result[0].status;
+				} else {
+					servResp.statusCode = 1500;
+					servResp.Description = result[0].status;
+				}
+			}
+		}else{
+			servResp.Description = "Error: payload is empty";
 		}
 		return servResp;
 	}
