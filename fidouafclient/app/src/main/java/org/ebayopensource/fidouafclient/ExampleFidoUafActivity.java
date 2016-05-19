@@ -76,6 +76,16 @@ public class ExampleFidoUafActivity extends Activity {
 	    finish();
 	}
 
+	private void finishWithError(){
+		Bundle data = new Bundle();
+
+		data.putString("message", "Unable to complete local authentication, please setup android device authentication(pin, pattern, fingerprint..)");
+		Intent intent = new Intent();
+		intent.putExtras(data);
+		setResult(RESULT_CANCELED, intent);
+		finish();
+	}
+
 	private String processOp (String inUafOperationMsg){
 		String msg = "";
 		String inMsg = extract(inUafOperationMsg);
@@ -95,6 +105,8 @@ public class ExampleFidoUafActivity extends Activity {
 		Intent intent = keyguardManager.createConfirmDeviceCredentialIntent("UAF","Confirm Identity");
 		if (intent != null) {
 			startActivityForResult(intent, REQUEST_CODE_CONFIRM_DEVICE_CREDENTIALS);
+		} else {
+			finishWithError();
 		}
 
 	}
