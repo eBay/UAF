@@ -4,6 +4,8 @@
 [UAF Architectural Overview](https://fidoalliance.org/wp-content/uploads/html/fido-uaf-overview-v1.0-ps-20141208.html)
 
 [News & Release Notes](RELEASE.md)
+
+- [2016.05.20 - Added wiki page for Maven build and Tomcat setup/run (using CLI only)](https://github.com/eBay/UAF/wiki/BuildingAndRunningUAFServerUsingMaven(CLIonly))
 - [2016.03.28 - Started wiki pages](https://github.com/eBay/UAF/wiki)
 - [2016.02.23](https://github.com/eBay/UAF/blob/master/RELEASE.md#20160223)
 - [2016.01.16](https://github.com/eBay/UAF/blob/master/RELEASE.md#20160116)
