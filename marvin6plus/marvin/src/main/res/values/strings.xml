@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Marvin - Android UAF Client</string>
+    <string name="android_uaf_client">Marvin - Android UAF Client</string>
+    <string name="action_diagnostic">Run diagnostics</string>
+</resources>
