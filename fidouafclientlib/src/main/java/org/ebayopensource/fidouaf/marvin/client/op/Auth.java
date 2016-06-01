@@ -30,25 +30,51 @@ public class Auth {
 	private Logger logger = Logger.getLogger(this.getClass().getName());
 	private Gson gson = new GsonBuilder().disableHtmlEscaping().create(); 
 	
-	public String auth (String uafMsg) throws Exception{
+	public String auth (String uafMsg) throws UafMsgProcessException, UafResponseMsgParseException, UafRequestMsgParseException{
 		logger.info ("  [UAF][1]Auth  ");
-
-		logger.info("  [UAF][2]Auth - priv key retrieved");
 		AuthenticationRequestProcessor p = new AuthenticationRequestProcessor();
 		AuthenticationResponse[] ret = new AuthenticationResponse[1];
-		AuthenticationResponse regResponse = p.processRequest(getAuthRequest(uafMsg), InitConfig.getInstance().getOperationalParams());
-		logger.info ("  [UAF][4]Auth - Auth Response Formed  ");
-		logger.info(regResponse.assertions[0].assertion);
-		logger.info ("  [UAF][6]Auth - done  ");
-		ret[0] = regResponse;
-		return getUafProtocolMsg( gson.toJson(ret) );
-	}
-	
-	public AuthenticationRequest getAuthRequest(String uafMsg) {
-		logger.info ("  [UAF][3]Reg - getAuthRequest  : " + uafMsg);
-		return gson.fromJson(uafMsg, AuthenticationRequest[].class)[0];
+		ret[0] = process(getAuthRequest(uafMsg), p);
+		return getUafProtocolMsg( ret );
 	}
 
+	private AuthenticationResponse process(AuthenticationRequest uafMsg,
+			AuthenticationRequestProcessor p)
+			throws UafMsgProcessException {
+		try{
+			AuthenticationResponse regResponse = p.processRequest(uafMsg, InitConfig.getInstance().getOperationalParams());
+			checkResult(regResponse);
+			logger.info ("  [UAF][3]Auth - Auth Response Formed  ");
+			logger.info(regResponse.assertions[0].assertion);
+			logger.info ("  [UAF][4]Auth - done  ");
+			return regResponse;
+		} catch (Exception e){
+			throw new UafMsgProcessException (e);
+		}
+	}
+
+	private void checkResult(AuthenticationResponse regResponse) throws Exception {
+		if (regResponse == null || regResponse.assertions == null || regResponse.assertions.length == 0 || regResponse.assertions[0] == null){
+			throw new Exception ("Processing didn't return result");
+		}
+	}
+	
+	public AuthenticationRequest getAuthRequest(String uafMsg) throws UafRequestMsgParseException {
+		try {
+			logger.info ("  [UAF][2]Reg - getAuthRequest  : " + uafMsg);
+			return gson.fromJson(uafMsg, AuthenticationRequest[].class)[0];
+		} catch (Exception e){
+			throw new UafRequestMsgParseException (e);
+		}
+	}
+
+	public String getUafProtocolMsg (AuthenticationResponse[] ret) throws UafResponseMsgParseException{
+		try{
+			return getUafProtocolMsg(gson.toJson(ret));
+		}catch (Exception e){
+			throw new UafResponseMsgParseException(e);
+		}
+	}
 	public String getUafProtocolMsg (String uafMsg){
 		String msg = "{\"uafProtocolMessage\":";
 		msg = msg + "\"";
