@@ -16,10 +16,8 @@
 
 package org.ebayopensource.fidouaf.marvin.client.op;
 
-import java.security.KeyPair;
 import java.util.logging.Logger;
 
-import org.ebayopensource.fidouaf.marvin.client.RegRecord;
 import org.ebayopensource.fidouaf.marvin.client.RegistrationRequestProcessor;
 import org.ebayopensource.fidouaf.marvin.client.config.InitConfig;
 import org.ebayopensource.fidouaf.marvin.client.msg.RegistrationRequest;
