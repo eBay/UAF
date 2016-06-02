@@ -29,6 +29,7 @@ import com.google.gson.GsonBuilder;
 
 import org.ebayopensource.fidouaf.marvin.client.config.InitConfig;
 import org.ebayopensource.fidouaf.marvin.client.op.Auth;
+import org.ebayopensource.fidouaf.marvin.client.op.Dereg;
 import org.ebayopensource.fidouaf.marvin.client.op.Reg;
 import org.json.JSONObject;
 
@@ -41,6 +42,7 @@ public class FidoUafOpActivity extends Activity {
     private Gson gson = new GsonBuilder().create();
     private Reg regOp = new Reg();
     private Auth authOp = new Auth();
+    private Dereg deregOp = new Dereg();
     private KeyguardManager keyguardManager;
     private int REQUEST_CODE_CONFIRM_DEVICE_CREDENTIALS = 1;
 
@@ -53,11 +55,11 @@ public class FidoUafOpActivity extends Activity {
         proceed();
     }
 
-    private void init (){
+    private void init() {
         if (!InitConfig.getInstance().isInitialized()) {
             try {
                 InitConfig.getInstance()
-                        .init(OperationalParams.AAID,OperationalParams.defaultAttestCert, OperationalParams.defaultAttestPrivKey, new OperationalParams(), new Storage ());
+                        .init(OperationalParams.AAID, OperationalParams.defaultAttestCert, OperationalParams.defaultAttestPrivKey, new OperationalParams(), new Storage());
             } catch (Exception e) {
                 logger.info("Key generator init failed");
                 back();
@@ -74,9 +76,8 @@ public class FidoUafOpActivity extends Activity {
                 msg = processOp(inMsg);
             }
         } catch (Exception e) {
-            logger.log(Level.WARNING, "Not able to get registration response", e);
-            back();
-            return;
+            logger.log(Level.WARNING, "Not able to do the operation", e);
+            data.putShort("errorCode", (short) 6);
         }
         data.putString("message", msg);
         Intent intent = new Intent();
@@ -90,15 +91,17 @@ public class FidoUafOpActivity extends Activity {
         String msg = "";
         try {
             String inMsg = extract(inUafOperationMsg);
+            String callingPackageName = getCallingPackage();
+            Preferences.setSettingsParam("callingPackageName", callingPackageName);
             if (inMsg.contains("\"Reg\"")) {
                 msg = regOp.register(inMsg);
             } else if (inMsg.contains("\"Auth\"")) {
                 msg = authOp.auth(inMsg);
             } else if (inMsg.contains("\"Dereg\"")) {
-
+                msg = deregOp.dereg(inMsg);
             }
-        }catch (Exception e){
-            logger.info("processOp failed. e="+e);
+        } catch (Exception e) {
+            logger.info("processOp failed. e=" + e);
         }
         return msg;
     }
@@ -116,7 +119,6 @@ public class FidoUafOpActivity extends Activity {
         } else {
             finishWithResult();
         }
-
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -124,13 +126,12 @@ public class FidoUafOpActivity extends Activity {
             if (resultCode == RESULT_CANCELED) {
                 back();
             }
-
-            // Challenge completed, proceed with using cipher
             if (resultCode == RESULT_OK) {
                 finishWithResult();
             }
+        } else {
+            back();
         }
-        back();
     }
 
     public void back(View view) {
@@ -139,9 +140,10 @@ public class FidoUafOpActivity extends Activity {
 
     private void back() {
         Bundle data = new Bundle();
-        String msg = "{}";
+        String msg = "";
         logger.info("Operation canceled");
         data.putString("message", msg);
+        data.putShort("errorCode", (short) 3);
         Intent intent = new Intent();
         intent.putExtras(data);
         setResult(RESULT_OK, intent);
@@ -166,6 +168,5 @@ public class FidoUafOpActivity extends Activity {
             logger.log(Level.WARNING, "Input message is invalid!", e);
             return "";
         }
-
     }
 }

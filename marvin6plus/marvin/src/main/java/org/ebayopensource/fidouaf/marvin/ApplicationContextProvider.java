@@ -49,6 +49,14 @@ public class ApplicationContextProvider extends Application {
         checkAttestationKey(sContext);
     }
 
+    /***
+     * This is one idea on how to best deal with the attestation certificates:
+     * Generate self signed certificate on app first run
+     * Pros: We can track the device
+     * Cons: The certificate will be regenerated if app is reinstall or app data cleaned
+     * Cons: The certificate is different for each app instance installed
+     * @param context
+     */
     private void checkAttestationKey (Context context){
         try{
             KeyStore ks = KeyStore.getInstance("AndroidKeyStore");
@@ -67,7 +75,7 @@ public class ApplicationContextProvider extends Application {
                 keyPairGenerator.initialize(
                         new KeyPairGeneratorSpec.Builder(context)
                                 .setAlias("UAFAttestKey")
-                                .setSubject(new X500Principal("CN=Marvin - Android UAF Cleint"))
+                                .setSubject(new X500Principal("CN=Marvin - Android UAF Client"))
                                 .setSerialNumber(BigInteger.valueOf(System.currentTimeMillis()))
                                 .setStartDate(start.getTime())
                                 .setEndDate(end.getTime())

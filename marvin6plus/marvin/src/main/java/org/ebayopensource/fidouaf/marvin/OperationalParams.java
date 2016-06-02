@@ -17,6 +17,7 @@
 package org.ebayopensource.fidouaf.marvin;
 
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -96,18 +97,13 @@ public class OperationalParams implements OperationalParamsIntf {
     @Override
     @TargetApi(Build.VERSION_CODES.M)
     public byte[] signWithAttestationKey(byte[] signedDataValue) throws Exception {
-
         KeyFactory kf = KeyFactory.getInstance("EC");
-
         byte[] signature = null;
         try {
             PrivateKey privateKey =
-                    //getKeyPairGenerator("attest").generateKeyPair().getPrivate();
                     kf.generatePrivate(new PKCS8EncodedKeySpec(attestPrivKey));
             java.security.Signature s = java.security.Signature.getInstance("SHA256withECDSA");
-
             s.initSign(privateKey);
-
             s.update(SHA.sha(signedDataValue, "SHA-256"));
             signature = s.sign();
         }catch(KeyPermanentlyInvalidatedException invalidatedKeyException) {
@@ -192,7 +188,8 @@ public class OperationalParams implements OperationalParamsIntf {
         String comma = "";
         try {
             Context context = ApplicationContextProvider.getContext();
-            PackageInfo packageInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), PackageManager.GET_SIGNATURES);
+            PackageInfo packageInfo = context.getPackageManager().getPackageInfo(Preferences.getSettingsParam("callingPackageName"), PackageManager.GET_SIGNATURES);
+//            PackageInfo packageInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), PackageManager.GET_SIGNATURES);
             for (Signature sign: packageInfo.signatures) {
                 MessageDigest messageDigest = MessageDigest.getInstance("SHA1");
                 messageDigest.update(sign.toByteArray());
@@ -227,18 +224,13 @@ public class OperationalParams implements OperationalParamsIntf {
     @Override
     @TargetApi(Build.VERSION_CODES.M)
     public byte[] getSignature(byte[] signedDataValue, String keyId) throws Exception {
-
         KeyStore ks = KeyStore.getInstance("AndroidKeyStore");
         ks.load(null);
-
         PrivateKey privateKey = (PrivateKey) ks.getKey(keyId, null);
-
         byte[] signature = null;
         try {
             java.security.Signature s = java.security.Signature.getInstance("SHA256withECDSA");
-
             s.initSign(privateKey);
-
             s.update(SHA.sha(signedDataValue, "SHA-256"));
             signature = s.sign();
         }catch(KeyPermanentlyInvalidatedException invalidatedKeyException) {
