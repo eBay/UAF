@@ -27,11 +27,11 @@ import org.ebayopensource.fidouaf.marvin.client.crypto.SHA;
 import org.ebayopensource.fidouaf.marvin.client.msg.RegistrationResponse;
 import org.ebayopensource.fidouaf.marvin.client.tlv.TagsEnum;
 import org.ebayopensource.util.Base64;
+import static org.ebayopensource.fidouaf.marvin.client.tlv.UnsignedUtil.encodeInt;
 
 
 public class RegAssertionBuilder {
 
-	public static final String AAID = "EBA0#0003";
 	private Logger logger = Logger.getLogger(this.getClass().getName());
 	private OperationalParamsIntf operationalParams;
 	
@@ -173,12 +173,6 @@ public class RegAssertionBuilder {
 		return byteout.toByteArray();
 	}
 
-	private byte[] encodeInt(int id) {
 
-		byte[] bytes = new byte[2];
-		bytes[0] = (byte) (id & 0x00ff);
-		bytes[1] = (byte) ((id & 0xff00) >> 8);
-		return bytes;
-	}
 
 }
