@@ -6,6 +6,7 @@ import java.util.logging.Logger;
 
 import org.ebayopensource.fidouaf.marvin.client.msg.AuthenticationRequest;
 import org.ebayopensource.fidouaf.marvin.client.msg.AuthenticationResponse;
+import org.junit.Before;
 import org.junit.Test;
 
 import com.google.gson.Gson;
@@ -15,6 +16,11 @@ public class AuthenticationRequestProcessorTest {
 	private Logger logger = Logger.getLogger(this.getClass().getName());
 	private Gson gson = new Gson();
 	private OperationalParams operParams = new OperationalParams();
+	
+	@Before
+	public void register(){
+		operParams.genAndRecord("TestApp");
+	}
 
 	@Test
 	public void testProcessRequest() throws Exception {

@@ -26,6 +26,7 @@ import org.ebayopensource.fidouaf.marvin.client.crypto.SHA;
 import org.ebayopensource.fidouaf.marvin.client.msg.AuthenticationResponse;
 import org.ebayopensource.fidouaf.marvin.client.tlv.TagsEnum;
 import org.ebayopensource.util.Base64;
+import static org.ebayopensource.fidouaf.marvin.client.tlv.UnsignedUtil.encodeInt;
 
 public class AuthAssertionBuilder {
 
@@ -146,13 +147,4 @@ public class AuthAssertionBuilder {
 		byteout.write(value);
 		return byteout.toByteArray();
 	}
-
-	private byte[] encodeInt(int id) {
-
-		byte[] bytes = new byte[2];
-		bytes[0] = (byte) (id & 0x00ff);
-		bytes[1] = (byte) ((id & 0xff00) >> 8);
-		return bytes;
-	}
-
 }
