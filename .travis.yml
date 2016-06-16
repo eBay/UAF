@@ -1,6 +1,5 @@
-language: android
+language: java
+# skip the default install (mvn install -DskipTests=true) to speed up the build
+install: true
+script: mvn -q install
 jdk: oraclejdk7
-
-android:
-  components:
-    - build-tools-23.0.1
