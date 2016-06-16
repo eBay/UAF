@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/eBay/UAF.svg?branch=f_android_uaf_client_gradle)](https://travis-ci.org/eBay/UAF)
+[![Build Status](https://secure.travis-ci.org/eBay/UAF.svg?branch=f_android_uaf_client_gradle)](https://travis-ci.org/eBay/UAF)
 
 # fidouafclientlib
 
