@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/eBay/UAF.svg?branch=f_android_uaf_client_gradle)](https://travis-ci.org/eBay/UAF)
+
 # fidouafclientlib
 
 This library is helping in building standard UAF messages and processing of the UAF operation requests and responses.
