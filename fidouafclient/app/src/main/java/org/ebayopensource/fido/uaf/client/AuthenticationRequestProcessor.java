@@ -16,10 +16,9 @@
 
 package org.ebayopensource.fido.uaf.client;
 
-import android.util.Base64;
-
 import com.google.gson.Gson;
 
+import org.ebayopensource.fido.uaf.crypto.Base64url;
 import org.ebayopensource.fido.uaf.msg.AuthenticationRequest;
 import org.ebayopensource.fido.uaf.msg.AuthenticationResponse;
 import org.ebayopensource.fido.uaf.msg.AuthenticatorSignAssertion;
@@ -44,8 +43,8 @@ public class AuthenticationRequestProcessor {
 		fcParams.appID = request.header.appID;
 		fcParams.facetID = getFacetId();
 		fcParams.challenge = request.challenge;
-		response.fcParams = Base64.encodeToString(gson.toJson(
-				fcParams).getBytes(), Base64.URL_SAFE);
+		response.fcParams = Base64url.encodeToString(gson.toJson(
+				fcParams).getBytes());
 		setAssertions(response,builder);
 		return response;
 	}

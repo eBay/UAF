@@ -16,8 +16,7 @@
 
 package org.ebayopensource.fido.uaf.client;
 
-import android.util.Base64;
-
+import org.ebayopensource.fido.uaf.crypto.Base64url;
 import org.ebayopensource.fidouafclient.util.Preferences;
 import org.ebayopensource.fido.uaf.crypto.Asn1;
 import org.ebayopensource.fido.uaf.crypto.BCrypt;
@@ -65,7 +64,7 @@ public class RegAssertionBuilder {
 		byteout.write(encodeInt(length));
 		byteout.write(value);
 
-		String ret = Base64.encodeToString(byteout.toByteArray(), Base64.URL_SAFE);
+		String ret = Base64url.encodeToString(byteout.toByteArray());
 		logger.info(" : assertion : " + ret);
 		Tags tags = parser.parse(ret);
 		String AAID = new String(tags.getTags().get(
@@ -108,7 +107,7 @@ public class RegAssertionBuilder {
 		byteout.write(value);
 		
 		byteout.write(encodeInt(TagsEnum.TAG_ATTESTATION_CERT.id));
-		value = Base64.decode(AttestCert.base64DERCert, Base64.URL_SAFE);
+		value = Base64url.decode(AttestCert.base64DERCert);
 		length = value.length;
 		byteout.write(encodeInt(length));
 		byteout.write(value);
@@ -177,17 +176,17 @@ public class RegAssertionBuilder {
 //				.encode(this.keyPair.getPrivate().getEncoded(),Base64.URL_SAFE));
 //		PublicKey pub = this.keyPair.getPublic();
 		PrivateKey priv =
-				KeyCodec.getPrivKey(Base64.decode(AttestCert.priv, Base64.URL_SAFE));
+				KeyCodec.getPrivKey(Base64url.decode(AttestCert.priv));
 				//this.keyPair.getPrivate();
 
 		logger.info(" : dataForSigning : "
-				+ Base64.encodeToString(dataForSigning, Base64.URL_SAFE));
+				+ Base64url.encodeToString(dataForSigning));
 
 		BigInteger[] signatureGen = NamedCurve.signAndFromatToRS(priv,
 				SHA.sha(dataForSigning, "SHA-256"));
 
 		boolean verify = NamedCurve.verify(
-				KeyCodec.getKeyAsRawBytes((ECPublicKey)KeyCodec.getPubKey(Base64.decode(AttestCert.pubCert, Base64.URL_SAFE))),
+				KeyCodec.getKeyAsRawBytes((ECPublicKey)KeyCodec.getPubKey(Base64url.decode(AttestCert.pubCert))),
 				//KeyCodec.getKeyAsRawBytes((ECPublicKey)this.keyPair.getPublic()),
 				SHA.sha(dataForSigning, "SHA-256"),
 				Asn1.decodeToBigIntegerArray(Asn1.getEncoded(signatureGen)));
@@ -195,15 +194,15 @@ public class RegAssertionBuilder {
 			throw new RuntimeException("Signatire match fail");
 		}
 		byte[] ret = Asn1.toRawSignatureBytes(signatureGen);
-		logger.info(" : signature : " + Base64.encodeToString(ret, Base64.URL_SAFE));
+		logger.info(" : signature : " + Base64url.encodeToString(ret));
 
 		return ret;
 	}
 
 	private byte[] getKeyId() throws IOException {
 		ByteArrayOutputStream byteout = new ByteArrayOutputStream();
-		String keyId = "ebay-test-key-"+ Base64.encodeToString(BCrypt.gensalt().getBytes(), Base64.NO_WRAP);
-		keyId = Base64.encodeToString(keyId.getBytes(), Base64.URL_SAFE);
+		String keyId = "ebay-test-key-"+ Base64url.encodeToString(BCrypt.gensalt().getBytes());
+		keyId = Base64url.encodeToString(keyId.getBytes());
 		Preferences.setSettingsParam("keyId", keyId);
 		byte[] value = keyId.getBytes();
 		byteout.write(value);

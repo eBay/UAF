@@ -9,6 +9,7 @@ import android.util.Base64;
 
 import com.google.gson.Gson;
 
+import org.ebayopensource.fido.uaf.crypto.Base64url;
 import org.ebayopensource.fido.uaf.msg.TrustedFacets;
 import org.ebayopensource.fido.uaf.msg.TrustedFacetsList;
 import org.ebayopensource.fido.uaf.msg.Version;
@@ -95,7 +96,7 @@ public abstract class OpUtils {
 
         try {
             trx.put("contentType", "text/plain");
-            trx.put("content", Base64.encodeToString("Authentication".getBytes(),Base64.URL_SAFE));
+            trx.put("content", Base64url.encodeToString("Authentication".getBytes()));
         } catch (JSONException e) {
             e.printStackTrace();
         }

@@ -16,10 +16,9 @@
 
 package org.ebayopensource.fido.uaf.client.op;
 
-import android.util.Base64;
-
 import com.google.gson.Gson;
 
+import org.ebayopensource.fido.uaf.crypto.Base64url;
 import org.ebayopensource.fidouafclient.util.Preferences;
 import org.ebayopensource.fido.uaf.client.RegistrationRequestProcessor;
 import org.ebayopensource.fido.uaf.crypto.KeyCodec;
@@ -49,8 +48,8 @@ public class Reg {
 		logger.info ("  [UAF][4]Reg - Reg Response Formed  ");
 		logger.info(regResponse.assertions[0].assertion);
 		logger.info ("  [UAF][6]Reg - done  ");
-		Preferences.setSettingsParam("pub", Base64.encodeToString(keyPair.getPublic().getEncoded(), Base64.URL_SAFE));
-		Preferences.setSettingsParam("priv", Base64.encodeToString(keyPair.getPrivate().getEncoded(), Base64.URL_SAFE));
+		Preferences.setSettingsParam("pub", Base64url.encodeToString(keyPair.getPublic().getEncoded()));
+		Preferences.setSettingsParam("priv", Base64url.encodeToString(keyPair.getPrivate().getEncoded()));
 		logger.info ("  [UAF][7]Reg - keys stored  ");
 		ret[0] = regResponse;
 		return getUafProtocolMsg( gson.toJson(ret) );

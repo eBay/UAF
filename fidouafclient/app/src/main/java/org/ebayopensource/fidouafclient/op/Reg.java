@@ -16,6 +16,7 @@
 
 package org.ebayopensource.fidouafclient.op;
 
+import org.ebayopensource.fido.uaf.crypto.Base64url;
 import org.ebayopensource.fidouafclient.curl.Curl;
 import org.ebayopensource.fidouafclient.util.Endpoints;
 import org.ebayopensource.fidouafclient.util.Preferences;
@@ -30,7 +31,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import android.content.Context;
-import android.util.Base64;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -130,8 +130,8 @@ public class Reg {
 		fcParams.channelBinding.serverEndPoint = "";
 		fcParams.channelBinding.tlsServerCertificate = "";
 		fcParams.channelBinding.tlsUnique = "";
-		return Base64.encodeToString(gson.toJson(
-				fcParams).getBytes(), Base64.URL_SAFE);
+		return Base64url.encodeToString(gson.toJson(
+				fcParams).getBytes());
 	}
 
 	private String getFacetId() {

@@ -16,10 +16,9 @@
 
 package org.ebayopensource.fido.uaf.client;
 
-import android.util.Base64;
-
 import com.google.gson.Gson;
 
+import org.ebayopensource.fido.uaf.crypto.Base64url;
 import org.ebayopensource.fidouafclient.util.Preferences;
 import org.ebayopensource.fido.uaf.msg.AuthenticatorRegistrationAssertion;
 import org.ebayopensource.fido.uaf.msg.FinalChallengeParams;
@@ -50,8 +49,8 @@ public class RegistrationRequestProcessor {
 		Preferences.setSettingsParam("appID", fcParams.appID);
 		fcParams.facetID = getFacetId();
 		fcParams.challenge = regRequest.challenge;
-		response.fcParams = Base64.encodeToString(gson.toJson(
-				fcParams).getBytes(), Base64.URL_SAFE);
+		response.fcParams = Base64url.encodeToString(gson.toJson(
+				fcParams).getBytes());
 		setAssertions(response,builder);
 		return response;
 	}
