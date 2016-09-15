@@ -16,7 +16,7 @@
 
 package org.ebayopensource.fido.uaf.tlv;
 
-import android.util.Base64;
+import org.ebayopensource.fido.uaf.crypto.Base64url;
 
 import java.io.IOException;
 
@@ -24,8 +24,8 @@ import java.io.IOException;
 public class TlvAssertionParser {
 	
 	public Tags parse(String base64OfRegResponse) throws IOException {
-		ByteInputStream bytes = new ByteInputStream(Base64
-				.decode(base64OfRegResponse, Base64.URL_SAFE));
+		ByteInputStream bytes = new ByteInputStream(Base64url
+				.decode(base64OfRegResponse));
 		boolean isReg = false;
 		return parse (bytes, isReg);
 	}

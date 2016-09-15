@@ -16,8 +16,7 @@
 
 package org.ebayopensource.fido.uaf.client;
 
-import android.util.Base64;
-
+import org.ebayopensource.fido.uaf.crypto.Base64url;
 import org.ebayopensource.fidouafclient.util.Preferences;
 import org.ebayopensource.fido.uaf.crypto.Asn1;
 import org.ebayopensource.fido.uaf.crypto.BCrypt;
@@ -51,7 +50,7 @@ public class AuthAssertionBuilder {
 		byteout.write(encodeInt(length));
 		byteout.write(value);
 
-		String ret = Base64.encodeToString(byteout.toByteArray(), Base64.NO_PADDING);
+		String ret = Base64url.encodeToString(byteout.toByteArray());
 		logger.info(" : assertion : " + ret);
 		return ret;
 	}
@@ -144,14 +143,14 @@ public class AuthAssertionBuilder {
 //				.decodeBase64(TestData.TEST_PUB_KEY));
 		
 		PublicKey pub =
-				KeyCodec.getPubKey(Base64.decode(Preferences.getSettingsParam("pub"), Base64.URL_SAFE));
+				KeyCodec.getPubKey(Base64url.decode(Preferences.getSettingsParam("pub")));
 		PrivateKey priv =
-				KeyCodec.getPrivKey(Base64.decode(Preferences.getSettingsParam("priv"), Base64.URL_SAFE));
+				KeyCodec.getPrivKey(Base64url.decode(Preferences.getSettingsParam("priv")));
 //				KeyCodec.getPrivKey(Base64
 //				.decodeBase64(TestData.TEST_PRIV_KEY));
 
 		logger.info(" : dataForSigning : "
-				+ Base64.encode(dataForSigning, Base64.URL_SAFE));
+				+ Base64url.encode(dataForSigning));
 
 		BigInteger[] signatureGen = NamedCurve.signAndFromatToRS(priv,
 				SHA.sha(dataForSigning, "SHA-256"));
@@ -164,7 +163,7 @@ public class AuthAssertionBuilder {
 			throw new RuntimeException("Signatire match fail");
 		}
 		byte[] ret = Asn1.toRawSignatureBytes(signatureGen);
-		logger.info(" : signature : " + Base64.encode(ret, Base64.URL_SAFE));
+		logger.info(" : signature : " + Base64url.encode(ret));
 
 		return ret;
 	}
