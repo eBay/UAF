@@ -5,6 +5,7 @@
 
 [News & Release Notes](RELEASE.md)
 
+- [2016.10.14 - Added endpoints for whitelisting AAID, and Facet Ids](https://github.com/eBay/UAF/blob/master/RELEASE.md#20161014)
 - [2016.05.20 - Added wiki page for Maven build and Tomcat setup/run (using CLI only)](https://github.com/eBay/UAF/wiki/BuildingAndRunningUAFServerUsingMaven(CLIonly))
 - [2016.03.28 - Started wiki pages](https://github.com/eBay/UAF/wiki)
 - [2016.02.23](https://github.com/eBay/UAF/blob/master/RELEASE.md#20160223)

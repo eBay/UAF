@@ -1,5 +1,25 @@
 # Release Notes
 
+## 2016.10.14
+Added two new endpoints in order to help testing with inbuilt FIDO UAF clients.
+
+Endpoint for whitelisting the UUID:
+```
+/fidouaf/v1/whitelistuuid/{URL_ENCODED_VALUE}
+```
+
+Endpoint for whitelisting the Facet Id:
+```
+/fidouaf/v1/whitelistfacetid/{URL_ENCODED_VALUE}
+```
+
+At a moment the new endpoints are deployed in: http://www.head2toes.org/fidouaf/v1/info
+
+After whitelisting the Lenovo ZUK Z2 inbuilt client, tested all operation successfully
+```
+AAID: 001A#2121
+```
+
 ## 2016.08.25
 (Status: Waiting on feedback)
 

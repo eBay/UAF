@@ -33,6 +33,8 @@ public class Dash {
 	private static Dash instance = new Dash();
 	public Map<String, Object> stats = new  HashMap<String, Object>();
 	public List<Object> history = new ArrayList<Object>(100);
+	public List<String> uuids = new ArrayList<String>();
+	public List<String> facetIds = new ArrayList<String>();
 	
 	private Dash (){
 		//Init

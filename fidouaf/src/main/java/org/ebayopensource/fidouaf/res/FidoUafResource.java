@@ -16,6 +16,8 @@
 
 package org.ebayopensource.fidouaf.res;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -55,6 +57,7 @@ import org.ebayopensource.fidouaf.res.util.FetchRequest;
 import org.ebayopensource.fidouaf.res.util.ProcessResponse;
 import org.ebayopensource.fidouaf.res.util.StorageImpl;
 import org.ebayopensource.fidouaf.stats.Dash;
+import org.ebayopensource.fidouaf.stats.Info;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -62,7 +65,30 @@ import com.google.gson.GsonBuilder;
 @Path("/v1")
 public class FidoUafResource {
 
-	Gson gson = new GsonBuilder().disableHtmlEscaping().create();
+	protected Gson gson = new GsonBuilder().disableHtmlEscaping().create();
+
+	@GET
+	@Path("/info")
+	@Produces(MediaType.APPLICATION_JSON)
+	public String info() {
+		return gson.toJson(new Info());
+	}
+	
+	@GET
+	@Path("/whitelistuuid/{uuid}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public String whitelistuuad(@PathParam("uuid") String uuid) {
+		Dash.getInstance().uuids.add(uuid);
+		return gson.toJson(Dash.getInstance().getInstance().uuids);
+	}
+	
+	@GET
+	@Path("/whitelistfacetid/{facetId}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public String whitelistfacetid(@PathParam("facetId") String facetId) {
+		Dash.getInstance().facetIds.add(facetId);
+		return gson.toJson(Dash.getInstance().facetIds);
+	}
 
 	@GET
 	@Path("/stats")
@@ -136,7 +162,9 @@ public class FidoUafResource {
 				"0014#0000", "0014#0001", "53EC#C002", "DAB8#8001",
 				"DAB8#0011", "DAB8#8011", "5143#0111", "5143#0120",
 				"4746#F816", "53EC#3801" };
-		return ret;
+		List<String> retList = new ArrayList<String>(Arrays.asList(ret));
+		retList.addAll(Dash.getInstance().uuids);
+		return retList.toArray(new String[0]);
 	}
 
 	/**
@@ -164,11 +192,13 @@ public class FidoUafResource {
 				"android:apk-key-hash:bE0f1WtRJrZv/C0y9CM73bAUqiI",
 				"android:apk-key-hash:Lir5oIjf552K/XN4bTul0VS3GfM",
 				"https://openidconnect.ebay.com" };
+		List<String> trustedIdsList = new ArrayList<String>(Arrays.asList(trustedIds));
+		trustedIdsList.addAll(Dash.getInstance().facetIds);
 		Facets facets = new Facets();
 		facets.trustedFacets = new TrustedFacets[1];
 		TrustedFacets trusted = new TrustedFacets();
 		trusted.version = new Version(1, 0);
-		trusted.ids = trustedIds;
+		trusted.ids = trustedIdsList.toArray(new String[0]);
 		facets.trustedFacets[0] = trusted;
 		return facets;
 	}
