@@ -96,8 +96,6 @@ public class TlvAssertionParser {
 						t.value = bytes.read(4);
 					}
 					ret.add(t);
-				} else if (t.id == TagsEnum.TAG_KEYID.id) {
-					addTagAndValue(bytes, ret, t);
 				} else if (t.id == TagsEnum.TAG_PUB_KEY.id) {
 					addTagAndValue(bytes, ret, t);
 				} else if (t.id == TagsEnum.TAG_ATTESTATION_BASIC_FULL.id) {
