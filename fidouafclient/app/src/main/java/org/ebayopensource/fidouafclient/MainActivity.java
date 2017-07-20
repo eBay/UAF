@@ -16,13 +16,25 @@
 
 package org.ebayopensource.fidouafclient;
 
-import java.io.ByteArrayInputStream;
-import java.security.MessageDigest;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateFactory;
-import java.util.List;
-import java.util.logging.Logger;
+import android.app.Activity;
+import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
+import android.content.pm.ResolveInfo;
+import android.os.Bundle;
+import android.util.Base64;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.EditText;
+import android.widget.TextView;
 
+import com.google.gson.Gson;
+
+import org.ebayopensource.fido.uaf.msg.RegistrationRequest;
+import org.ebayopensource.fido.uaf.msg.client.UAFIntentType;
 import org.ebayopensource.fidouafclient.curl.Curl;
 import org.ebayopensource.fidouafclient.op.Auth;
 import org.ebayopensource.fidouafclient.op.Dereg;
@@ -30,24 +42,13 @@ import org.ebayopensource.fidouafclient.op.OpUtils;
 import org.ebayopensource.fidouafclient.op.Reg;
 import org.ebayopensource.fidouafclient.util.Endpoints;
 import org.ebayopensource.fidouafclient.util.Preferences;
-import org.ebayopensource.fido.uaf.msg.RegistrationRequest;
-import org.ebayopensource.fido.uaf.msg.client.UAFIntentType;
 
-import com.google.gson.Gson;
-
-import android.os.Bundle;
-import android.app.Activity;
-import android.content.Intent;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.PackageManager.NameNotFoundException;
-import android.content.pm.ResolveInfo;
-import android.util.Base64;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.EditText;
-import android.widget.TextView;
+import java.io.ByteArrayInputStream;
+import java.security.MessageDigest;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateFactory;
+import java.util.List;
+import java.util.logging.Logger;
 
 public class MainActivity extends Activity {
 
@@ -56,6 +57,7 @@ public class MainActivity extends Activity {
     private static final int DEREG_ACTIVITY_RES_4 = 4;
     private Logger logger = Logger.getLogger(this.getClass().getName());
     private Gson gson = new Gson();
+    private TextView facetID;
     private TextView msg;
     private TextView title;
     private TextView username;
@@ -81,6 +83,19 @@ public class MainActivity extends Activity {
         msg = (TextView) findViewById(R.id.textViewMsg);
         title = (TextView) findViewById(R.id.textViewTitle);
         username = (TextView) findViewById(R.id.textUsername);
+    }
+	
+    public void facetIDRequest(View view) {
+        String facetIDval = "";
+        try {
+            facetIDval = getFacetID(this.getPackageManager().getPackageInfo(this.getPackageName(), this.getPackageManager().GET_SIGNATURES));
+            Log.d("facetID: ", facetIDval);
+        } catch (NameNotFoundException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        facetID = (TextView) findViewById(R.id.textViewFacetID);
+        facetID.setText(facetIDval);
     }
 
     public void info(View view) {
