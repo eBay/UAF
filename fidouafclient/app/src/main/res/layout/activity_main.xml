@@ -14,27 +14,27 @@
 
 
 
-        <LinearLayout
+    <LinearLayout
 
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/regButton"
+        android:orientation="vertical">
+
+        <ImageView
+            android:id="@+id/imageButtonRegRequest"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:contentDescription="RegRequest"
+            android:onClick="regRequest"
+            android:src="@drawable/s_register" />
+
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/regButton"
-            android:orientation="vertical">
-
-            <ImageView
-                android:id="@+id/imageButtonRegRequest"
-                android:layout_width="45dp"
-                android:layout_height="45dp"
-                android:contentDescription="RegRequest"
-                android:onClick="regRequest"
-                android:src="@drawable/s_register" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:hint="@string/name"
-                android:text="@string/action_button_reg"/>
-        </LinearLayout>
+            android:hint="@string/name"
+            android:text="@string/action_button_reg"/>
+    </LinearLayout>
 
     <EditText
         android:id="@+id/editTextName"
@@ -43,12 +43,45 @@
         android:layout_toRightOf="@id/regButton"
         />
 
+    <LinearLayout
+
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/regButton"
+        android:id="@+id/facetButton"
+        android:orientation="vertical">
+
+        <ImageView
+            android:id="@+id/imageButtonFacetRequest"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:contentDescription="FacetRequest"
+            android:onClick="facetIDRequest"
+            android:src="@drawable/s_register" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="facetID"
+            android:text="facetID"/>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/textViewFacetID"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/regButton"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="21dp"
+        android:layout_toEndOf="@+id/regButton"
+        android:hint="Press the facetID button to get facet id."/>
+
 
     <ScrollView
         android:id="@+id/scrollView1"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:layout_below="@id/regButton"
+        android:layout_below="@id/facetButton"
         android:layout_marginTop="10dp"
         android:scrollbars="vertical">
 
