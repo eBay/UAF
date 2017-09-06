@@ -187,11 +187,7 @@ public class FidoUafResource {
 	public Facets facets() {
 		String timestamp = new Date().toString();
 		Dash.getInstance().stats.put(Dash.LAST_REG_REQ, timestamp);
-		String[] trustedIds = { "https://www.head2toes.org",
-				"android:apk-key-hash:Df+2X53Z0UscvUu6obxC3rIfFyk",
-				"android:apk-key-hash:bE0f1WtRJrZv/C0y9CM73bAUqiI",
-				"android:apk-key-hash:Lir5oIjf552K/XN4bTul0VS3GfM",
-				"https://openidconnect.ebay.com" };
+		String[] trustedIds = { "https://ms.com" };
 		List<String> trustedIdsList = new ArrayList<String>(Arrays.asList(trustedIds));
 		trustedIdsList.addAll(Dash.getInstance().facetIds);
 		Facets facets = new Facets();

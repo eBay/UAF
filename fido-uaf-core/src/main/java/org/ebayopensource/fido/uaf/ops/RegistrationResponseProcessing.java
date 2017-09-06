@@ -31,11 +31,7 @@ import org.ebayopensource.fido.uaf.msg.RegistrationResponse;
 import org.ebayopensource.fido.uaf.msg.Version;
 import org.ebayopensource.fido.uaf.storage.AuthenticatorRecord;
 import org.ebayopensource.fido.uaf.storage.RegistrationRecord;
-import org.ebayopensource.fido.uaf.tlv.Tag;
-import org.ebayopensource.fido.uaf.tlv.Tags;
-import org.ebayopensource.fido.uaf.tlv.TagsEnum;
-import org.ebayopensource.fido.uaf.tlv.TlvAssertionParser;
-import org.ebayopensource.fido.uaf.tlv.UnsignedUtil;
+import org.ebayopensource.fido.uaf.tlv.*;
 
 import com.google.gson.Gson;
 
@@ -92,6 +88,8 @@ public class RegistrationResponseProcessing {
 		try {
 			Tags tags = parser
 					.parse(authenticatorRegistrationAssertion.assertion);
+			record.PublicKey = Base64.encodeBase64URLSafeString(tags.getTags()
+					.get(TagsEnum.TAG_PUB_KEY.id).value);
 			try {
 				verifyAttestationSignature(tags, record);
 			} catch (Exception e) {
@@ -107,8 +105,6 @@ public class RegistrationResponseProcessing {
 			Base64.encodeBase64URLSafeString(tags.getTags().get(
 					TagsEnum.TAG_KEYID.id).value);
 			record.authenticator = authRecord;
-			record.PublicKey = Base64.encodeBase64URLSafeString(tags.getTags()
-					.get(TagsEnum.TAG_PUB_KEY.id).value);
 			record.AuthenticatorVersion = getAuthenticatorVersion(tags);
 			String fc = Base64.encodeBase64URLSafeString(tags.getTags().get(
 					TagsEnum.TAG_FINAL_CHALLENGE.id).value);
@@ -131,6 +127,7 @@ public class RegistrationResponseProcessing {
 
 		Tag krd = tags.getTags().get(TagsEnum.TAG_UAFV1_KRD.id);
 		Tag signature = tags.getTags().get(TagsEnum.TAG_SIGNATURE.id);
+		AlgAndEncodingEnum algorithm = notary.getAlgAndEncoding(tags.getTags().get(TagsEnum.TAG_ASSERTION_INFO.id));
 
 		byte[] signedBytes = new byte[krd.value.length + 4];
 		System.arraycopy(UnsignedUtil.encodeInt(krd.id), 0, signedBytes, 0, 2);
@@ -143,8 +140,7 @@ public class RegistrationResponseProcessing {
 				.encodeBase64URLSafeString(signature.value);
 		record.attestVerifiedStatus = "FAILED_VALIDATION_ATTEMPT";
 
-		if (certificateValidator.validate(certBytes, signedBytes,
-				signature.value)) {
+		if (this.notary.verifySignature(signedBytes, signature.value, record.PublicKey, algorithm)) {
 			record.attestVerifiedStatus = "VALID";
 		} else {
 			record.attestVerifiedStatus = "NOT_VERIFIED";

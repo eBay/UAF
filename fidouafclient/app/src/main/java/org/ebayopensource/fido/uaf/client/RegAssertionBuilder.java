@@ -66,11 +66,11 @@ public class RegAssertionBuilder {
 
 		String ret = Base64url.encodeToString(byteout.toByteArray());
 		logger.info(" : assertion : " + ret);
-		Tags tags = parser.parse(ret);
-		String AAID = new String(tags.getTags().get(
-				TagsEnum.TAG_AAID.id).value);
-		String KeyID = new String(tags.getTags()
-				.get(TagsEnum.TAG_KEYID.id).value);
+//		Tags tags = parser.parse(ret);
+//		String AAID = new String(tags.getTags().get(
+//				TagsEnum.TAG_AAID.id).value);
+//		String KeyID = new String(tags.getTags()
+//				.get(TagsEnum.TAG_KEYID.id).value);
 		return ret;
 	}
 

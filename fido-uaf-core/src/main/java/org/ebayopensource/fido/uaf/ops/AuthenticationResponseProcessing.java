@@ -100,11 +100,11 @@ public class AuthenticationResponseProcessing {
 					TagsEnum.TAG_UAFV1_SIGNED_DATA.id);
 			Tag signature = tags.getTags().get(TagsEnum.TAG_SIGNATURE.id);
 			Tag info = tags.getTags().get(TagsEnum.TAG_ASSERTION_INFO.id);
-			AlgAndEncodingEnum algAndEncoding = getAlgAndEncoding(info);
+			AlgAndEncodingEnum algAndEncoding = notary.getAlgAndEncoding(info);
 			String pubKey = registrationRecord.PublicKey;
+			byte[] dataForSigning = notary.getDataForSigning(signnedData);
 			try {
-				if (!verifySignature(signnedData, signature, pubKey,
-						algAndEncoding)) {
+				if (!notary.verifySignature(dataForSigning, signature.value, pubKey, algAndEncoding)) {
 					logger.log(Level.INFO,
 							"Signature verification failed for authenticator: "
 									+ authRecord.toString());
@@ -128,108 +128,6 @@ public class AuthenticationResponseProcessing {
 			authRecord.status = "FAILED_ASSERTION_VERIFICATION";
 			return authRecord;
 		}
-	}
-
-	private AlgAndEncodingEnum getAlgAndEncoding(Tag info) {
-		int id = (int) info.value[3] + (int) info.value[4] * 256;
-		AlgAndEncodingEnum ret = null;
-		AlgAndEncodingEnum[] values = AlgAndEncodingEnum.values();
-		for (AlgAndEncodingEnum algAndEncodingEnum : values) {
-			if (algAndEncodingEnum.id == id) {
-				ret = algAndEncodingEnum;
-				break;
-			}
-		}
-		logger.info(" : SignatureAlgAndEncoding : " + ret);
-		return ret;
-	}
-
-	private boolean verifySignature(Tag signedData, Tag signature,
-			String pubKey, AlgAndEncodingEnum algAndEncoding)
-			throws InvalidKeyException, NoSuchAlgorithmException,
-			NoSuchProviderException, SignatureException,
-			UnsupportedEncodingException, Exception {
-
-		byte[] dataForSigning = getDataForSigning(signedData);
-
-		logger.info(" : pub 		   : " + pubKey);
-		logger.info(" : dataForSigning : "
-				+ Base64.encodeBase64URLSafeString(dataForSigning));
-		logger.info(" : signature 	   : "
-				+ Base64.encodeBase64URLSafeString(signature.value));
-
-		// This works
-		// return NamedCurve.verify(KeyCodec.getKeyAsRawBytes(pubKey),
-		// dataForSigning, Asn1.decodeToBigIntegerArray(signature.value));
-
-		byte[] decodeBase64 = Base64.decodeBase64(pubKey);
-		if(algAndEncoding == AlgAndEncodingEnum.UAF_ALG_SIGN_RSASSA_PSS_SHA256_RAW) {
-			PublicKey publicKey = KeyCodec.getRSAPublicKey(decodeBase64);
-			return RSA.verifyPSS(publicKey, 
-					SHA.sha(dataForSigning, "SHA-256"), 
-					signature.value);
-		} else if(algAndEncoding == AlgAndEncodingEnum.UAF_ALG_SIGN_RSASSA_PSS_SHA256_DER) {
-			PublicKey publicKey = KeyCodec.getRSAPublicKey(new DEROctetString(decodeBase64).getOctets());
-			return RSA.verifyPSS(publicKey, 
-					SHA.sha(dataForSigning, "SHA-256"), 
-					new DEROctetString(signature.value).getOctets());
-		} else {
-			if (algAndEncoding == AlgAndEncodingEnum.UAF_ALG_SIGN_SECP256K1_ECDSA_SHA256_DER) {
-				ECPublicKey decodedPub = (ECPublicKey) KeyCodec.getPubKeyFromCurve(
-						decodeBase64, "secp256k1");
-				return NamedCurve.verifyUsingSecp256k1(
-						KeyCodec.getKeyAsRawBytes(decodedPub),
-						SHA.sha(dataForSigning, "SHA-256"),
-						Asn1.decodeToBigIntegerArray(signature.value));
-			}
-			if (algAndEncoding == AlgAndEncodingEnum.UAF_ALG_SIGN_SECP256R1_ECDSA_SHA256_DER) {
-				if (decodeBase64.length>65){
-					return NamedCurve.verify(KeyCodec.getKeyAsRawBytes(pubKey),
-							SHA.sha(dataForSigning, "SHA-256"),
-							Asn1.decodeToBigIntegerArray(signature.value));
-				} else {
-					ECPublicKey decodedPub = (ECPublicKey) KeyCodec.getPubKeyFromCurve(
-							decodeBase64, "secp256r1");
-					return NamedCurve.verify(KeyCodec.getKeyAsRawBytes(decodedPub),
-								SHA.sha(dataForSigning, "SHA-256"),
-								Asn1.decodeToBigIntegerArray(signature.value));
-				}
-			}
-			if (signature.value.length == 64) {
-				ECPublicKey decodedPub = (ECPublicKey) KeyCodec.getPubKeyFromCurve(
-						decodeBase64, "secp256r1");
-				return NamedCurve.verify(KeyCodec.getKeyAsRawBytes(decodedPub),
-						SHA.sha(dataForSigning, "SHA-256"),
-						Asn1.transformRawSignature(signature.value));
-			} else if (65 == decodeBase64.length
-					&& AlgAndEncodingEnum.UAF_ALG_SIGN_SECP256R1_ECDSA_SHA256_DER == algAndEncoding) {
-				ECPublicKey decodedPub = (ECPublicKey) KeyCodec.getPubKeyFromCurve(
-						decodeBase64, "secp256r1");
-				return NamedCurve.verify(KeyCodec.getKeyAsRawBytes(decodedPub),
-						SHA.sha(dataForSigning, "SHA-256"),
-						Asn1.decodeToBigIntegerArray(signature.value));
-			} else {
-				return NamedCurve.verify(KeyCodec.getKeyAsRawBytes(pubKey),
-						SHA.sha(dataForSigning, "SHA-256"),
-						Asn1.decodeToBigIntegerArray(signature.value));
-			}
-		}
-	}
-
-	private byte[] getDataForSigning(Tag signedData) throws IOException {
-		ByteArrayOutputStream byteout = new ByteArrayOutputStream();
-		byteout.write(encodeInt(signedData.id));
-		byteout.write(encodeInt(signedData.length));
-		byteout.write(signedData.value);
-		return byteout.toByteArray();
-	}
-
-	private byte[] encodeInt(int id) {
-
-		byte[] bytes = new byte[2];
-		bytes[0] = (byte) (id & 0x00ff);
-		bytes[1] = (byte) ((id & 0xff00) >> 8);
-		return bytes;
 	}
 
 	private RegistrationRecord getRegistration(AuthenticatorRecord authRecord,
