@@ -1,0 +1,5 @@
+{
+  "name": "UAF Test Service",
+  "description": "A simple service to test UAF clients",
+  "addons": [ ]
+}
