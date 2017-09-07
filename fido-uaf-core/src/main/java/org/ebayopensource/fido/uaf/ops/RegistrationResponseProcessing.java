@@ -41,24 +41,13 @@ public class RegistrationResponseProcessing {
 	private long serverDataExpiryInMs = 5 * 60 * 1000;
 	private Notary notary = null;
 	private Gson gson = new Gson();
-	private CertificateValidator certificateValidator;
 
-	public RegistrationResponseProcessing() {
-		this.certificateValidator = new CertificateValidatorImpl();
-	}
+	public RegistrationResponseProcessing() {}
 
 	public RegistrationResponseProcessing(long serverDataExpiryInMs,
 			Notary notary) {
 		this.serverDataExpiryInMs = serverDataExpiryInMs;
 		this.notary = notary;
-		this.certificateValidator = new CertificateValidatorImpl();
-	}
-
-	public RegistrationResponseProcessing(long serverDataExpiryInMs,
-			Notary notary, CertificateValidator certificateValidator) {
-		this.serverDataExpiryInMs = serverDataExpiryInMs;
-		this.notary = notary;
-		this.certificateValidator = certificateValidator;
 	}
 
 	public RegistrationRecord[] processResponse(RegistrationResponse response)
@@ -126,11 +115,7 @@ public class RegistrationResponseProcessing {
 		Tag signature = tags.getTags().get(TagsEnum.TAG_SIGNATURE.id);
 		AlgAndEncodingEnum algorithm = notary.getAlgAndEncoding(tags.getTags().get(TagsEnum.TAG_ASSERTION_INFO.id));
 
-		byte[] signedBytes = new byte[krd.value.length + 4];
-		System.arraycopy(UnsignedUtil.encodeInt(krd.id), 0, signedBytes, 0, 2);
-		System.arraycopy(UnsignedUtil.encodeInt(krd.length), 0, signedBytes, 2,
-				2);
-		System.arraycopy(krd.value, 0, signedBytes, 4, krd.value.length);
+		byte[] signedBytes = this.notary.getDataForSigning(krd);
 
 		record.attestDataToSign = Base64.encodeBase64URLSafeString(signedBytes);
 		record.attestSignature = Base64

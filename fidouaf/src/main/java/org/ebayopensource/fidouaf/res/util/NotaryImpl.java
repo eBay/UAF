@@ -22,6 +22,7 @@ import org.ebayopensource.fido.uaf.crypto.*;
 import org.apache.commons.codec.binary.Base64;
 import org.ebayopensource.fido.uaf.tlv.AlgAndEncodingEnum;
 import org.ebayopensource.fido.uaf.tlv.Tag;
+import org.ebayopensource.fido.uaf.tlv.UnsignedUtil;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -151,11 +152,12 @@ public class NotaryImpl implements Notary {
 	}
 
 	public byte[] getDataForSigning(Tag signedData) throws IOException {
-		ByteArrayOutputStream byteout = new ByteArrayOutputStream();
-		byteout.write(encodeInt(signedData.id));
-		byteout.write(encodeInt(signedData.length));
-		byteout.write(signedData.value);
-		return byteout.toByteArray();
+		byte[] signedBytes = new byte[signedData.value.length + 4];
+		System.arraycopy(UnsignedUtil.encodeInt(signedData.id), 0, signedBytes, 0, 2);
+		System.arraycopy(UnsignedUtil.encodeInt(signedData.length), 0, signedBytes, 2,
+				2);
+		System.arraycopy(signedData.value, 0, signedBytes, 4, signedData.value.length);
+		return signedBytes;
 	}
 
 	public byte[] encodeInt(int id) {

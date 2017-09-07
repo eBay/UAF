@@ -95,17 +95,12 @@ public class AuthenticationResponseProcessing {
 			Tag signnedData = tags.getTags().get(
 					TagsEnum.TAG_UAFV1_SIGNED_DATA.id);
 
-			byte[] signedBytes = new byte[signnedData.value.length + 4];
-			System.arraycopy(UnsignedUtil.encodeInt(signnedData.id), 0, signedBytes, 0, 2);
-			System.arraycopy(UnsignedUtil.encodeInt(signnedData.length), 0, signedBytes, 2,
-					2);
-			System.arraycopy(signnedData.value, 0, signedBytes, 4, signnedData.value.length);
+			byte[] signedBytes = this.notary.getDataForSigning(signnedData);
 
 			Tag signature = tags.getTags().get(TagsEnum.TAG_SIGNATURE.id);
 			Tag info = tags.getTags().get(TagsEnum.TAG_ASSERTION_INFO.id);
 			AlgAndEncodingEnum algAndEncoding = notary.getAlgAndEncoding(info);
 			String pubKey = registrationRecord.PublicKey;
-			byte[] dataForSigning = notary.getDataForSigning(signnedData);
 			try {
 				if (!this.notary.verifySignature(signedBytes, signature.value, pubKey, algAndEncoding)) {
 					logger.log(Level.INFO,
