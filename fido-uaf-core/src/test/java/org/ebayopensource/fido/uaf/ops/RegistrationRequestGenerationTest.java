@@ -3,11 +3,16 @@ package org.ebayopensource.fido.uaf.ops;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.logging.Logger;
 
 import org.bouncycastle.util.encoders.Base64;
 import org.ebayopensource.fido.uaf.crypto.Notary;
+import org.ebayopensource.fido.uaf.crypto.SHA;
 import org.ebayopensource.fido.uaf.msg.RegistrationRequest;
+import org.ebayopensource.fido.uaf.tlv.AlgAndEncodingEnum;
+import org.ebayopensource.fido.uaf.tlv.Tag;
 import org.junit.Test;
 
 import com.google.gson.Gson;
@@ -37,16 +42,38 @@ public class RegistrationRequestGenerationTest {
 		assertTrue(RegistrationRequestGeneration.APP_ID.equals(regReq.header.appID));
 		logger.info(gson.toJson(regReq));
 	}
-	
+
 	class NotaryImpl implements Notary {
 
 		public boolean verify(String dataToSign, String signature) {
 			return signature.startsWith(TEST_SIGNATURE);
 		}
-		
+
+		@Override
+		public boolean verifySignature(byte[] dataForSigning, byte[] signature, String pubKey, AlgAndEncodingEnum algAndEncoding) throws Exception {
+			return true;
+		}
+
+		@Override
+		public AlgAndEncodingEnum getAlgAndEncoding(Tag info) {
+			return AlgAndEncodingEnum.UAF_ALG_KEY_ECC_X962_DER;
+		}
+
+		@Override
+		public byte[] getDataForSigning(Tag signedData) throws IOException {
+			return "".getBytes();
+		}
+
+		@Override
+		public byte[] encodeInt(int id) {
+			byte[] bytes = new byte[2];
+			bytes[0] = (byte) (id & 0x00ff);
+			bytes[1] = (byte) ((id & 0xff00) >> 8);
+			return bytes;
+		}
+
 		public String sign(String dataToSign) {
-			// For testing
-			return TEST_SIGNATURE;
+			return SHA.sha256(dataToSign);
 		}
 	}
 

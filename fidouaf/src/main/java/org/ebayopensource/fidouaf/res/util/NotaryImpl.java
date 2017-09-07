@@ -159,7 +159,6 @@ public class NotaryImpl implements Notary {
 	}
 
 	public byte[] encodeInt(int id) {
-
 		byte[] bytes = new byte[2];
 		bytes[0] = (byte) (id & 0x00ff);
 		bytes[1] = (byte) ((id & 0xff00) >> 8);
