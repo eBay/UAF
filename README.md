@@ -40,3 +40,17 @@ The code presented here is divided into three groups:
 1. [fido-uaf-core](fido-uaf-core/README.md) - UAF protocol implementation
 2. [fidouaf](fidouaf/README.md) - UAF server, a Jersey service application for demoing UAF protocol implementation use
 3. [RP Client App](fidouafclient) - Android relying party client app for demoing UAF server
+
+# Steps for running the demo
+
+1. Build and run the UAF server as described in the Wiki page of the project (https://github.com/eBay/UAF/wiki/BuildingAndRunningUAFServer).
+2. Build and run the client (fidouafclient).
+3. Obtain the facetID of the client.
+
+3.1. If the client program is run on an android device, pressing the button labelled "facetID" will display the string representing the facetID of the client program on the screen.
+
+3.2. If the client program is run on an emulator, pressing the button labelled "facetID" will cause the string representing the facetID of the client program to be printed on the IDE console (Logcat). The string can be located by searching for the term "facetID:".
+
+4. In the file UAF/fidouaf/src/main/java/org/ebayopensource/fidouaf/res/config.properties, replace the example string representing the facetID of the client program with the value obtained in step 3.
+5. Set the Server Endpoint on the client by clicking on the settings menu on the upper right corner of the client application, filling in an appropriate IP address and port for the server (e.g., http://192.168.1.34:8080), then clicking on the checkmark to save the settings.
+6. The client and the server are now ready to be tested.

@@ -175,7 +175,6 @@ public abstract class OpUtils {
     }
 
     public static String clientSendRegResponse (String uafMessage, String endpoint){
-        StringBuffer res = new StringBuffer();
         String decoded = "";
         try {
             JSONObject json = new JSONObject (uafMessage);
@@ -184,12 +183,9 @@ public abstract class OpUtils {
             e.printStackTrace();
         }
 
-        res.append("#uafMessageegOut\n"+decoded);
         String headerStr = "Content-Type:Application/json Accept:Application/json";
-        res.append("\n\n#ServerResponse\n");
         String serverResponse = Curl.postInSeparateThread(endpoint, headerStr , decoded);
-        res.append(serverResponse);
-        return res.toString();
+        return serverResponse;
     }
 
 

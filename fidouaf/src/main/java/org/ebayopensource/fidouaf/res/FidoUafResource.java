@@ -16,11 +16,14 @@
 
 package org.ebayopensource.fidouaf.res;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -190,6 +193,7 @@ public class FidoUafResource {
 		String[] trustedIds = { "https://ms.com" };
 		List<String> trustedIdsList = new ArrayList<String>(Arrays.asList(trustedIds));
 		trustedIdsList.addAll(Dash.getInstance().facetIds);
+		trustedIdsList.add(readFacet());
 		Facets facets = new Facets();
 		facets.trustedFacets = new TrustedFacets[1];
 		TrustedFacets trusted = new TrustedFacets();
@@ -197,6 +201,19 @@ public class FidoUafResource {
 		trusted.ids = trustedIdsList.toArray(new String[0]);
 		facets.trustedFacets[0] = trusted;
 		return facets;
+	}
+	
+	private String readFacet() {
+		InputStream in = getClass().getResourceAsStream("config.properties");
+		String facetVal = "";
+		try {
+			Properties props = new Properties();
+			props.load(in);
+			facetVal = props.getProperty("facetId");
+		} catch (IOException e) {
+			e.printStackTrace();
+		} 
+		return facetVal.toString();
 	}
 
 	/**
