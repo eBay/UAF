@@ -122,9 +122,6 @@ public class RegistrationResponseProcessing {
 
 	private void verifyAttestationSignature(Tags tags, RegistrationRecord record)
 			throws NoSuchAlgorithmException, IOException, Exception {
-		byte[] certBytes = tags.getTags().get(TagsEnum.TAG_ATTESTATION_CERT.id).value;
-		record.attestCert = Base64.encodeBase64URLSafeString(certBytes);
-
 		Tag krd = tags.getTags().get(TagsEnum.TAG_UAFV1_KRD.id);
 		Tag signature = tags.getTags().get(TagsEnum.TAG_SIGNATURE.id);
 		AlgAndEncodingEnum algorithm = notary.getAlgAndEncoding(tags.getTags().get(TagsEnum.TAG_ASSERTION_INFO.id));

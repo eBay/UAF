@@ -43,11 +43,7 @@ import org.ebayopensource.fido.uaf.msg.Version;
 import org.ebayopensource.fido.uaf.storage.AuthenticatorRecord;
 import org.ebayopensource.fido.uaf.storage.RegistrationRecord;
 import org.ebayopensource.fido.uaf.storage.StorageInterface;
-import org.ebayopensource.fido.uaf.tlv.AlgAndEncodingEnum;
-import org.ebayopensource.fido.uaf.tlv.Tag;
-import org.ebayopensource.fido.uaf.tlv.Tags;
-import org.ebayopensource.fido.uaf.tlv.TagsEnum;
-import org.ebayopensource.fido.uaf.tlv.TlvAssertionParser;
+import org.ebayopensource.fido.uaf.tlv.*;
 
 public class AuthenticationResponseProcessing {
 
@@ -98,13 +94,20 @@ public class AuthenticationResponseProcessing {
 			registrationRecord = getRegistration(authRecord, storage);
 			Tag signnedData = tags.getTags().get(
 					TagsEnum.TAG_UAFV1_SIGNED_DATA.id);
+
+			byte[] signedBytes = new byte[signnedData.value.length + 4];
+			System.arraycopy(UnsignedUtil.encodeInt(signnedData.id), 0, signedBytes, 0, 2);
+			System.arraycopy(UnsignedUtil.encodeInt(signnedData.length), 0, signedBytes, 2,
+					2);
+			System.arraycopy(signnedData.value, 0, signedBytes, 4, signnedData.value.length);
+
 			Tag signature = tags.getTags().get(TagsEnum.TAG_SIGNATURE.id);
 			Tag info = tags.getTags().get(TagsEnum.TAG_ASSERTION_INFO.id);
 			AlgAndEncodingEnum algAndEncoding = notary.getAlgAndEncoding(info);
 			String pubKey = registrationRecord.PublicKey;
 			byte[] dataForSigning = notary.getDataForSigning(signnedData);
 			try {
-				if (!notary.verifySignature(dataForSigning, signature.value, pubKey, algAndEncoding)) {
+				if (!this.notary.verifySignature(signedBytes, signature.value, pubKey, algAndEncoding)) {
 					logger.log(Level.INFO,
 							"Signature verification failed for authenticator: "
 									+ authRecord.toString());
