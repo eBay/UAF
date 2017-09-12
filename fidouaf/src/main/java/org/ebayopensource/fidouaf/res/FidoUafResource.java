@@ -36,6 +36,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
 import org.apache.commons.codec.binary.Base64;
 import org.ebayopensource.fido.uaf.msg.AuthenticationRequest;
 import org.ebayopensource.fido.uaf.msg.AuthenticationResponse;
@@ -75,36 +77,41 @@ public class FidoUafResource {
 	@GET
 	@Path("/info")
 	@Produces(MediaType.APPLICATION_JSON)
-	public String info() {
-		return gson.toJson(new Info());
+	@ApiOperation(value = "Print information about the server")
+	public Info info() {
+		return new Info();
 	}
 	
 	@GET
 	@Path("/whitelistuuid/{uuid}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public String whitelistuuad(@PathParam("uuid") String uuid) {
+	@ApiOperation(value = "List all UUIDs that are whitelisted by the service")
+	public List<String> whitelistuuad(@PathParam("uuid") String uuid) {
 		Dash.getInstance().uuids.add(uuid);
-		return gson.toJson(Dash.getInstance().getInstance().uuids);
+		return Dash.getInstance().getInstance().uuids;
 	}
 	
 	@GET
 	@Path("/whitelistfacetid/{facetId}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public String whitelistfacetid(@PathParam("facetId") String facetId) {
+	@ApiOperation(value = "List all Facet IDs that are whitelisted by the service")
+	public List<String> whitelistfacetid(@PathParam("facetId") String facetId) {
 		Dash.getInstance().facetIds.add(facetId);
-		return gson.toJson(Dash.getInstance().facetIds);
+		return Dash.getInstance().facetIds;
 	}
 
 	@GET
 	@Path("/stats")
 	@Produces(MediaType.APPLICATION_JSON)
-	public String getStats() {
-		return gson.toJson(Dash.getInstance().stats);
+	@ApiOperation(value = "Get usage information")
+	public Map<String, Object> getStats() {
+		return Dash.getInstance().stats;
 	}
 
 	@GET
 	@Path("/history")
 	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(value = "Get all the operations performed by the server")
 	public List<Object> getHistory() {
 		return Dash.getInstance().history;
 	}
@@ -112,6 +119,7 @@ public class FidoUafResource {
 	@GET
 	@Path("/registrations")
 	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(value = "Get all valid registrations")
 	public Map<String, RegistrationRecord> getDbDump() {
 		return StorageImpl.getInstance().dbDump();
 	}
@@ -123,6 +131,7 @@ public class FidoUafResource {
 	@POST
 	@Path("/public/regRequest/{username}")
 	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(value = "Initiate a new registration")
 	public RegistrationRequest[] getRegisReqPublic(
 			@PathParam("username") String username) {
 
@@ -141,16 +150,18 @@ public class FidoUafResource {
 	@GET
 	@Path("/public/regRequest/{username}/{appId}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public String getRegReqForAppId(@PathParam("username") String username, 
+	@ApiOperation(value = "Get the data for an existing registration")
+	public RegistrationRequest[] getRegReqForAppId(@PathParam("username") String username,
 			@PathParam("appId") String appId) {
 		RegistrationRequest[] regReq = getRegisReqPublic(username);
 		setAppId(appId, regReq[0].header);
-		return gson.toJson(regReq);
+		return regReq;
 	}
 
 	@GET
 	@Path("/public/regRequest")
 	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(value = "Initiate a registration")
 	public RegistrationRequest[] postRegisReqPublic(String username) {
 		return regReqPublic(username);
 	}
@@ -285,18 +296,18 @@ public class FidoUafResource {
 	@GET
 	@Path("/public/authRequest")
 	@Produces(MediaType.APPLICATION_JSON)
-	public String getAuthReq() {
-		return gson.toJson(getAuthReqObj());
+	public AuthenticationRequest[] getAuthReq() {
+		return getAuthReqObj();
 	}
 
 	@GET
 	@Path("/public/authRequest/{appId}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public String getAuthForAppIdReq(@PathParam("appId") String appId) {
+	public AuthenticationRequest[] getAuthForAppIdReq(@PathParam("appId") String appId) {
 		AuthenticationRequest[] authReqObj = getAuthReqObj();
 		setAppId(appId, authReqObj[0].header);
 		
-		return gson.toJson(authReqObj);
+		return authReqObj;
 	}
 
 	private void setAppId(String appId, OperationHeader header) {
@@ -322,13 +333,13 @@ public class FidoUafResource {
 	@GET
 	@Path("/public/authRequest/{appId}/{trxContent}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public String getAuthTrxReq(@PathParam("appId") String appId,
+	public AuthenticationRequest[] getAuthTrxReq(@PathParam("appId") String appId,
 			@PathParam("trxContent") String trxContent) {
 		AuthenticationRequest[] authReqObj = getAuthReqObj();
 		setAppId(appId, authReqObj[0].header);
 		setTransaction(trxContent, authReqObj);
 		
-		return gson.toJson(authReqObj);
+		return authReqObj;
 	}
 
 	private void setTransaction(String trxContent, AuthenticationRequest[] authReqObj) {
