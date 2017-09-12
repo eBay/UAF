@@ -1,1 +1,1 @@
-web: java -jar target/java-getting-started-1.0.jar
+web: java -jar fidouaf/build/server/webapp-runner-*.jar fidouaf/build/libs/fidouaf.war
