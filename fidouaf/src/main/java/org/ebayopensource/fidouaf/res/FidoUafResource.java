@@ -37,25 +37,13 @@ import javax.ws.rs.core.UriInfo;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
 import org.apache.commons.codec.binary.Base64;
-import org.ebayopensource.fido.uaf.msg.AuthenticationRequest;
-import org.ebayopensource.fido.uaf.msg.AuthenticationResponse;
-import org.ebayopensource.fido.uaf.msg.Operation;
-import org.ebayopensource.fido.uaf.msg.OperationHeader;
-import org.ebayopensource.fido.uaf.msg.RegistrationRequest;
-import org.ebayopensource.fido.uaf.msg.RegistrationResponse;
-import org.ebayopensource.fido.uaf.msg.Transaction;
-import org.ebayopensource.fido.uaf.msg.Version;
+import org.ebayopensource.fido.uaf.msg.*;
 import org.ebayopensource.fido.uaf.storage.AuthenticatorRecord;
 import org.ebayopensource.fido.uaf.storage.DuplicateKeyException;
 import org.ebayopensource.fido.uaf.storage.RegistrationRecord;
 import org.ebayopensource.fido.uaf.storage.SystemErrorException;
-import org.ebayopensource.fidouaf.RPserver.msg.ReturnUAFAuthenticationRequest;
-import org.ebayopensource.fidouaf.RPserver.msg.ReturnUAFDeregistrationRequest;
-import org.ebayopensource.fidouaf.RPserver.msg.ReturnUAFRegistrationRequest;
-import org.ebayopensource.fidouaf.RPserver.msg.ServerResponse;
-import org.ebayopensource.fidouaf.RPserver.msg.GetUAFRequest;
+import org.ebayopensource.fidouaf.RPserver.msg.*;
 import org.ebayopensource.fidouaf.facets.Facets;
 import org.ebayopensource.fidouaf.facets.TrustedFacets;
 import org.ebayopensource.fidouaf.res.util.DeregRequestProcessor;
@@ -124,46 +112,21 @@ public class FidoUafResource {
 		return StorageImpl.getInstance().dbDump();
 	}
 
-	/**
-	 * Initiates a new registration
-	 * @return
-	 */
 	@POST
-	@Path("/public/regRequest/{username}")
+	@Path("/public/regRequest")
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiOperation(value = "Initiate a new registration")
-	public RegistrationRequest[] getRegisReqPublic(
-			@PathParam("username") String username) {
-
-		return regReqPublic(username);
+	public RegistrationRequest[] getRegisReqPublic(UserRegRequest regRequest) {
+		return regReqPublic(regRequest);
 	}
 
-	private RegistrationRequest[] regReqPublic(String username){
+	private RegistrationRequest[] regReqPublic(UserRegRequest regRequest){
 		RegistrationRequest[] regReq = new RegistrationRequest[1];
 		regReq[0] = new FetchRequest(getAppId(), getAllowedAaids())
-				.getRegistrationRequest(username);
+				.getRegistrationRequest(regRequest);
 		Dash.getInstance().stats.put(Dash.LAST_REG_REQ, regReq);
 		Dash.getInstance().history.add(regReq);
 		return regReq;
-	}
-	
-	@GET
-	@Path("/public/regRequest/{username}/{appId}")
-	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(value = "Get the data for an existing registration")
-	public RegistrationRequest[] getRegReqForAppId(@PathParam("username") String username,
-			@PathParam("appId") String appId) {
-		RegistrationRequest[] regReq = getRegisReqPublic(username);
-		setAppId(appId, regReq[0].header);
-		return regReq;
-	}
-
-	@GET
-	@Path("/public/regRequest")
-	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(value = "Initiate a registration")
-	public RegistrationRequest[] postRegisReqPublic(String username) {
-		return regReqPublic(username);
 	}
 
 	/**
@@ -230,7 +193,7 @@ public class FidoUafResource {
 		} catch (IOException e) {
 			e.printStackTrace();
 		} 
-		return facetVal.toString();
+		return facetVal;
 	}
 
 	/**
@@ -253,7 +216,7 @@ public class FidoUafResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public RegistrationRecord[] processRegResponse(String payload) {
-		RegistrationRecord[] result = null;
+		RegistrationRecord[] result;
 		if (! payload.isEmpty()) {
 			RegistrationResponse[] fromJson = (new Gson()).fromJson(payload,
 					RegistrationResponse[].class);
@@ -294,19 +257,12 @@ public class FidoUafResource {
 	}
 
 	@GET
-	@Path("/public/authRequest")
+	@Path("/public/authRequest/{registrationId}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public AuthenticationRequest[] getAuthReq() {
-		return getAuthReqObj();
-	}
-
-	@GET
-	@Path("/public/authRequest/{appId}")
-	@Produces(MediaType.APPLICATION_JSON)
-	public AuthenticationRequest[] getAuthForAppIdReq(@PathParam("appId") String appId) {
+	public AuthenticationRequest[] getAuthForAppIdReq(@PathParam("registrationId") String registrationId) {
 		AuthenticationRequest[] authReqObj = getAuthReqObj();
-		setAppId(appId, authReqObj[0].header);
-		
+//		setAppId(appId, authReqObj[0].header);
+
 		return authReqObj;
 	}
 
@@ -330,11 +286,10 @@ public class FidoUafResource {
 		}
 	}
 
-	@GET
-	@Path("/public/authRequest/{appId}/{trxContent}")
+	@POST
+	@Path("/public/authRequest/{appId}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public AuthenticationRequest[] getAuthTrxReq(@PathParam("appId") String appId,
-			@PathParam("trxContent") String trxContent) {
+	public AuthenticationRequest[] getAuthTrxReq(@PathParam("appId") String appId, String trxContent) {
 		AuthenticationRequest[] authReqObj = getAuthReqObj();
 		setAppId(appId, authReqObj[0].header);
 		setTransaction(trxContent, authReqObj);
@@ -376,259 +331,5 @@ public class FidoUafResource {
 			return result;
 		}
 		return new AuthenticatorRecord[0];
-	}
-
-	@POST
-	@Path("/public/uafRegRequest")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	public ReturnUAFRegistrationRequest GetUAFRegistrationRequest(String payload) {
-		RegistrationRequest[] result = getRegisReqPublic("iafuser01");
-		ReturnUAFRegistrationRequest uafReq = null;
-		if (result != null) {
-			uafReq = new ReturnUAFRegistrationRequest();
-			uafReq.statusCode = 1200;
-			uafReq.uafRequest = result;
-			uafReq.op = Operation.Reg;
-			uafReq.lifetimeMillis = 5 * 60 * 1000;
-		}
-		return uafReq;
-	}
-
-	@POST
-	@Path("/public/uafAuthRequest")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	public ReturnUAFAuthenticationRequest GetUAFAuthenticationRequest(
-			String payload) {
-		AuthenticationRequest[] result = getAuthReqObj();
-		ReturnUAFAuthenticationRequest uafReq = null;
-		if (result != null) {
-			uafReq = new ReturnUAFAuthenticationRequest();
-			uafReq.statusCode = 1200;
-			uafReq.uafRequest = result;
-			uafReq.op = Operation.Auth;
-			uafReq.lifetimeMillis = 5 * 60 * 1000;
-		}
-		return uafReq;
-	}
-
-	@POST
-	@Path("/public/uafDeregRequest")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	public ReturnUAFDeregistrationRequest GetUAFDeregistrationRequest(
-			String payload) {
-		String result = deregRequestPublic(payload);
-		ReturnUAFDeregistrationRequest uafReq = new ReturnUAFDeregistrationRequest();
-		if (result.equalsIgnoreCase("Success")) {
-			uafReq.statusCode = 1200;
-		} else if (result
-				.equalsIgnoreCase("Failure: Problem in deleting record from local DB")) {
-			uafReq.statusCode = 1404;
-		} else if (result
-				.equalsIgnoreCase("Failure: problem processing deregistration request")) {
-			uafReq.statusCode = 1491;
-		} else {
-			uafReq.statusCode = 1500;
-
-		}
-		uafReq.uafRequest = null;
-		uafReq.op = Operation.Dereg;
-		uafReq.lifetimeMillis = 0;
-		return uafReq;
-	}
-
-	@POST
-	@Path("/public/uafAuthResponse")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	public ServerResponse UAFAuthResponse(String payload) {
-		ServerResponse servResp = new ServerResponse();
-		if (!payload.isEmpty()) {
-			String findOp = payload;
-			findOp = findOp.substring(findOp.indexOf("op") + 6,
-					findOp.indexOf(",", findOp.indexOf("op")) - 1);
-			System.out.println("findOp=" + findOp);
-
-			AuthenticatorRecord[] result = processAuthResponse(payload);
-
-			if (result[0].status.equals("SUCCESS")) {
-				servResp.statusCode = 1200;
-				servResp.Description = "OK. Operation completed";
-			} else if (result[0].status.equals("FAILED_SIGNATURE_NOT_VALID")
-					|| result[0].status.equals("FAILED_SIGNATURE_VERIFICATION")
-					|| result[0].status.equals("FAILED_ASSERTION_VERIFICATION")) {
-				servResp.statusCode = 1496;
-				servResp.Description = result[0].status;
-			} else if (result[0].status.equals("INVALID_SERVER_DATA_EXPIRED")
-					|| result[0].status
-					.equals("INVALID_SERVER_DATA_SIGNATURE_NO_MATCH")
-					|| result[0].status.equals("INVALID_SERVER_DATA_CHECK_FAILED")) {
-				servResp.statusCode = 1491;
-				servResp.Description = result[0].status;
-			} else {
-				servResp.statusCode = 1500;
-				servResp.Description = result[0].status;
-			}
-		}else{
-			servResp.Description = "Error: payload is empty";
-		}
-
-		return servResp;
-	}
-
-	@POST
-	@Path("/public/uafRegResponse")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	public ServerResponse UAFRegResponse(String payload) {
-		ServerResponse servResp = new ServerResponse();
-		if (!payload.isEmpty()) {
-			String findOp = payload;
-			findOp = findOp.substring(findOp.indexOf("op") + 6,
-					findOp.indexOf(",", findOp.indexOf("op")) - 1);
-			System.out.println("findOp=" + findOp);
-
-			RegistrationRecord[] result = processRegResponse(payload);
-
-			if (result[0].status.equals("SUCCESS")) {
-				servResp.statusCode = 1200;
-				servResp.Description = "OK. Operation completed";
-			} else if (result[0].status.equals("ASSERTIONS_CHECK_FAILED")) {
-				servResp.statusCode = 1496;
-				servResp.Description = result[0].status;
-			} else if (result[0].status.equals("INVALID_SERVER_DATA_EXPIRED")
-					|| result[0].status
-					.equals("INVALID_SERVER_DATA_SIGNATURE_NO_MATCH")
-					|| result[0].status.equals("INVALID_SERVER_DATA_CHECK_FAILED")) {
-				servResp.statusCode = 1491;
-				servResp.Description = result[0].status;
-			} else {
-				servResp.statusCode = 1500;
-				servResp.Description = result[0].status;
-			}
-		}else{
-			servResp.Description = "Error: payload is empty";
-		}
-
-		return servResp;
-	}
-
-	@POST
-	@Path("/public/uafRequest")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	public String GetUAFRequest(String payload) {
-		String uafReq = null;
-		if (!payload.isEmpty()) {
-			Gson gson = new Gson();
-			GetUAFRequest req = gson.fromJson(payload, GetUAFRequest.class);
-
-			if (req.op.name().equals("Reg")) {
-				RegistrationRequest[] result = getRegisReqPublic("iafuser01");
-				ReturnUAFRegistrationRequest uafRegReq = null;
-				if (result != null) {
-					uafRegReq = new ReturnUAFRegistrationRequest();
-					uafRegReq.statusCode = 1200;
-					uafRegReq.uafRequest = result;
-					uafRegReq.op = Operation.Reg;
-					uafRegReq.lifetimeMillis = 5 * 60 * 1000;
-				}
-				uafReq = gson.toJson(uafRegReq);
-			} else if (req.op.name().equals("Auth")) {
-				AuthenticationRequest[] result = getAuthReqObj();
-				ReturnUAFAuthenticationRequest uafAuthReq = null;
-				if (result != null) {
-					uafAuthReq = new ReturnUAFAuthenticationRequest();
-					uafAuthReq.statusCode = 1200;
-					uafAuthReq.uafRequest = result;
-					uafAuthReq.op = Operation.Auth;
-					uafAuthReq.lifetimeMillis = 5 * 60 * 1000;
-				}
-				uafReq = gson.toJson(uafAuthReq);
-			} else if (req.op.name().equals("Dereg")) {
-				String result = deregRequestPublic(payload);
-				ReturnUAFDeregistrationRequest uafDeregReq = new ReturnUAFDeregistrationRequest();
-				if (result.equalsIgnoreCase("Success")) {
-					uafDeregReq.statusCode = 1200;
-				} else if (result
-						.equalsIgnoreCase("Failure: Problem in deleting record from local DB")) {
-					uafDeregReq.statusCode = 1404;
-				} else if (result
-						.equalsIgnoreCase("Failure: problem processing deregistration request")) {
-					uafDeregReq.statusCode = 1491;
-				} else {
-					uafDeregReq.statusCode = 1500;
-
-				}
-				uafDeregReq.uafRequest = null;
-				uafDeregReq.op = Operation.Dereg;
-				uafDeregReq.lifetimeMillis = 0;
-				uafReq = gson.toJson(uafDeregReq);
-			}
-		}
-		return uafReq;
-	}
-
-	@POST
-	@Path("/public/uafResponse")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	public ServerResponse UAFResponse(String payload) {
-		ServerResponse servResp = new ServerResponse();
-		if (!payload.isEmpty()) {
-			String findOp = payload;
-			findOp = findOp.substring(findOp.indexOf("op") + 6,
-					findOp.indexOf(",", findOp.indexOf("op")) - 1);
-			System.out.println("findOp=" + findOp);
-
-			if (findOp.equals("Reg")) {
-				RegistrationRecord[] result = processRegResponse(payload);
-
-				if (result[0].status.equals("SUCCESS")) {
-					servResp.statusCode = 1200;
-					servResp.Description = "OK. Operation completed";
-				} else if (result[0].status.equals("ASSERTIONS_CHECK_FAILED")) {
-					servResp.statusCode = 1496;
-					servResp.Description = result[0].status;
-				} else if (result[0].status.equals("INVALID_SERVER_DATA_EXPIRED")
-						|| result[0].status
-						.equals("INVALID_SERVER_DATA_SIGNATURE_NO_MATCH")
-						|| result[0].status
-						.equals("INVALID_SERVER_DATA_CHECK_FAILED")) {
-					servResp.statusCode = 1491;
-					servResp.Description = result[0].status;
-				} else {
-					servResp.statusCode = 1500;
-					servResp.Description = result[0].status;
-				}
-			} else if (findOp.equals("Auth")) {
-				AuthenticatorRecord[] result = processAuthResponse(payload);
-
-				if (result[0].status.equals("SUCCESS")) {
-					servResp.statusCode = 1200;
-					servResp.Description = "OK. Operation completed";
-				} else if (result[0].status.equals("FAILED_SIGNATURE_NOT_VALID")
-						|| result[0].status.equals("FAILED_SIGNATURE_VERIFICATION")
-						|| result[0].status.equals("FAILED_ASSERTION_VERIFICATION")) {
-					servResp.statusCode = 1496;
-					servResp.Description = result[0].status;
-				} else if (result[0].status.equals("INVALID_SERVER_DATA_EXPIRED")
-						|| result[0].status
-						.equals("INVALID_SERVER_DATA_SIGNATURE_NO_MATCH")
-						|| result[0].status
-						.equals("INVALID_SERVER_DATA_CHECK_FAILED")) {
-					servResp.statusCode = 1491;
-					servResp.Description = result[0].status;
-				} else {
-					servResp.statusCode = 1500;
-					servResp.Description = result[0].status;
-				}
-			}
-		}else{
-			servResp.Description = "Error: payload is empty";
-		}
-		return servResp;
 	}
 }

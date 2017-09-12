@@ -24,21 +24,19 @@ import org.ebayopensource.fido.uaf.storage.AuthenticatorRecord;
 import org.ebayopensource.fido.uaf.storage.RegistrationRecord;
 
 public class ProcessResponse {
-
 	private static final int SERVER_DATA_EXPIRY_IN_MS = 5 * 60 * 1000;
 
-	// Gson gson = new Gson ();
-
 	public AuthenticatorRecord[] processAuthResponse(AuthenticationResponse resp) {
-		AuthenticatorRecord[] result = null;
+		AuthenticatorRecord[] result;
 		try {
 			result = new AuthenticationResponseProcessing(
-					SERVER_DATA_EXPIRY_IN_MS, NotaryImpl.getInstance()).verify(
-					resp, StorageImpl.getInstance());
+				SERVER_DATA_EXPIRY_IN_MS,
+				NotaryImpl.getInstance()
+			).verify(
+				resp, StorageImpl.getInstance()
+			);
 		} catch (Exception e) {
-			System.out
-					.println("!!!!!!!!!!!!!!!!!!!..............................."
-							+ e.getMessage());
+			System.out.println("Error: " + e.getMessage());
 			result = new AuthenticatorRecord[1];
 			result[0] = new AuthenticatorRecord();
 			result[0].status = e.getMessage();
@@ -47,15 +45,14 @@ public class ProcessResponse {
 	}
 
 	public RegistrationRecord[] processRegResponse(RegistrationResponse resp) {
-		RegistrationRecord[] result = null;
+		RegistrationRecord[] result;
 		try {
 			result = new RegistrationResponseProcessing(
-					SERVER_DATA_EXPIRY_IN_MS, NotaryImpl.getInstance())
-					.processResponse(resp);
+				SERVER_DATA_EXPIRY_IN_MS,
+				NotaryImpl.getInstance()
+			).processResponse(resp);
 		} catch (Exception e) {
-			System.out
-					.println("!!!!!!!!!!!!!!!!!!!..............................."
-							+ e.getMessage());
+			System.out.println("Error: " + e.getMessage());
 			result = new RegistrationRecord[1];
 			result[0] = new RegistrationRecord();
 			result[0].status = e.getMessage();

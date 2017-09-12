@@ -31,4 +31,5 @@ public class RegistrationRecord {
 	public String attestDataToSign;
 	public String attestSignature;
 	public String attestVerifiedStatus;
+	public String registrationId;
 }

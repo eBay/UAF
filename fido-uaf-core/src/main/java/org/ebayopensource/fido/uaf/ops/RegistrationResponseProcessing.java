@@ -25,6 +25,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.ebayopensource.fido.uaf.crypto.CertificateValidator;
 import org.ebayopensource.fido.uaf.crypto.CertificateValidatorImpl;
 import org.ebayopensource.fido.uaf.crypto.Notary;
+import org.ebayopensource.fido.uaf.crypto.SHA;
 import org.ebayopensource.fido.uaf.msg.AuthenticatorRegistrationAssertion;
 import org.ebayopensource.fido.uaf.msg.FinalChallengeParams;
 import org.ebayopensource.fido.uaf.msg.RegistrationResponse;
@@ -100,6 +101,7 @@ public class RegistrationResponseProcessing {
 			logger.log(Level.INFO, "FC: " + fc);
 			if (record.status == null) {
 				record.status = "SUCCESS";
+				record.registrationId = getRegistrationId(record);
 			}
 		} catch (Exception e) {
 			record.status = "ASSERTIONS_CHECK_FAILED";
@@ -107,6 +109,10 @@ public class RegistrationResponseProcessing {
 					+ authenticatorRegistrationAssertion.assertion, e);
 		}
 		return record;
+	}
+
+	private String getRegistrationId(RegistrationRecord record) {
+		return SHA.sha256(record.PublicKey);
 	}
 
 	private void verifyAttestationSignature(Tags tags, RegistrationRecord record)
