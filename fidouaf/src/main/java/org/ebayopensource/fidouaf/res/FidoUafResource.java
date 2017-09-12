@@ -35,6 +35,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
 
+import io.swagger.annotations.Api;
 import org.apache.commons.codec.binary.Base64;
 import org.ebayopensource.fido.uaf.msg.AuthenticationRequest;
 import org.ebayopensource.fido.uaf.msg.AuthenticationResponse;
@@ -65,6 +66,7 @@ import org.ebayopensource.fidouaf.stats.Info;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+@Api
 @Path("/v1")
 public class FidoUafResource {
 
