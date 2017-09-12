@@ -114,7 +114,11 @@ public class FidoUafResource {
 		return StorageImpl.getInstance().dbDump();
 	}
 
-	@GET
+	/**
+	 * Initiates a new registration
+	 * @return
+	 */
+	@POST
 	@Path("/public/regRequest/{username}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public RegistrationRequest[] getRegisReqPublic(
