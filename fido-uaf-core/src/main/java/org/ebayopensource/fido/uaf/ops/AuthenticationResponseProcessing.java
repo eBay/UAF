@@ -71,12 +71,13 @@ public class AuthenticationResponseProcessing {
 		FinalChallengeParams fcp = getFcp(response);
 		checkFcp(fcp);
 		for (int i = 0; i < result.length; i++) {
-			result[i] = processAssertions(response.assertions[i], serverData);
+			result[i] = processAssertions(response.registrationID, response.assertions[i], serverData);
 		}
 		return result;
 	}
 
 	private AuthenticatorRecord processAssertions(
+			String registrationID,
 			AuthenticatorSignAssertion authenticatorSignAssertion,
 			StorageInterface storage) {
 		TlvAssertionParser parser = new TlvAssertionParser();
@@ -85,10 +86,12 @@ public class AuthenticationResponseProcessing {
 
 		try {
 			Tags tags = parser.parse(authenticatorSignAssertion.assertion);
-			authRecord.AAID = new String(tags.getTags().get(
-					TagsEnum.TAG_AAID.id).value);
-			authRecord.KeyID = Base64.encodeBase64URLSafeString(tags.getTags()
-					.get(TagsEnum.TAG_KEYID.id).value);
+			authRecord.registrationID = registrationID;
+//			authRecord.AAID = new String(tags.getTags().get(
+//					TagsEnum.TAG_AAID.id).value);
+//			authRecord.KeyID = Base64.encodeBase64URLSafeString(tags.getTags()
+//					.get(TagsEnum.TAG_KEYID.id).value);
+
 			// authRecord.KeyID = new String(
 			// tags.getTags().get(TagsEnum.TAG_KEYID.id).value);
 			registrationRecord = getRegistration(authRecord, storage);

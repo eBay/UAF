@@ -85,7 +85,6 @@ public class RegistrationResponseProcessing {
 			} catch (Exception e) {
 				record.attestVerifiedStatus = "NOT_VERIFIED";
 			}
-
 			AuthenticatorRecord authRecord = new AuthenticatorRecord();
 			authRecord.AAID = new String(tags.getTags().get(
 					TagsEnum.TAG_AAID.id).value);
@@ -94,14 +93,15 @@ public class RegistrationResponseProcessing {
 			// TagsEnum.TAG_KEYID.id).value);
 			Base64.encodeBase64URLSafeString(tags.getTags().get(
 					TagsEnum.TAG_KEYID.id).value);
-			record.authenticator = authRecord;
-			record.AuthenticatorVersion = getAuthenticatorVersion(tags);
 			String fc = Base64.encodeBase64URLSafeString(tags.getTags().get(
 					TagsEnum.TAG_FINAL_CHALLENGE.id).value);
 			logger.log(Level.INFO, "FC: " + fc);
 			if (record.status == null) {
 				record.status = "SUCCESS";
 				record.registrationId = getRegistrationId(record);
+				record.authenticator.registrationID = record.registrationId;
+				record.authenticator = authRecord;
+				record.AuthenticatorVersion = getAuthenticatorVersion(tags);
 			}
 		} catch (Exception e) {
 			record.status = "ASSERTIONS_CHECK_FAILED";

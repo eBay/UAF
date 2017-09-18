@@ -25,8 +25,9 @@ public class AuthenticatorRecord {
 	public String deviceId;
 	public String username;
 	public String status;
+	public String registrationID;
 
 	public String toString() {
-		return AAID + DLM + KeyID;
+		return registrationID;
 	}
 }

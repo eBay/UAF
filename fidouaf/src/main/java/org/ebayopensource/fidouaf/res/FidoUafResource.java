@@ -25,12 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
@@ -88,13 +83,13 @@ public class FidoUafResource {
 		return Dash.getInstance().facetIds;
 	}
 
-	@GET
-	@Path("/stats")
-	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(value = "Get usage information")
-	public Map<String, Object> getStats() {
-		return Dash.getInstance().stats;
-	}
+//	@GET
+//	@Path("/stats")
+//	@Produces(MediaType.APPLICATION_JSON)
+//	@ApiOperation(value = "Get usage information")
+//	public Map<String, Object> getStats() {
+//		return Dash.getInstance().stats;
+//	}
 
 	@GET
 	@Path("/history")
@@ -124,7 +119,8 @@ public class FidoUafResource {
 		RegistrationRequest[] regReq = new RegistrationRequest[1];
 		regReq[0] = new FetchRequest(getAppId(), getAllowedAaids())
 				.getRegistrationRequest(regRequest);
-		Dash.getInstance().stats.put(Dash.LAST_REG_REQ, regReq);
+		Dash.getInstance().addStats("", Dash.LAST_REG_REQ, regReq);
+//		Dash.getInstance().stats.put(Dash.LAST_REG_REQ, regReq);
 		Dash.getInstance().history.add(regReq);
 		return regReq;
 	}
@@ -169,7 +165,7 @@ public class FidoUafResource {
 	@Produces("application/fido.trusted-apps+json")
 	public Facets facets() {
 		String timestamp = new Date().toString();
-		Dash.getInstance().stats.put(Dash.LAST_REG_REQ, timestamp);
+//		Dash.getInstance().stats.put(Dash.LAST_REG_REQ, timestamp);
 		String[] trustedIds = { "https://ms.com" };
 		List<String> trustedIdsList = new ArrayList<String>(Arrays.asList(trustedIds));
 		trustedIdsList.addAll(Dash.getInstance().facetIds);
@@ -211,7 +207,7 @@ public class FidoUafResource {
 //		return "https://www.head2toes.org/fidouaf/v1/public/uaf/facets";
 	}
 
-	@POST
+	@PUT
 	@Path("/public/regResponse")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
@@ -220,7 +216,9 @@ public class FidoUafResource {
 		if (! payload.isEmpty()) {
 			RegistrationResponse[] fromJson = (new Gson()).fromJson(payload,
 					RegistrationResponse[].class);
-			Dash.getInstance().stats.put(Dash.LAST_REG_RES, fromJson);
+
+			Dash.getInstance().addStats("", Dash.LAST_REG_RES, fromJson);
+//			Dash.getInstance().stats.put(Dash.LAST_REG_RES, fromJson);
 			Dash.getInstance().history.add(fromJson);
 
 			RegistrationResponse registrationResponse = fromJson[0];
@@ -256,42 +254,49 @@ public class FidoUafResource {
 		return new DeregRequestProcessor().process(payload);
 	}
 
-	@GET
-	@Path("/public/authRequest/{registrationId}")
-	@Produces(MediaType.APPLICATION_JSON)
-	public AuthenticationRequest[] getAuthForAppIdReq(@PathParam("registrationId") String registrationId) {
-		AuthenticationRequest[] authReqObj = getAuthReqObj();
-//		setAppId(appId, authReqObj[0].header);
+	// WE only want the one with tx content
+//	@GET
+//	@Path("/public/authRequest/{registrationId}")
+//	@Produces(MediaType.APPLICATION_JSON)
+//	public AuthenticationRequest[] getAuthForAppIdReq(@PathParam("registrationId") String registrationId) {
+//		AuthenticationRequest[] authReqObj = getAuthReqObj();
+////		setAppId(appId, authReqObj[0].header);
+//
+//		return authReqObj;
+//	}
+//
+//	private void setAppId(String appId, OperationHeader header) {
+//		if (appId == null || appId.isEmpty()){
+//			return;
+//		}
+//		String decodedAppId = new String (Base64.decodeBase64(appId));
+//		Facets facets = facets();
+//		if (facets == null || facets.trustedFacets == null || facets.trustedFacets.length == 0
+//				 || facets.trustedFacets[0] == null || facets.trustedFacets[0].ids == null){
+//			return;
+//		}
+//		String[] ids = facets.trustedFacets[0].ids;
+//		for (int i = 0; i < ids.length; i++) {
+//
+//			if (decodedAppId.equals(ids[i])){
+//				header.appID = decodedAppId;
+//				break;
+//			}
+//		}
+//	}
 
-		return authReqObj;
-	}
 
-	private void setAppId(String appId, OperationHeader header) {
-		if (appId == null || appId.isEmpty()){
-			return;
-		}
-		String decodedAppId = new String (Base64.decodeBase64(appId));
-		Facets facets = facets();
-		if (facets == null || facets.trustedFacets == null || facets.trustedFacets.length == 0
-				 || facets.trustedFacets[0] == null || facets.trustedFacets[0].ids == null){
-			return;
-		}
-		String[] ids = facets.trustedFacets[0].ids;
-		for (int i = 0; i < ids.length; i++) {
-			
-			if (decodedAppId.equals(ids[i])){
-				header.appID = decodedAppId;
-				break;
-			}
-		}
-	}
+	// we need an endpoint to get authentication requests by registrationId
+	// and it will use the 3 way auth system described in the issue in github
+	// @Path
 
 	@POST
-	@Path("/public/authRequest/{appId}")
+	@Path("/public/authRequest/{registrationId}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public AuthenticationRequest[] getAuthTrxReq(@PathParam("appId") String appId, String trxContent) {
-		AuthenticationRequest[] authReqObj = getAuthReqObj();
-		setAppId(appId, authReqObj[0].header);
+	public AuthenticationRequest[] getAuthTrxReq(@PathParam("registrationId") String registrationId, String trxContent) {
+		//TODO: find registration record by registrationID and verify signature
+		AuthenticationRequest[] authReqObj = getAuthReqObj(registrationId); // TODO search by registration Id
+//		setAppId(registrationId, authReqObj[0].header);
 		setTransaction(trxContent, authReqObj);
 		
 		return authReqObj;
@@ -305,11 +310,12 @@ public class FidoUafResource {
 		authReqObj[0].transaction[0] = t;
 	}
 
-	public AuthenticationRequest[] getAuthReqObj() {
+	public AuthenticationRequest[] getAuthReqObj(String registrationID) {
 		AuthenticationRequest[] ret = new AuthenticationRequest[1];
 		ret[0] = new FetchRequest(getAppId(), getAllowedAaids())
 				.getAuthenticationRequest();
-		Dash.getInstance().stats.put(Dash.LAST_AUTH_REQ, ret);
+		Dash.getInstance().addStats(registrationID, Dash.LAST_AUTH_REQ, ret);
+//		Dash.getInstance().stats.put(Dash.LAST_AUTH_REQ, ret);
 		Dash.getInstance().history.add(ret);
 		return ret;
 	}
@@ -318,18 +324,24 @@ public class FidoUafResource {
 	@Path("/public/authResponse")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public AuthenticatorRecord[] processAuthResponse(String payload) {
+	public AuthenticationRequest[] processAuthResponse(String payload) {
 		if (!payload.isEmpty()) {
-			Dash.getInstance().stats.put(Dash.LAST_AUTH_RES, payload);
+//			Dash.getInstance().stats.put(Dash.LAST_AUTH_RES, payload);
 			Gson gson = new Gson();
 			AuthenticationResponse[] authResp = gson.fromJson(payload,
 					AuthenticationResponse[].class);
-			Dash.getInstance().stats.put(Dash.LAST_AUTH_RES, authResp);
+
+//			Dash.getInstance().stats.put(Dash.LAST_AUTH_RES, authResp);
+//			Dash.getInstance().addStats(authResp[0].registrationID, Dash.LAST_AUTH_RES, authResp);
 			Dash.getInstance().history.add(authResp);
 			AuthenticatorRecord[] result = new ProcessResponse()
 					.processAuthResponse(authResp[0]);
-			return result;
+			if(result[0].status.equals("SUCCESS")) {
+			    AuthenticationRequest[] response = Dash.getInstance().getTransactions(authResp[0].registrationID);
+			    return response;
+            }
+			return new AuthenticationRequest[0];
 		}
-		return new AuthenticatorRecord[0];
+		return new AuthenticationRequest[0];
 	}
 }

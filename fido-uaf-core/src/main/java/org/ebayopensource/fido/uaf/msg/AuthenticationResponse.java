@@ -20,4 +20,5 @@ public class AuthenticationResponse {
 	public OperationHeader header;
 	public String fcParams;
 	public AuthenticatorSignAssertion[] assertions;
+	public String registrationID;
 }

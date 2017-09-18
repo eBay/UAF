@@ -16,11 +16,12 @@
 
 package org.ebayopensource.fidouaf.stats;
 
+
+import org.ebayopensource.fido.uaf.msg.AuthenticationRequest;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 public class Dash {
 	
@@ -31,7 +32,10 @@ public class Dash {
 	public static String LAST_DEREG_REQ = "LAST_DEREG_REQ";
 	
 	private static Dash instance = new Dash();
-	public Map<String, Object> stats = new  HashMap<String, Object>();
+
+	private Map<String, List<AuthenticationRequest>> authStats = new  HashMap<String, List<AuthenticationRequest>>();
+	private Map<String, Object> regStats = new HashMap<String, Object>();
+
 	public List<Object> history = new ArrayList<Object>(100);
 	public List<String> uuids = new ArrayList<String>();
 	public List<String> facetIds = new ArrayList<String>();
@@ -43,12 +47,28 @@ public class Dash {
 	public static Dash getInstance (){
 		return instance;
 	}
-	
+
 	public void add(Object o){
 		if (history.size() >99){
 			history.remove(0);
 		}
 		history.add(o);
 	}
+
+	public void addStats(String id, String type, Object o) {
+		if (type.equals("LAST_AUTH_REQ") || type.equals("LAST_AUTH_RES")) {
+            List<AuthenticationRequest> requests = authStats.get(id);
+			requests.add((AuthenticationRequest) o);
+			authStats.put(id, requests);
+		}
+		else if (type.equals("LAST_REG_REQ")){
+		    regStats.put(id, o);
+        }
+	}
+
+	public AuthenticationRequest[] getTransactions(String registrationID) {
+        List<AuthenticationRequest> requests = authStats.get(registrationID);
+	    return requests.toArray(new AuthenticationRequest[requests.size()]);
+    }
 	
 }
