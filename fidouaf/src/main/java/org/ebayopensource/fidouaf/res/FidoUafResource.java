@@ -32,6 +32,7 @@ import javax.ws.rs.core.UriInfo;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import org.ebayopensource.fido.uaf.msg.*;
 import org.ebayopensource.fido.uaf.storage.AuthenticatorRecord;
 import org.ebayopensource.fido.uaf.storage.DuplicateKeyException;
@@ -101,8 +102,8 @@ public class FidoUafResource {
 	@Path("/registrations")
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiOperation(value = "Get all valid registrations")
-	public Map<String, RegistrationRecord> getDbDump() {
-		return StorageImpl.getInstance().dbDump();
+	public RegistrationRequest[] getDbDump() {
+		return StorageImpl.getInstance().readRegReq();
 	}
 
 	@POST
@@ -223,6 +224,7 @@ public class FidoUafResource {
 			result = new ProcessResponse().processRegResponse(registrationResponse);
 			if (result[0].status.equals("SUCCESS")) {
 				try {
+					StorageImpl.getInstance().storeRegReq(null);
 					StorageImpl.getInstance().storeRegRecord(result);
 				} catch (DuplicateKeyException e) {
 					result = new RegistrationRecord[1];
@@ -334,11 +336,23 @@ public class FidoUafResource {
 			AuthenticatorRecord[] result = new ProcessResponse()
 					.processAuthResponse(authResp[0]);
 			if(result[0].status.equals("SUCCESS")) {
-			    AuthenticationRequest[] response = Dash.getInstance().getTransactions(authResp[0].registrationID);
-			    return response;
-            }
+				AuthenticationRequest[] response = Dash.getInstance().getTransactions(authResp[0].registrationID);
+				return response;
+			}
 			return new AuthenticationRequest[0];
 		}
 		return new AuthenticationRequest[0];
+	}
+
+	@GET
+	@Path("/public/getTransactions/{registrationId}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Transaction[] getTransactions(@PathParam("registrationId") String registrationId) {
+		AuthenticationRequest[] requests = Dash.getInstance().getTransactions(registrationId);
+		List<Transaction> transactions = new ArrayList<Transaction>();
+		for (AuthenticationRequest r: requests) {
+			transactions.add(r.transaction[0]);
+		}
+		return transactions.toArray(new Transaction[transactions.size()]);
 	}
 }

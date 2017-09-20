@@ -18,6 +18,8 @@ package org.ebayopensource.fidouaf.stats;
 
 
 import org.ebayopensource.fido.uaf.msg.AuthenticationRequest;
+import org.ebayopensource.fido.uaf.msg.Transaction;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
