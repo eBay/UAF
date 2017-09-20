@@ -18,6 +18,8 @@ package org.ebayopensource.fidouaf.res.util;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import org.ebayopensource.fido.uaf.msg.RegistrationRequest;
 import org.ebayopensource.fido.uaf.storage.DuplicateKeyException;
 import org.ebayopensource.fido.uaf.storage.RegistrationRecord;
 import org.ebayopensource.fido.uaf.storage.StorageInterface;
@@ -25,6 +27,7 @@ import org.ebayopensource.fido.uaf.storage.SystemErrorException;
 
 public class StorageImpl implements StorageInterface {
 
+	private RegistrationRequest[] lastRegReq = null;
 	private static StorageImpl instance = new StorageImpl();
 	private Map<String, RegistrationRecord> db = new HashMap<String, RegistrationRecord>();
 
@@ -50,7 +53,7 @@ public class StorageImpl implements StorageInterface {
 		return null;
 	}
 
-	public void store(RegistrationRecord[] records)
+	public void storeRegRecord(RegistrationRecord[] records)
 			throws DuplicateKeyException, SystemErrorException {
 		if (records != null && records.length > 0) {
 			for (int i = 0; i < records.length; i++) {
@@ -65,6 +68,16 @@ public class StorageImpl implements StorageInterface {
 
 	public RegistrationRecord readRegistrationRecord(String key) {
 		return db.get(key);
+	}
+
+	@Override
+	public void storeRegReq(RegistrationRequest[] regReq) {
+		this.lastRegReq = regReq;
+	}
+
+	@Override
+	public RegistrationRequest[] readRegReq() {
+		return lastRegReq;
 	}
 
 	public void update(RegistrationRecord[] records) {

@@ -16,6 +16,7 @@
 
 package org.ebayopensource.fido.uaf.storage;
 
+import org.ebayopensource.fido.uaf.msg.RegistrationRequest;
 import org.ebayopensource.fido.uaf.storage.RegistrationRecord;
 
 public interface StorageInterface {
@@ -24,10 +25,13 @@ public interface StorageInterface {
 
 	public String getUsername(String serverDataString);
 
-	public void store(RegistrationRecord[] records)
+	public void storeRegRecord(RegistrationRecord[] records)
 			throws DuplicateKeyException, SystemErrorException;
 
 	public RegistrationRecord readRegistrationRecord(String key);
+
+	public void storeRegReq(RegistrationRequest[] regReq);
+	public RegistrationRequest[] readRegReq();
 
 	public void update(RegistrationRecord[] records);
 }

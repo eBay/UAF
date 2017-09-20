@@ -32,13 +32,11 @@ import javax.ws.rs.core.UriInfo;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.apache.commons.codec.binary.Base64;
 import org.ebayopensource.fido.uaf.msg.*;
 import org.ebayopensource.fido.uaf.storage.AuthenticatorRecord;
 import org.ebayopensource.fido.uaf.storage.DuplicateKeyException;
 import org.ebayopensource.fido.uaf.storage.RegistrationRecord;
 import org.ebayopensource.fido.uaf.storage.SystemErrorException;
-import org.ebayopensource.fidouaf.RPserver.msg.*;
 import org.ebayopensource.fidouaf.facets.Facets;
 import org.ebayopensource.fidouaf.facets.TrustedFacets;
 import org.ebayopensource.fidouaf.res.util.DeregRequestProcessor;
@@ -119,6 +117,7 @@ public class FidoUafResource {
 		RegistrationRequest[] regReq = new RegistrationRequest[1];
 		regReq[0] = new FetchRequest(getAppId(), getAllowedAaids())
 				.getRegistrationRequest(regRequest);
+		StorageImpl.getInstance().storeRegReq(regReq);
 		Dash.getInstance().addStats("", Dash.LAST_REG_REQ, regReq);
 //		Dash.getInstance().stats.put(Dash.LAST_REG_REQ, regReq);
 		Dash.getInstance().history.add(regReq);
@@ -218,14 +217,13 @@ public class FidoUafResource {
 					RegistrationResponse[].class);
 
 			Dash.getInstance().addStats("", Dash.LAST_REG_RES, fromJson);
-//			Dash.getInstance().stats.put(Dash.LAST_REG_RES, fromJson);
 			Dash.getInstance().history.add(fromJson);
 
 			RegistrationResponse registrationResponse = fromJson[0];
 			result = new ProcessResponse().processRegResponse(registrationResponse);
 			if (result[0].status.equals("SUCCESS")) {
 				try {
-					StorageImpl.getInstance().store(result);
+					StorageImpl.getInstance().storeRegRecord(result);
 				} catch (DuplicateKeyException e) {
 					result = new RegistrationRecord[1];
 					result[0] = new RegistrationRecord();
@@ -294,7 +292,6 @@ public class FidoUafResource {
 	@Path("/public/authRequest/{registrationId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public AuthenticationRequest[] getAuthTrxReq(@PathParam("registrationId") String registrationId, String trxContent) {
-		//TODO: find registration record by registrationID and verify signature
 		AuthenticationRequest[] authReqObj = getAuthReqObj(registrationId); // TODO search by registration Id
 //		setAppId(registrationId, authReqObj[0].header);
 		setTransaction(trxContent, authReqObj);
