@@ -99,7 +99,7 @@ public class RegistrationResponseProcessing {
 			if (record.status == null) {
 				record.status = "SUCCESS";
 				record.registrationId = getRegistrationId(record);
-				record.authenticator.registrationID = record.registrationId;
+				authRecord.registrationID = record.registrationId;
 				record.authenticator = authRecord;
 				record.AuthenticatorVersion = getAuthenticatorVersion(tags);
 			}

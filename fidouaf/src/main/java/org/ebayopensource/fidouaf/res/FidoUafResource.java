@@ -99,12 +99,21 @@ public class FidoUafResource {
 	}
 
 	@GET
+	@Path("/pendingRegistrations")
+	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(value = "Get all valid registrations")
+	public RegistrationRequest[] getPendingReg() {
+		return StorageImpl.getInstance().readRegReq();
+	}
+
+	@GET
 	@Path("/registrations")
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiOperation(value = "Get all valid registrations")
-	public RegistrationRequest[] getDbDump() {
-		return StorageImpl.getInstance().readRegReq();
+	public Map<String, RegistrationRecord> getDbDump() {
+		return StorageImpl.getInstance().dbDump();
 	}
+
 
 	@POST
 	@Path("/public/regRequest")
@@ -294,10 +303,12 @@ public class FidoUafResource {
 	@Path("/public/authRequest/{registrationId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public AuthenticationRequest[] getAuthTrxReq(@PathParam("registrationId") String registrationId, String trxContent) {
-		AuthenticationRequest[] authReqObj = getAuthReqObj(registrationId); // TODO search by registration Id
+		AuthenticationRequest[] authReqObj = getAuthReqObj();
 //		setAppId(registrationId, authReqObj[0].header);
 		setTransaction(trxContent, authReqObj);
-		
+		Dash.getInstance().addStats(registrationId, Dash.LAST_AUTH_REQ, authReqObj[0]);
+
+
 		return authReqObj;
 	}
 
@@ -309,11 +320,10 @@ public class FidoUafResource {
 		authReqObj[0].transaction[0] = t;
 	}
 
-	public AuthenticationRequest[] getAuthReqObj(String registrationID) {
+	public AuthenticationRequest[] getAuthReqObj() {
 		AuthenticationRequest[] ret = new AuthenticationRequest[1];
 		ret[0] = new FetchRequest(getAppId(), getAllowedAaids())
 				.getAuthenticationRequest();
-		Dash.getInstance().addStats(registrationID, Dash.LAST_AUTH_REQ, ret);
 //		Dash.getInstance().stats.put(Dash.LAST_AUTH_REQ, ret);
 		Dash.getInstance().history.add(ret);
 		return ret;

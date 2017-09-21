@@ -60,6 +60,9 @@ public class Dash {
 	public void addStats(String id, String type, Object o) {
 		if (type.equals("LAST_AUTH_REQ") || type.equals("LAST_AUTH_RES")) {
             List<AuthenticationRequest> requests = authStats.get(id);
+            if (requests == null) {
+            	requests = new ArrayList<AuthenticationRequest>();
+			}
 			requests.add((AuthenticationRequest) o);
 			authStats.put(id, requests);
 		}
