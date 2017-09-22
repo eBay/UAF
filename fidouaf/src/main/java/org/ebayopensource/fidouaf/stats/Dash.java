@@ -17,6 +17,7 @@
 package org.ebayopensource.fidouaf.stats;
 
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.ebayopensource.fido.uaf.msg.AuthenticationRequest;
 import org.ebayopensource.fido.uaf.msg.Transaction;
 
@@ -32,9 +33,10 @@ public class Dash {
 	public static String LAST_AUTH_REQ = "LAST_AUTH_REQ";
 	public static String LAST_AUTH_RES = "LAST_AUTH_RES";
 	public static String LAST_DEREG_REQ = "LAST_DEREG_REQ";
-	
+
 	private static Dash instance = new Dash();
 
+	private Map<String, List<Transaction>> txResponses = new HashMap<String, List<Transaction>>();
 	private Map<String, List<AuthenticationRequest>> authStats = new  HashMap<String, List<AuthenticationRequest>>();
 	private Map<String, Object> regStats = new HashMap<String, Object>();
 
@@ -71,9 +73,32 @@ public class Dash {
         }
 	}
 
-	public AuthenticationRequest[] getTransactions(String registrationID) {
+	public AuthenticationRequest[] getAuthReqests(String registrationID) {
         List<AuthenticationRequest> requests = authStats.get(registrationID);
 	    return requests.toArray(new AuthenticationRequest[requests.size()]);
     }
-	
+
+    public boolean removeAuthRequest(String registrationId, AuthenticationRequest authReq) {
+		List<AuthenticationRequest> requests = authStats.get(registrationId);
+		if (requests.remove(authReq)) {
+			authStats.put(registrationId, requests);
+			return true;
+		}
+		else
+			return false;
+	}
+
+	public void addTxResponse(String key, Transaction t) {
+		List<Transaction> transactions = txResponses.get(key);
+		if (transactions == null) {
+			transactions = new ArrayList<Transaction>();
+		}
+		transactions.add(t);
+		txResponses.put(key, transactions);
+	}
+
+	public Transaction[] getTxResponse(String key) {
+		List<Transaction> tx = txResponses.get(key);
+		return tx.toArray(new Transaction[tx.size()]);
+	}
 }

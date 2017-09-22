@@ -32,6 +32,7 @@ import javax.ws.rs.core.UriInfo;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import org.ebayopensource.fido.uaf.msg.*;
 import org.ebayopensource.fido.uaf.storage.AuthenticatorRecord;
@@ -233,8 +234,8 @@ public class FidoUafResource {
 			result = new ProcessResponse().processRegResponse(registrationResponse);
 			if (result[0].status.equals("SUCCESS")) {
 				try {
-					StorageImpl.getInstance().storeRegReq(null);
 					StorageImpl.getInstance().storeRegRecord(result);
+					StorageImpl.getInstance().storeRegReq(null);
 				} catch (DuplicateKeyException e) {
 					result = new RegistrationRecord[1];
 					result[0] = new RegistrationRecord();
@@ -317,6 +318,7 @@ public class FidoUafResource {
 		Transaction t = new Transaction();
 		t.content = trxContent;
 		t.contentType = MediaType.TEXT_PLAIN;
+		t.id = System.currentTimeMillis();
 		authReqObj[0].transaction[0] = t;
 	}
 
@@ -346,7 +348,7 @@ public class FidoUafResource {
 			AuthenticatorRecord[] result = new ProcessResponse()
 					.processAuthResponse(authResp[0]);
 			if(result[0].status.equals("SUCCESS")) {
-				AuthenticationRequest[] response = Dash.getInstance().getTransactions(authResp[0].registrationID);
+				AuthenticationRequest[] response = Dash.getInstance().getAuthReqests(authResp[0].registrationID);
 				return response;
 			}
 			return new AuthenticationRequest[0];
@@ -354,15 +356,46 @@ public class FidoUafResource {
 		return new AuthenticationRequest[0];
 	}
 
+	@PUT
+	@Path("/public/authResponse/{registrationId}/{txIndex}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public TransactionResponse[] processTxData(@PathParam("registrationId") String registrationId,
+											   @PathParam("txIndex") Long txIndex, String payload) {
+		//TODO payload should be json containing the type of response in plain text and signed by the respective priv key
+		AuthenticationRequest[] requests = Dash.getInstance().getAuthReqests(registrationId);
+		AuthenticationRequest authReq = new AuthenticationRequest();
+		for (AuthenticationRequest r: requests) {
+			if (r.transaction[0].id.equals(txIndex)) {
+				authReq = r;
+				break;
+			}
+		}
+		if (Dash.getInstance().removeAuthRequest(registrationId, authReq)) {
+			Dash.getInstance().addTxResponse(payload, authReq.transaction[0]);
+			TransactionResponse[] txResp = new TransactionResponse[1];
+			txResp[0] = new TransactionResponse();
+			txResp[0].transactionId = txIndex;
+			txResp[0].transaction = authReq.transaction[0];
+			txResp[0].response = payload;
+			return txResp;
+		}
+		return new TransactionResponse[0];
+	}
+
 	@GET
 	@Path("/public/getTransactions/{registrationId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Transaction[] getTransactions(@PathParam("registrationId") String registrationId) {
-		AuthenticationRequest[] requests = Dash.getInstance().getTransactions(registrationId);
-		List<Transaction> transactions = new ArrayList<Transaction>();
-		for (AuthenticationRequest r: requests) {
-			transactions.add(r.transaction[0]);
+		AuthenticationRequest[] requests = Dash.getInstance().getAuthReqests(registrationId);
+		if (requests != null) {
+			List<Transaction> transactions = new ArrayList<Transaction>();
+			for (AuthenticationRequest r : requests) {
+				transactions.add(r.transaction[0]);
+			}
+			Dash.getInstance().history.add(transactions);
+			return transactions.toArray(new Transaction[transactions.size()]);
 		}
-		return transactions.toArray(new Transaction[transactions.size()]);
+		return new Transaction[0];
 	}
 }

@@ -19,5 +19,6 @@ package org.ebayopensource.fido.uaf.msg;
 public class Transaction {
 	public String contentType;
 	public String content;
+	public Long id;
 	public DisplayPNGCharacteristicsDescriptor tcDisplayPNGCharacteristics;
 }
