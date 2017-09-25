@@ -1,13 +1,14 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 21
-    buildToolsVersion "22.0.1"
+    compileSdkVersion 25
+    buildToolsVersion "26.0.0"
+    useLibrary 'org.apache.http.legacy'
 
     defaultConfig {
         applicationId "org.ebayopensource.fidouafclient"
-        minSdkVersion 21
-        targetSdkVersion 21
+        minSdkVersion 23
+        targetSdkVersion 25
     }
 
     buildTypes {
@@ -19,7 +20,7 @@ android {
 }
 
 dependencies {
-    compile 'com.android.support:support-v4:18.0.0'
+    compile 'com.android.support:support-v4:25.0.0'
     compile 'com.google.code.gson:gson:2.3.1'
     compile files('libs/commons-codec-1.10.jar')
     compile files('libs/sc-light-jdk15on-1.47.0.2.jar')

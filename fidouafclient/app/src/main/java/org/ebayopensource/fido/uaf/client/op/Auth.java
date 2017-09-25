@@ -19,9 +19,11 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import org.ebayopensource.fido.uaf.client.AuthenticationRequestProcessor;
+import org.ebayopensource.fido.uaf.crypto.FidoSigner;
 import org.ebayopensource.fido.uaf.msg.AuthenticationRequest;
 import org.ebayopensource.fido.uaf.msg.AuthenticationResponse;
 
+import java.security.KeyPair;
 import java.util.logging.Logger;
 
 public class Auth {
@@ -29,11 +31,11 @@ public class Auth {
 	private Logger logger = Logger.getLogger(this.getClass().getName());
 	private Gson gson = new GsonBuilder().disableHtmlEscaping().create(); 
 	
-	public String auth (String uafMsg){
+	public String auth (String uafMsg, FidoSigner fidoSigner, KeyPair signingKeyPair){
 	logger.info ("  [UAF][1]Auth  ");
 	try {
 		logger.info("  [UAF][2]Auth - priv key retrieved");
-		AuthenticationRequestProcessor p = new AuthenticationRequestProcessor();
+		AuthenticationRequestProcessor p = new AuthenticationRequestProcessor(fidoSigner, signingKeyPair);
 		AuthenticationResponse[] ret = new AuthenticationResponse[1];
 		AuthenticationResponse regResponse = p.processRequest(getAuthRequest(uafMsg));
 		logger.info ("  [UAF][4]Auth - Auth Response Formed  ");

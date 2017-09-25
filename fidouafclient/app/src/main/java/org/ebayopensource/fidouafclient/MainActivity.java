@@ -33,6 +33,7 @@ import android.widget.TextView;
 
 import com.google.gson.Gson;
 
+import org.ebayopensource.fido.uaf.crypto.FidoKeystore;
 import org.ebayopensource.fido.uaf.msg.RegistrationRequest;
 import org.ebayopensource.fido.uaf.msg.client.UAFIntentType;
 import org.ebayopensource.fidouafclient.curl.Curl;
@@ -50,6 +51,9 @@ import java.security.cert.CertificateFactory;
 import java.util.List;
 import java.util.logging.Logger;
 
+import static android.R.id.message;
+import static android.content.ContentValues.TAG;
+
 public class MainActivity extends Activity {
 
     private static final int REG_ACTIVITY_RES_3 = 3;
@@ -61,14 +65,20 @@ public class MainActivity extends Activity {
     private TextView msg;
     private TextView title;
     private TextView username;
+
     private Reg reg = new Reg();
     private Dereg dereg = new Dereg();
     private Auth auth = new Auth();
     private int authenticatorIndex = 1;
 
+    private FidoKeystore fidoKeystore;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        fidoKeystore = FidoKeystore.createKeyStore(getApplicationContext());
+
         if (Preferences.getSettingsParam("keyID").equals("")) {
             setContentView(R.layout.activity_main);
             findFields();
@@ -129,6 +139,7 @@ public class MainActivity extends Activity {
         }
         Preferences.setSettingsParam("username", username);
 
+
         title.setText("Registration operation executed, Username = " + username);
 
         Intent i = new Intent("org.fidoalliance.intent.FIDO_OPERATION");
@@ -146,6 +157,7 @@ public class MainActivity extends Activity {
             e.printStackTrace();
         }
         String regRequest = reg.getUafMsgRegRequest(username, facetID, this);
+        Log.d(TAG, "UAF reg request: " + regRequest);
         title.setText("{regRequest}" + regRequest);
 
         Bundle data = new Bundle();
@@ -250,6 +262,8 @@ public class MainActivity extends Activity {
         if (requestCode == 1) {
             if (resultCode == RESULT_OK) {
                 String asmResponse = data.getStringExtra("message");
+                Log.d(TAG, "UAF message: " + asmResponse);
+
                 String discoveryData = data.getStringExtra("discoveryData");
                 msg.setText("{message}" + asmResponse + "{discoveryData}" + discoveryData);
                 //Prepare ReqResponse
@@ -262,6 +276,7 @@ public class MainActivity extends Activity {
         if (requestCode == 2) {
             if (resultCode == RESULT_OK) {
                 String asmResponse = data.getStringExtra("message");
+                Log.d(TAG, "UAF message: " + asmResponse);
                 msg.setText(asmResponse);
                 dereg.recordKeyId(asmResponse);
                 //Prepare ReqResponse
@@ -274,6 +289,7 @@ public class MainActivity extends Activity {
             if (resultCode == RESULT_OK) {
                 try {
                     String uafMessage = data.getStringExtra("message");
+                    Log.d(TAG, "UAF message: " + message);
                     msg.setText(uafMessage);
                     //Prepare ReqResponse
                     //post to server
@@ -299,6 +315,7 @@ public class MainActivity extends Activity {
                 findFields();
                 title.setText("extras=" + extras.toString());
                 String message = data.getStringExtra("message");
+                Log.d(TAG, "UAF message: " + message);
                 if (message != null) {
                     String out = "Dereg done. Client msg=" + message;
                     out = out + ". Sent=" + dereg.clientSendDeregResponse(message);
@@ -318,6 +335,7 @@ public class MainActivity extends Activity {
         } else if (requestCode == AUTH_ACTIVITY_RES_5) {
             if (resultCode == RESULT_OK) {
                 String uafMessage = data.getStringExtra("message");
+                Log.d(TAG, "UAF message: " + uafMessage);
                 if (uafMessage != null) {
                     msg.setText(uafMessage);
                     //Prepare ReqResponse

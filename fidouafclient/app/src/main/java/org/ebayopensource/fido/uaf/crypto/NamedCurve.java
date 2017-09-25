@@ -71,7 +71,7 @@ public class NamedCurve {
   
   
   public static boolean verify(byte[] pub, byte[] dataForSigning,
-			BigInteger[] rs) throws Exception {
+			BigInteger[] rs) {
 		ECDSASigner signer = new ECDSASigner();
 		X9ECParameters params = SECNamedCurves.getByName("secp256r1");
 		ECDomainParameters ecParams = new ECDomainParameters(params.getCurve(),
