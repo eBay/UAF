@@ -16,12 +16,19 @@
 
 package org.ebayopensource.fidouaf.res.util;
 
+import org.apache.commons.codec.binary.Base64;
 import org.ebayopensource.fido.uaf.msg.AuthenticationResponse;
 import org.ebayopensource.fido.uaf.msg.RegistrationResponse;
+import org.ebayopensource.fido.uaf.msg.TransactionAction;
+import org.ebayopensource.fido.uaf.msg.TransactionResponse;
 import org.ebayopensource.fido.uaf.ops.AuthenticationResponseProcessing;
 import org.ebayopensource.fido.uaf.ops.RegistrationResponseProcessing;
 import org.ebayopensource.fido.uaf.storage.AuthenticatorRecord;
 import org.ebayopensource.fido.uaf.storage.RegistrationRecord;
+import org.ebayopensource.fido.uaf.storage.StorageInterface;
+import org.ebayopensource.fido.uaf.tlv.AlgAndEncodingEnum;
+import org.ebayopensource.fido.uaf.tlv.ByteInputStream;
+import sun.misc.IOUtils;
 
 public class ProcessResponse {
 	private static final int SERVER_DATA_EXPIRY_IN_MS = 5 * 60 * 1000;
@@ -30,10 +37,10 @@ public class ProcessResponse {
 		AuthenticatorRecord[] result;
 		try {
 			result = new AuthenticationResponseProcessing(
-				SERVER_DATA_EXPIRY_IN_MS,
-				NotaryImpl.getInstance()
+					SERVER_DATA_EXPIRY_IN_MS,
+					NotaryImpl.getInstance()
 			).verify(
-				resp, StorageImpl.getInstance()
+					resp, StorageImpl.getInstance()
 			);
 		} catch (Exception e) {
 			System.out.println("Error: " + e.getMessage());
@@ -48,8 +55,8 @@ public class ProcessResponse {
 		RegistrationRecord[] result;
 		try {
 			result = new RegistrationResponseProcessing(
-				SERVER_DATA_EXPIRY_IN_MS,
-				NotaryImpl.getInstance()
+					SERVER_DATA_EXPIRY_IN_MS,
+					NotaryImpl.getInstance()
 			).processResponse(resp);
 		} catch (Exception e) {
 			System.out.println("Error: " + e.getMessage());
@@ -58,5 +65,36 @@ public class ProcessResponse {
 			result[0].status = e.getMessage();
 		}
 		return result;
+	}
+
+	public boolean processTxResponse(TransactionAction resp, String registrationId) {
+		boolean result;
+		RegistrationRecord registrationRecord = null;
+
+		try {
+			AuthenticatorRecord authRecord = new AuthenticatorRecord();
+			authRecord.registrationID = registrationId;
+			registrationRecord = getRegistration(authRecord, StorageImpl.getInstance());
+			String pubKey = registrationRecord.PublicKey;
+
+			ByteInputStream response = new ByteInputStream(
+					Base64.decodeBase64(resp.response));
+			ByteInputStream signature = new ByteInputStream(
+					Base64.decodeBase64(resp.signature));
+
+			result = NotaryImpl.getInstance().verifySignature(response.readAll(), signature.readAll(), pubKey, AlgAndEncodingEnum.UAF_ALG_SIGN_SECP256R1_ECDSA_SHA256_DER);
+
+			return result;
+
+		} catch (Exception e) {
+			System.out.println("Error: " + e.getMessage());
+		}
+		return false;
+	}
+
+	private RegistrationRecord getRegistration(AuthenticatorRecord authRecord,
+											   StorageInterface serverData) {
+		return serverData.readRegistrationRecord(authRecord.toString());
+
 	}
 }

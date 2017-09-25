@@ -32,6 +32,7 @@ import javax.ws.rs.core.UriInfo;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import org.ebayopensource.fido.uaf.msg.*;
@@ -39,6 +40,7 @@ import org.ebayopensource.fido.uaf.storage.AuthenticatorRecord;
 import org.ebayopensource.fido.uaf.storage.DuplicateKeyException;
 import org.ebayopensource.fido.uaf.storage.RegistrationRecord;
 import org.ebayopensource.fido.uaf.storage.SystemErrorException;
+import org.ebayopensource.fido.uaf.tlv.ByteInputStream;
 import org.ebayopensource.fidouaf.facets.Facets;
 import org.ebayopensource.fidouaf.facets.TrustedFacets;
 import org.ebayopensource.fidouaf.res.util.DeregRequestProcessor;
@@ -308,7 +310,7 @@ public class FidoUafResource {
 //		setAppId(registrationId, authReqObj[0].header);
 		setTransaction(trxContent, authReqObj);
 		Dash.getInstance().addStats(registrationId, Dash.LAST_AUTH_REQ, authReqObj[0]);
-
+        Dash.getInstance().history.add(authReqObj);
 
 		return authReqObj;
 	}
@@ -326,8 +328,6 @@ public class FidoUafResource {
 		AuthenticationRequest[] ret = new AuthenticationRequest[1];
 		ret[0] = new FetchRequest(getAppId(), getAllowedAaids())
 				.getAuthenticationRequest();
-//		Dash.getInstance().stats.put(Dash.LAST_AUTH_REQ, ret);
-		Dash.getInstance().history.add(ret);
 		return ret;
 	}
 
@@ -362,23 +362,42 @@ public class FidoUafResource {
 	@Produces(MediaType.APPLICATION_JSON)
 	public TransactionResponse[] processTxData(@PathParam("registrationId") String registrationId,
 											   @PathParam("txIndex") Long txIndex, String payload) {
-		//TODO payload should be json containing the type of response in plain text and signed by the respective priv key
-		AuthenticationRequest[] requests = Dash.getInstance().getAuthReqests(registrationId);
-		AuthenticationRequest authReq = new AuthenticationRequest();
-		for (AuthenticationRequest r: requests) {
-			if (r.transaction[0].id.equals(txIndex)) {
-				authReq = r;
-				break;
+		if (!payload.isEmpty()) {
+			TransactionAction[] txAction = gson.fromJson(payload,
+					TransactionAction[].class);
+
+			if(new ProcessResponse().processTxResponse(txAction[0], registrationId)) {
+
+				TransactionResponse[] txResp = new TransactionResponse[1];
+				txResp[0] = new TransactionResponse();
+
+				AuthenticationRequest[] requests = Dash.getInstance().getAuthReqests(registrationId);
+				AuthenticationRequest authReq = new AuthenticationRequest();
+				for (AuthenticationRequest r : requests) {
+					if (r.transaction[0].id.equals(txIndex)) {
+						authReq = r;
+						break;
+					}
+				}
+				if (Dash.getInstance().removeAuthRequest(registrationId, authReq)) {
+
+                    if (txAction[0].response.equals("U0lHTkVEX1RY")) {
+                        Dash.getInstance().addTxResponse("SIGNED_TX", authReq.transaction[0]);
+                        txResp[0].response = "SIGNED_TX";
+                    }
+                    else if (txAction[0].response.equals("REVDTElORURfVFg=")) {
+                        Dash.getInstance().addTxResponse("DECLINED_TX", authReq.transaction[0]);
+                        txResp[0].response = "DECLINED_TX";
+                    }
+                    else
+                        return new TransactionResponse[0];
+//                    Dash.getInstance().history.add(txResp);
+					txResp[0].transactionId = txIndex;
+					txResp[0].transaction = authReq.transaction[0];
+
+					return txResp;
+				}
 			}
-		}
-		if (Dash.getInstance().removeAuthRequest(registrationId, authReq)) {
-			Dash.getInstance().addTxResponse(payload, authReq.transaction[0]);
-			TransactionResponse[] txResp = new TransactionResponse[1];
-			txResp[0] = new TransactionResponse();
-			txResp[0].transactionId = txIndex;
-			txResp[0].transaction = authReq.transaction[0];
-			txResp[0].response = payload;
-			return txResp;
 		}
 		return new TransactionResponse[0];
 	}
@@ -393,7 +412,7 @@ public class FidoUafResource {
 			for (AuthenticationRequest r : requests) {
 				transactions.add(r.transaction[0]);
 			}
-			Dash.getInstance().history.add(transactions);
+//			Dash.getInstance().history.add(transactions);
 			return transactions.toArray(new Transaction[transactions.size()]);
 		}
 		return new Transaction[0];
