@@ -25,6 +25,7 @@ import org.ebayopensource.fido.uaf.crypto.FixedCertFidoAttestationSigner;
 import org.ebayopensource.fido.uaf.crypto.KeyCodec;
 import org.ebayopensource.fido.uaf.crypto.SHA;
 import org.ebayopensource.fido.uaf.msg.RegistrationResponse;
+import org.ebayopensource.fido.uaf.tlv.AlgAndEncodingEnum;
 import org.ebayopensource.fido.uaf.tlv.Tags;
 import org.ebayopensource.fido.uaf.tlv.TagsEnum;
 import org.ebayopensource.fido.uaf.tlv.TlvAssertionParser;
@@ -32,6 +33,8 @@ import org.ebayopensource.fidouafclient.util.Preferences;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.security.GeneralSecurityException;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
@@ -128,15 +131,8 @@ public class RegAssertionBuilder {
 		byteout.write(value);
 
 		byteout.write(encodeInt(TagsEnum.TAG_ASSERTION_INFO.id));
-		//2 bytes - vendor; 1 byte Authentication Mode; 2 bytes Sig Alg; 2 bytes Pub Key Alg
-		// XXX ugly -- should use other indicator; should use constants for sign alg and pub key alg
-		if (keyPair.getPublic() instanceof java.security.interfaces.ECPublicKey) {
-			// using secp256r1 and DER encoding
-			value = new byte[] { 0x00, 0x00, 0x01, 0x02, 0x00, 0x00, 0x01 };
-		} else {
-			// using secp256k1 and raw encoding
-			value = new byte[] { 0x00, 0x00, 0x01, 0x01, 0x00, 0x00, 0x01 };
-		}
+		value = makeAssertionInfo();
+
 
 		length = value.length;
 		byteout.write(encodeInt(length));
@@ -167,6 +163,23 @@ public class RegAssertionBuilder {
 		byteout.write(value);
 
 		return byteout.toByteArray();
+	}
+
+	private byte[] makeAssertionInfo() {
+		//2 bytes - vendor; 1 byte Authentication Mode; 2 bytes Sig Alg; 2 bytes Pub Key Alg
+		ByteBuffer bb = ByteBuffer.allocate(7);
+		bb.order(ByteOrder.LITTLE_ENDIAN);
+		// 2 bytes - vendor assigned version
+		bb.put((byte)0x0);
+		bb.put((byte)0x0);
+		// 1 byte Authentication Mode;
+		bb.put((byte)0x1);
+		// 2 bytes Sig Alg
+		bb.putShort((short) AlgAndEncodingEnum.UAF_ALG_SIGN_SECP256R1_ECDSA_SHA256_RAW.id);
+		// 2 bytes Pub Key Alg
+		bb.putShort((short) AlgAndEncodingEnum.UAF_ALG_KEY_ECC_X962_RAW.id);
+
+		return bb.array().clone();
 	}
 
 	private byte[] getFC(RegistrationResponse response) throws NoSuchAlgorithmException {

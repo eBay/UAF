@@ -24,11 +24,14 @@ import org.ebayopensource.fido.uaf.crypto.Base64url;
 import org.ebayopensource.fido.uaf.crypto.FidoSigner;
 import org.ebayopensource.fido.uaf.crypto.SHA;
 import org.ebayopensource.fido.uaf.msg.AuthenticationResponse;
+import org.ebayopensource.fido.uaf.tlv.AlgAndEncodingEnum;
 import org.ebayopensource.fido.uaf.tlv.TagsEnum;
 import org.ebayopensource.fidouafclient.util.Preferences;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Logger;
@@ -85,6 +88,28 @@ public class AuthAssertionBuilder {
 		return byteout.toByteArray();
 	}
 
+	private static byte[] makeAssertionInfo() {
+		//2 bytes - vendor; 1 byte Authentication Mode; 2 bytes Sig Alg
+		// XXX -- ugly. make this smarter and use consts
+		ByteBuffer bb = ByteBuffer.allocate(5);
+		bb.order(ByteOrder.LITTLE_ENDIAN);
+		//2 bytes - vendor
+		bb.put((byte)0x0);
+		bb.put((byte)0x0);
+		// 1 byte Authentication Mode;
+		bb.put((byte)0x1);
+		// 2 bytes Sig Alg
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+			bb.putShort((short)AlgAndEncodingEnum.UAF_ALG_SIGN_SECP256R1_ECDSA_SHA256_DER.id);
+			//value = new byte[] { 0x00, 0x00, 0x01, 0x02, 0x00 };
+		} else {
+			//value = new byte[] { 0x00, 0x00, 0x01, 0x01, 0x00 };
+			bb.putShort((short)AlgAndEncodingEnum.UAF_ALG_SIGN_SECP256R1_ECDSA_SHA256_RAW.id);
+		}
+
+		return bb.array().clone();
+	}
+
 	private byte[] getSignedData(AuthenticationResponse response) throws IOException, NoSuchAlgorithmException {
 		ByteArrayOutputStream byteout = new ByteArrayOutputStream();
 		byte[] value = null;
@@ -97,13 +122,7 @@ public class AuthAssertionBuilder {
 		byteout.write(value);
 
 		byteout.write(encodeInt(TagsEnum.TAG_ASSERTION_INFO.id));
-		//2 bytes - vendor; 1 byte Authentication Mode; 2 bytes Sig Alg
-		// XXX -- ugly. make this smarter and use consts
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-			value = new byte[] { 0x00, 0x00, 0x01, 0x02, 0x00 };
-		} else {
-			value = new byte[] { 0x00, 0x00, 0x01, 0x01, 0x00 };
-		}
+		value = makeAssertionInfo();
 
 		length = value.length;
 		byteout.write(encodeInt(length));
