@@ -20,7 +20,7 @@
 
     <string name="application_name">FingerprintDialog</string>
     <string name="use_password">Use password</string>
-    <string name="sign_in">Sign in</string>
+    <string name="authenticate">Authenticate</string>
     <string name="ok">OK</string>
     <string name="password">Password</string>
     <string name="fingerprint_description">Confirm fingerprint to continue</string>
