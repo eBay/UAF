@@ -3,3 +3,5 @@ gradle
 .gradle
 build
 .classes
+.iml
+local.properties
