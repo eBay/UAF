@@ -37,6 +37,7 @@ import org.ebayopensource.fido.uaf.crypto.FidoKeystore;
 import org.ebayopensource.fido.uaf.crypto.FidoSigner;
 import org.ebayopensource.fido.uaf.crypto.FidoSignerAndroidM;
 import org.ebayopensource.fido.uaf.msg.RegistrationRequest;
+import org.ebayopensource.fidouafclient.fp.FingerprintAuthProcessor;
 import org.ebayopensource.fidouafclient.fp.FingerprintAuthenticationDialogFragment;
 import org.ebayopensource.fidouafclient.util.Preferences;
 import org.json.JSONObject;
@@ -51,7 +52,7 @@ import java.util.logging.Logger;
 
 import static android.content.ContentValues.TAG;
 
-public class ExampleFidoUafActivity extends Activity {
+public class ExampleFidoUafActivity extends Activity implements FingerprintAuthProcessor {
 
     private Logger logger = Logger.getLogger(this.getClass().getName());
     private Gson gson = new Gson();
@@ -172,7 +173,8 @@ public class ExampleFidoUafActivity extends Activity {
         finish();
     }
 
-    public void doAuthOp(FingerprintManager.CryptoObject cryptObj) {
+    @Override
+    public void processAuthentication(FingerprintManager.CryptoObject cryptObj) {
         FidoSigner fidoSigner = new FidoSignerAndroidM(cryptObj.getSignature());
         // fido signer doesn't need key pair, handled internally
         String msg = authOp.auth(authReq, fidoSigner, null);

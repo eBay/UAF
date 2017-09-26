@@ -19,10 +19,8 @@ package org.ebayopensource.fidouafclient.fp;
 import android.app.Activity;
 import android.app.DialogFragment;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.hardware.fingerprint.FingerprintManager;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,7 +28,6 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import org.ebayopensource.fidouafclient.ExampleFidoUafActivity;
 import org.ebayopensource.fidouafclient.R;
 
 /**
@@ -49,8 +46,6 @@ public class FingerprintAuthenticationDialogFragment extends DialogFragment
     private FingerprintManager.CryptoObject mCryptoObject;
     private FingerprintUiHelper mFingerprintUiHelper;
     private Activity mActivity;
-
-    private SharedPreferences mSharedPreferences;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -113,7 +108,6 @@ public class FingerprintAuthenticationDialogFragment extends DialogFragment
     public void onAttach(Context context) {
         super.onAttach(context);
         mActivity = getActivity();
-        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
     }
 
     /**
@@ -156,8 +150,7 @@ public class FingerprintAuthenticationDialogFragment extends DialogFragment
     public void onAuthenticated(FingerprintManager.CryptoObject cryptObj) {
         // Callback from FingerprintUiHelper. Let the activity know that authentication was
         // successful.
-        // XXX use interface
-        ((ExampleFidoUafActivity)mActivity).doAuthOp(cryptObj);
+        ((FingerprintAuthProcessor)mActivity).processAuthentication(cryptObj);
         dismiss();
     }
 
