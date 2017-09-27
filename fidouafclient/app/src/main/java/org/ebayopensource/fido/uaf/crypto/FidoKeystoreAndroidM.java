@@ -4,6 +4,7 @@ import android.os.Build;
 import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyProperties;
 import android.support.annotation.NonNull;
+import android.support.annotation.RequiresApi;
 import android.util.Log;
 
 import java.io.IOException;
@@ -30,6 +31,7 @@ public class FidoKeystoreAndroidM extends FidoKeystore {
         return "org.ebayopensource.fidouafclient.keystore.key_" + username;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     public KeyPair generateKeyPair(String username) {
         Log.d(TAG, "generateKeyPair");
@@ -51,7 +53,9 @@ public class FidoKeystoreAndroidM extends FidoKeystore {
                     .setUserAuthenticationRequired(true);
             //.setUserAuthenticationValidityDurationSeconds(5 * 60)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                // XXX this needs to be the real server challenge
                 builder = builder.setAttestationChallenge(new byte[16]);
+                builder = builder.setInvalidatedByBiometricEnrollment(false);
             }
             keyPairGenerator.initialize(builder.build());
 
