@@ -39,7 +39,6 @@ import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
-import java.security.Security;
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPrivateCrtKey;
 import java.security.interfaces.RSAPrivateKey;
@@ -56,11 +55,6 @@ import java.util.logging.Logger;
 public class KeyCodec {
 
     private static Logger logger = Logger.getLogger(KeyCodec.class.getName());
-
-    static {
-        Security.addProvider(new org.spongycastle.jce.provider.BouncyCastleProvider());
-    }
-
 
     public static KeyPair getKeyPair()
             throws InvalidAlgorithmParameterException,
