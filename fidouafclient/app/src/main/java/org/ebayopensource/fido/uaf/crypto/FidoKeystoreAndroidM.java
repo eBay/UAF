@@ -1,5 +1,6 @@
 package org.ebayopensource.fido.uaf.crypto;
 
+import android.hardware.fingerprint.FingerprintManager;
 import android.os.Build;
 import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyProperties;
@@ -23,15 +24,30 @@ import java.security.spec.ECGenParameterSpec;
  * Created by JP20818 on 2017/09/25.
  */
 
+@RequiresApi(api = Build.VERSION_CODES.M)
 public class FidoKeystoreAndroidM extends FidoKeystore {
 
     private static final String TAG = FidoKeystoreAndroidM.class.getSimpleName();
+
+    private static final int KEY_TIMEOUT_SECS = 60;
+
+    private FingerprintManager fingerprintManager;
+
+    public FidoKeystoreAndroidM(FingerprintManager fingerprintManager) {
+        this.fingerprintManager = fingerprintManager;
+    }
+
+    public boolean isFingerprintAuthAvailable() {
+        // The line below prevents the false positive inspection from Android Studio
+        // noinspection ResourceType
+        return fingerprintManager.isHardwareDetected()
+                && fingerprintManager.hasEnrolledFingerprints();
+    }
 
     private String getKeyId(String username) {
         return "org.ebayopensource.fidouafclient.keystore.key_" + username;
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     public KeyPair generateKeyPair(String username) {
         Log.d(TAG, "generateKeyPair");
@@ -51,7 +67,12 @@ public class FidoKeystoreAndroidM extends FidoKeystore {
                     // Only permit the private key to be used if the user authenticated
                     // within the last five minutes.
                     .setUserAuthenticationRequired(true);
-            //.setUserAuthenticationValidityDurationSeconds(5 * 60)
+            if (!isFingerprintAuthAvailable()) {
+                // make sure key can be used with PIN if no FP available or supported
+                // authenticaton is done via the confirmCredentials() API
+                builder = builder.setUserAuthenticationValidityDurationSeconds(KEY_TIMEOUT_SECS);
+            }
+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 // XXX this needs to be the real server challenge
                 builder = builder.setAttestationChallenge(new byte[16]);

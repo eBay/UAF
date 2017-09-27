@@ -1,6 +1,7 @@
 package org.ebayopensource.fido.uaf.crypto;
 
 import android.content.Context;
+import android.hardware.fingerprint.FingerprintManager;
 import android.os.Build;
 
 import java.security.KeyPair;
@@ -15,7 +16,7 @@ public abstract class FidoKeystore {
 
     public static FidoKeystore createKeyStore(Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            return new FidoKeystoreAndroidM();
+            return new FidoKeystoreAndroidM(context.getSystemService(FingerprintManager.class));
         }
 
         return new FidoKeyStoreBC();

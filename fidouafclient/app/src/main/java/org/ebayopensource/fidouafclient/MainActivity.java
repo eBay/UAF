@@ -90,6 +90,13 @@ public class MainActivity extends Activity {
         }
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+
+
+    }
+
     private void findFields (){
         msg = (TextView) findViewById(R.id.textViewMsg);
         title = (TextView) findViewById(R.id.textViewTitle);

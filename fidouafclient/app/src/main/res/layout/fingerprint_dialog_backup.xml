@@ -35,7 +35,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="@android:style/TextAppearance.Material.Subhead"
-            android:id="@+id/new_fingerprint_info_text"
+            android:id="@+id/fingerprint_info_text"
             android:visibility="gone"
             android:textColor="?android:attr/textColorSecondary" />
     </FrameLayout>

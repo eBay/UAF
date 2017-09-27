@@ -23,6 +23,7 @@ import android.content.Intent;
 import android.hardware.fingerprint.FingerprintManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.util.Log;
 import android.view.Menu;
@@ -46,7 +47,9 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.security.InvalidKeyException;
 import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.Signature;
 import java.util.logging.Level;
@@ -131,7 +134,16 @@ public class ExampleFidoUafActivity extends Activity implements FingerprintAuthP
                 Log.d(TAG, "username: " + username);
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    startFingerprintAuth();
+                    if (supportsFingerprintAuth()) {
+                        startFingerprintAuth();
+                    } else {
+                        // assume already authenticated via confirmCredentials()
+                        FidoSigner fidoSigner = createFidoSigner();
+                        // fido signer doesn't need key pair, handled internally
+                        String authMsg = authOp.auth(authReq, fidoSigner, null);
+
+                        returnResultAndFinish(authMsg);
+                    }
                 } else {
                     FidoSigner fidoSigner = new FidoSignerBC();
                     KeyPair keyPair = fidoKeystore.getKeyPair(username);
@@ -150,6 +162,15 @@ public class ExampleFidoUafActivity extends Activity implements FingerprintAuthP
             Log.e(TAG, errorMessage, e);
             finishWithError(errorMessage);
         }
+    }
+
+    @NonNull
+    private FidoSigner createFidoSigner() throws NoSuchAlgorithmException, InvalidKeyException {
+        Signature signature = Signature.getInstance("SHA256withECDSA");
+        PrivateKey privateKey = fidoKeystore.getKeyPair(Preferences.getSettingsParam("username")).getPrivate();
+        signature.initSign(privateKey);
+        
+        return new FidoSignerAndroidM(signature);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
@@ -196,8 +217,20 @@ public class ExampleFidoUafActivity extends Activity implements FingerprintAuthP
         return false;
     }
 
+    private boolean supportsFingerprintAuth() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            FingerprintManager fingerprintManager = getSystemService(FingerprintManager.class);
+
+            // noinspection ResourceType
+            return fingerprintManager.isHardwareDetected()
+                    && fingerprintManager.hasEnrolledFingerprints();
+        }
+
+        return false;
+     }
+
     public void proceed(View view) {
-        if (isAuthOp() && isAndroidM()) {
+        if (isAuthOp() && isAndroidM() && supportsFingerprintAuth()) {
             // Android M does fingerprint auth internally, so we don't call confirmDeviceCredential()
             processOpAndFinish();
         } else {

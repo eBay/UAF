@@ -20,7 +20,9 @@ import android.app.Activity;
 import android.app.DialogFragment;
 import android.content.Context;
 import android.hardware.fingerprint.FingerprintManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.RequiresApi;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,6 +36,7 @@ import org.ebayopensource.fidouafclient.R;
  * A dialog which uses fingerprint APIs to authenticate the user, and falls back to password
  * authentication if fingerprint is not available.
  */
+@RequiresApi(api = Build.VERSION_CODES.M)
 public class FingerprintAuthenticationDialogFragment extends DialogFragment
         implements FingerprintUiHelper.Callback {
 
@@ -71,7 +74,7 @@ public class FingerprintAuthenticationDialogFragment extends DialogFragment
 
         mFingerprintContent = v.findViewById(R.id.fingerprint_container);
         mFingerprintInfoTextView = (TextView)
-                v.findViewById(R.id.new_fingerprint_info_text);
+                v.findViewById(R.id.fingerprint_info_text);
         mFingerprintUiHelper = new FingerprintUiHelper(
                 mActivity.getSystemService(FingerprintManager.class),
                 (ImageView) v.findViewById(R.id.fingerprint_icon),
@@ -135,12 +138,14 @@ public class FingerprintAuthenticationDialogFragment extends DialogFragment
             case FINGERPRINT:
                 mCancelButton.setText(R.string.cancel);
                 mFingerprintContent.setVisibility(View.VISIBLE);
+                mFingerprintInfoTextView.setVisibility(View.GONE);
                 break;
             case NEW_FINGERPRINT_ENROLLED:
                 // Intentional fall through
             case FINGEPRINT_AUTH_NOT_SUPPORTED:
                 mCancelButton.setText(R.string.cancel);
                 mFingerprintContent.setVisibility(View.GONE);
+                mFingerprintInfoTextView.setVisibility(View.VISIBLE);
                 mFingerprintInfoTextView.setText("Fingeprint auth not supported");
                 break;
         }
