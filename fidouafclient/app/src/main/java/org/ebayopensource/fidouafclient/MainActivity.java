@@ -30,10 +30,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 
-import org.ebayopensource.fido.uaf.crypto.FidoKeystore;
 import org.ebayopensource.fido.uaf.msg.RegistrationRequest;
 import org.ebayopensource.fido.uaf.msg.client.UAFIntentType;
 import org.ebayopensource.fidouafclient.curl.Curl;
@@ -48,18 +48,23 @@ import java.io.ByteArrayInputStream;
 import java.security.MessageDigest;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
 import static android.R.id.message;
-import static android.content.ContentValues.TAG;
 
 public class MainActivity extends Activity {
 
     private static final int REG_ACTIVITY_RES_3 = 3;
     private static final int AUTH_ACTIVITY_RES_5 = 5;
     private static final int DEREG_ACTIVITY_RES_4 = 4;
-    private Logger logger = Logger.getLogger(this.getClass().getName());
+
+    // XXX unify loggers
+    private static final String TAG = MainActivity.class.getSimpleName();
+
+    private static final Logger logger = Logger.getLogger(MainActivity.class.getName());
+
     private Gson gson = new Gson();
     private TextView facetID;
     private TextView msg;
@@ -71,13 +76,9 @@ public class MainActivity extends Activity {
     private Auth auth = new Auth();
     private int authenticatorIndex = 1;
 
-    private FidoKeystore fidoKeystore;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        fidoKeystore = FidoKeystore.createKeyStore(getApplicationContext());
 
         if (Preferences.getSettingsParam("keyID").equals("")) {
             setContentView(R.layout.activity_main);
@@ -242,11 +243,14 @@ public class MainActivity extends Activity {
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.d(TAG, String.format("onActivityResult: requestCode=%d, resultCode=%d, data=%s",
+                requestCode, resultCode, new ArrayList<>(data.getExtras().keySet())));
 
         if (data == null){
             msg.setText("UAF Client didn't return any data. resultCode="+resultCode);
             return;
         }
+
         Object[] array = data.getExtras().keySet().toArray();
         StringBuffer extras = new StringBuffer();
         extras.append("[resultCode="+resultCode+"]");
@@ -270,7 +274,7 @@ public class MainActivity extends Activity {
                 //post to server
             }
             if (resultCode == RESULT_CANCELED) {
-                //Write your code if there's no result
+                userCancelled();
             }
         }
         if (requestCode == 2) {
@@ -283,7 +287,7 @@ public class MainActivity extends Activity {
                 //post to server
             }
             if (resultCode == RESULT_CANCELED) {
-                //Write your code if there's no result
+                userCancelled();
             }
         } else if (requestCode == REG_ACTIVITY_RES_3) {
             if (resultCode == RESULT_OK) {
@@ -305,7 +309,7 @@ public class MainActivity extends Activity {
                 }
             }
             if (resultCode == RESULT_CANCELED) {
-                //Write your code if there's no result
+                userCancelled();
             }
         } else if (requestCode == DEREG_ACTIVITY_RES_4) {
             if (resultCode == RESULT_OK) {
@@ -315,7 +319,7 @@ public class MainActivity extends Activity {
                 findFields();
                 title.setText("extras=" + extras.toString());
                 String message = data.getStringExtra("message");
-                Log.d(TAG, "UAF message: " + message);
+                Log.d(TAG, String.format("UAF message: [%s]", message));
                 if (message != null) {
                     String out = "Dereg done. Client msg=" + message;
                     out = out + ". Sent=" + dereg.clientSendDeregResponse(message);
@@ -330,7 +334,7 @@ public class MainActivity extends Activity {
 
             }
             if (resultCode == RESULT_CANCELED) {
-                //Write your code if there's no result
+                userCancelled();
             }
         } else if (requestCode == AUTH_ACTIVITY_RES_5) {
             if (resultCode == RESULT_OK) {
@@ -346,10 +350,16 @@ public class MainActivity extends Activity {
                 }
             }
             if (resultCode == RESULT_CANCELED) {
-                //Write your code if there's no result
+                userCancelled();
             }
         }
 
+    }
+
+    private void userCancelled() {
+        String warnMsg = "User cancelled";
+        Log.w(TAG, warnMsg);
+        Toast.makeText(this, warnMsg, Toast.LENGTH_SHORT).show();
     }
 
     public RegistrationRequest getRegistrationRequest(String username) {

@@ -36,11 +36,11 @@ import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Logger;
 
-import static android.content.ContentValues.TAG;
-
 public class AuthAssertionBuilder {
 
-	private Logger logger = Logger.getLogger(this.getClass().getName());
+	private static final String TAG = AuthAssertionBuilder.class.getSimpleName();
+
+	private static final Logger logger = Logger.getLogger(AuthAssertionBuilder.class.getName());
 
 	private FidoSigner fidoSigner;
 	private KeyPair signingKeyPair;
