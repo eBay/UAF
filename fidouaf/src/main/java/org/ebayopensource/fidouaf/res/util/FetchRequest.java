@@ -20,6 +20,7 @@ import org.ebayopensource.fido.uaf.msg.AuthenticationRequest;
 import org.ebayopensource.fido.uaf.msg.RegistrationRequest;
 import org.ebayopensource.fido.uaf.ops.AuthenticationRequestGeneration;
 import org.ebayopensource.fido.uaf.ops.RegistrationRequestGeneration;
+import org.ebayopensource.fido.uaf.msg.UserRegRequest;
 
 public class FetchRequest {
 
@@ -36,9 +37,9 @@ public class FetchRequest {
 		this.aaids = aaids;
 	}
 
-	public RegistrationRequest getRegistrationRequest(String username) {
+	public RegistrationRequest getRegistrationRequest(UserRegRequest regRequest) {
 		RegistrationRequest request = new RegistrationRequestGeneration(appId,
-				aaids).createRegistrationRequest(username,
+				aaids).createRegistrationRequest(regRequest,
 				NotaryImpl.getInstance());
 		return request;
 	}

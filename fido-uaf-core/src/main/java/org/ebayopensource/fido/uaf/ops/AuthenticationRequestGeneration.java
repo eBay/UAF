@@ -30,6 +30,7 @@ public class AuthenticationRequestGeneration {
 
 	private String appId = RegistrationRequestGeneration.APP_ID;
 	private String[] acceptedAaids = null;
+	private String registrationID = "";
 
 	public AuthenticationRequestGeneration() {
 	}

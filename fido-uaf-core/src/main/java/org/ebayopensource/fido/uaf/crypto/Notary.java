@@ -16,9 +16,27 @@
 
 package org.ebayopensource.fido.uaf.crypto;
 
+import org.ebayopensource.fido.uaf.tlv.AlgAndEncodingEnum;
+import org.ebayopensource.fido.uaf.tlv.Tag;
+
+import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+
 public interface Notary {
 
 	public String sign(String dataToSign);
 
 	public boolean verify(String dataToSign, String signature);
+
+	public boolean verifySignature(byte[] dataForSigning, byte[] signature,
+							String pubKey, AlgAndEncodingEnum algAndEncoding) throws Exception;
+
+	public AlgAndEncodingEnum getAlgAndEncoding(Tag info);
+
+	public byte[] getDataForSigning(Tag signedData) throws IOException;
+
+	public byte[] encodeInt(int id);
 }

@@ -25,17 +25,14 @@ import org.apache.commons.codec.binary.Base64;
 import org.ebayopensource.fido.uaf.crypto.CertificateValidator;
 import org.ebayopensource.fido.uaf.crypto.CertificateValidatorImpl;
 import org.ebayopensource.fido.uaf.crypto.Notary;
+import org.ebayopensource.fido.uaf.crypto.SHA;
 import org.ebayopensource.fido.uaf.msg.AuthenticatorRegistrationAssertion;
 import org.ebayopensource.fido.uaf.msg.FinalChallengeParams;
 import org.ebayopensource.fido.uaf.msg.RegistrationResponse;
 import org.ebayopensource.fido.uaf.msg.Version;
 import org.ebayopensource.fido.uaf.storage.AuthenticatorRecord;
 import org.ebayopensource.fido.uaf.storage.RegistrationRecord;
-import org.ebayopensource.fido.uaf.tlv.Tag;
-import org.ebayopensource.fido.uaf.tlv.Tags;
-import org.ebayopensource.fido.uaf.tlv.TagsEnum;
-import org.ebayopensource.fido.uaf.tlv.TlvAssertionParser;
-import org.ebayopensource.fido.uaf.tlv.UnsignedUtil;
+import org.ebayopensource.fido.uaf.tlv.*;
 
 import com.google.gson.Gson;
 
@@ -45,24 +42,13 @@ public class RegistrationResponseProcessing {
 	private long serverDataExpiryInMs = 5 * 60 * 1000;
 	private Notary notary = null;
 	private Gson gson = new Gson();
-	private CertificateValidator certificateValidator;
 
-	public RegistrationResponseProcessing() {
-		this.certificateValidator = new CertificateValidatorImpl();
-	}
+	public RegistrationResponseProcessing() {}
 
 	public RegistrationResponseProcessing(long serverDataExpiryInMs,
 			Notary notary) {
 		this.serverDataExpiryInMs = serverDataExpiryInMs;
 		this.notary = notary;
-		this.certificateValidator = new CertificateValidatorImpl();
-	}
-
-	public RegistrationResponseProcessing(long serverDataExpiryInMs,
-			Notary notary, CertificateValidator certificateValidator) {
-		this.serverDataExpiryInMs = serverDataExpiryInMs;
-		this.notary = notary;
-		this.certificateValidator = certificateValidator;
 	}
 
 	public RegistrationRecord[] processResponse(RegistrationResponse response)
@@ -92,12 +78,13 @@ public class RegistrationResponseProcessing {
 		try {
 			Tags tags = parser
 					.parse(authenticatorRegistrationAssertion.assertion);
+			record.PublicKey = Base64.encodeBase64URLSafeString(tags.getTags()
+					.get(TagsEnum.TAG_PUB_KEY.id).value);
 			try {
 				verifyAttestationSignature(tags, record);
 			} catch (Exception e) {
 				record.attestVerifiedStatus = "NOT_VERIFIED";
 			}
-
 			AuthenticatorRecord authRecord = new AuthenticatorRecord();
 			authRecord.AAID = new String(tags.getTags().get(
 					TagsEnum.TAG_AAID.id).value);
@@ -106,15 +93,15 @@ public class RegistrationResponseProcessing {
 			// TagsEnum.TAG_KEYID.id).value);
 			Base64.encodeBase64URLSafeString(tags.getTags().get(
 					TagsEnum.TAG_KEYID.id).value);
-			record.authenticator = authRecord;
-			record.PublicKey = Base64.encodeBase64URLSafeString(tags.getTags()
-					.get(TagsEnum.TAG_PUB_KEY.id).value);
-			record.AuthenticatorVersion = getAuthenticatorVersion(tags);
 			String fc = Base64.encodeBase64URLSafeString(tags.getTags().get(
 					TagsEnum.TAG_FINAL_CHALLENGE.id).value);
 			logger.log(Level.INFO, "FC: " + fc);
 			if (record.status == null) {
 				record.status = "SUCCESS";
+				record.registrationId = getRegistrationId(record);
+				authRecord.registrationID = record.registrationId;
+				record.authenticator = authRecord;
+				record.AuthenticatorVersion = getAuthenticatorVersion(tags);
 			}
 		} catch (Exception e) {
 			record.status = "ASSERTIONS_CHECK_FAILED";
@@ -124,27 +111,24 @@ public class RegistrationResponseProcessing {
 		return record;
 	}
 
+	private String getRegistrationId(RegistrationRecord record) {
+		return SHA.sha256(record.PublicKey);
+	}
+
 	private void verifyAttestationSignature(Tags tags, RegistrationRecord record)
 			throws NoSuchAlgorithmException, IOException, Exception {
-		byte[] certBytes = tags.getTags().get(TagsEnum.TAG_ATTESTATION_CERT.id).value;
-		record.attestCert = Base64.encodeBase64URLSafeString(certBytes);
-
 		Tag krd = tags.getTags().get(TagsEnum.TAG_UAFV1_KRD.id);
 		Tag signature = tags.getTags().get(TagsEnum.TAG_SIGNATURE.id);
+		AlgAndEncodingEnum algorithm = notary.getAlgAndEncoding(tags.getTags().get(TagsEnum.TAG_ASSERTION_INFO.id));
 
-		byte[] signedBytes = new byte[krd.value.length + 4];
-		System.arraycopy(UnsignedUtil.encodeInt(krd.id), 0, signedBytes, 0, 2);
-		System.arraycopy(UnsignedUtil.encodeInt(krd.length), 0, signedBytes, 2,
-				2);
-		System.arraycopy(krd.value, 0, signedBytes, 4, krd.value.length);
+		byte[] signedBytes = this.notary.getDataForSigning(krd);
 
 		record.attestDataToSign = Base64.encodeBase64URLSafeString(signedBytes);
 		record.attestSignature = Base64
 				.encodeBase64URLSafeString(signature.value);
 		record.attestVerifiedStatus = "FAILED_VALIDATION_ATTEMPT";
 
-		if (certificateValidator.validate(certBytes, signedBytes,
-				signature.value)) {
+		if (this.notary.verifySignature(signedBytes, signature.value, record.PublicKey, algorithm)) {
 			record.attestVerifiedStatus = "VALID";
 		} else {
 			record.attestVerifiedStatus = "NOT_VERIFIED";

@@ -32,7 +32,7 @@ public class DeregRequestProcessor {
 				DeregistrationRequest[] deregFromJson = gson.fromJson(payload,
 						DeregistrationRequest[].class);
 				DeregistrationRequest deregRequest = deregFromJson[0];
-				Dash.getInstance().stats.put(Dash.LAST_DEREG_REQ, deregFromJson);
+				Dash.getInstance().addStats("", Dash.LAST_DEREG_REQ, deregFromJson);
 				AuthenticatorRecord authRecord = new AuthenticatorRecord();
 				for (DeregisterAuthenticator authenticator : deregRequest.authenticators) {
 					authRecord.AAID = authenticator.aaid;

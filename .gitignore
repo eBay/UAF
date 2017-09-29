@@ -1,5 +1,7 @@
 .DS_Store
-gradle
 .gradle
 build
+out
 .classes
+.idea
+target

@@ -14,12 +14,25 @@
  * limitations under the License.
  */
 
-package org.ebayopensource.fido.uaf.ri.client;
+package org.ebayopensource.fidouaf.res;
 
-public interface Constants {
-	
-	public static final String APP_ID = "https://www.head2toes.org/fidouaf/v1/public/uaf/facets";
-	public static final String FACET_ID = "https://www.head2toes.org";
-	public static final String AAID = "EBA0#0101";
+import io.swagger.annotations.Api;
+import org.ebayopensource.fidouaf.stats.Server;
 
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+
+@Api
+@Path("/")
+public class Service {
+ 
+	@GET
+	@Path("/")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Server getMsg() {
+		return new Server();
+	}
+ 
 }

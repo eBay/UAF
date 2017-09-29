@@ -11,7 +11,24 @@ repositories {
 dependencies {
 	compile 'com.sun.jersey:jersey-server:1.8'
 	compile 'com.sun.jersey:jersey-json:1.8'
+	compile group: 'com.thetransactioncompany', name: 'cors-filter', version: '2.6'
+	compile group: 'io.swagger', name: 'swagger-jersey-jaxrs', version: '1.5.0'
+	compile 'com.github.jsimone:webapp-runner:8.5.11.3'
 	compile project(':fido-uaf-core')
 
 	testCompile 'junit:junit:4.12'
 }
+
+task stage(dependsOn: ['build', 'clean'])
+
+build.mustRunAfter clean
+war.mustRunAfter clean
+
+task copyToLib(type: Copy) {
+	into "$buildDir/server"
+	from(configurations.compile) {
+		include "webapp-runner*"
+	}
+}
+
+stage.dependsOn(copyToLib)

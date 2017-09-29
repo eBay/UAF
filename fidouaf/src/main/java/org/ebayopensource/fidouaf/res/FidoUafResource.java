@@ -25,34 +25,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.apache.commons.codec.binary.Base64;
-import org.ebayopensource.fido.uaf.msg.AuthenticationRequest;
-import org.ebayopensource.fido.uaf.msg.AuthenticationResponse;
-import org.ebayopensource.fido.uaf.msg.Operation;
-import org.ebayopensource.fido.uaf.msg.OperationHeader;
-import org.ebayopensource.fido.uaf.msg.RegistrationRequest;
-import org.ebayopensource.fido.uaf.msg.RegistrationResponse;
-import org.ebayopensource.fido.uaf.msg.Transaction;
-import org.ebayopensource.fido.uaf.msg.Version;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
+import org.ebayopensource.fido.uaf.msg.*;
 import org.ebayopensource.fido.uaf.storage.AuthenticatorRecord;
 import org.ebayopensource.fido.uaf.storage.DuplicateKeyException;
 import org.ebayopensource.fido.uaf.storage.RegistrationRecord;
 import org.ebayopensource.fido.uaf.storage.SystemErrorException;
-import org.ebayopensource.fidouaf.RPserver.msg.ReturnUAFAuthenticationRequest;
-import org.ebayopensource.fidouaf.RPserver.msg.ReturnUAFDeregistrationRequest;
-import org.ebayopensource.fidouaf.RPserver.msg.ReturnUAFRegistrationRequest;
-import org.ebayopensource.fidouaf.RPserver.msg.ServerResponse;
-import org.ebayopensource.fidouaf.RPserver.msg.GetUAFRequest;
+import org.ebayopensource.fido.uaf.tlv.ByteInputStream;
 import org.ebayopensource.fidouaf.facets.Facets;
 import org.ebayopensource.fidouaf.facets.TrustedFacets;
 import org.ebayopensource.fidouaf.res.util.DeregRequestProcessor;
@@ -65,6 +53,7 @@ import org.ebayopensource.fidouaf.stats.Info;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+@Api
 @Path("/v1")
 public class FidoUafResource {
 
@@ -73,80 +62,79 @@ public class FidoUafResource {
 	@GET
 	@Path("/info")
 	@Produces(MediaType.APPLICATION_JSON)
-	public String info() {
-		return gson.toJson(new Info());
+	@ApiOperation(value = "Print information about the server")
+	public Info info() {
+		return new Info();
 	}
 	
 	@GET
 	@Path("/whitelistuuid/{uuid}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public String whitelistuuad(@PathParam("uuid") String uuid) {
+	@ApiOperation(value = "List all UUIDs that are whitelisted by the service")
+	public List<String> whitelistuuad(@PathParam("uuid") String uuid) {
 		Dash.getInstance().uuids.add(uuid);
-		return gson.toJson(Dash.getInstance().getInstance().uuids);
+		return Dash.getInstance().getInstance().uuids;
 	}
 	
 	@GET
 	@Path("/whitelistfacetid/{facetId}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public String whitelistfacetid(@PathParam("facetId") String facetId) {
+	@ApiOperation(value = "List all Facet IDs that are whitelisted by the service")
+	public List<String> whitelistfacetid(@PathParam("facetId") String facetId) {
 		Dash.getInstance().facetIds.add(facetId);
-		return gson.toJson(Dash.getInstance().facetIds);
+		return Dash.getInstance().facetIds;
 	}
 
-	@GET
-	@Path("/stats")
-	@Produces(MediaType.APPLICATION_JSON)
-	public String getStats() {
-		return gson.toJson(Dash.getInstance().stats);
-	}
+//	@GET
+//	@Path("/stats")
+//	@Produces(MediaType.APPLICATION_JSON)
+//	@ApiOperation(value = "Get usage information")
+//	public Map<String, Object> getStats() {
+//		return Dash.getInstance().stats;
+//	}
 
 	@GET
 	@Path("/history")
 	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(value = "Get all the operations performed by the server")
 	public List<Object> getHistory() {
 		return Dash.getInstance().history;
 	}
 
 	@GET
+	@Path("/pendingRegistrations")
+	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(value = "Get all valid registrations")
+	public RegistrationRequest[] getPendingReg() {
+		return StorageImpl.getInstance().readRegReq();
+	}
+
+	@GET
 	@Path("/registrations")
 	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(value = "Get all valid registrations")
 	public Map<String, RegistrationRecord> getDbDump() {
 		return StorageImpl.getInstance().dbDump();
 	}
 
-	@GET
-	@Path("/public/regRequest/{username}")
-	@Produces(MediaType.APPLICATION_JSON)
-	public RegistrationRequest[] getRegisReqPublic(
-			@PathParam("username") String username) {
 
-		return regReqPublic(username);
-	}
-
-	private RegistrationRequest[] regReqPublic(String username){
-		RegistrationRequest[] regReq = new RegistrationRequest[1];
-		regReq[0] = new FetchRequest(getAppId(), getAllowedAaids())
-				.getRegistrationRequest(username);
-		Dash.getInstance().stats.put(Dash.LAST_REG_REQ, regReq);
-		Dash.getInstance().history.add(regReq);
-		return regReq;
-	}
-	
-	@GET
-	@Path("/public/regRequest/{username}/{appId}")
-	@Produces(MediaType.APPLICATION_JSON)
-	public String getRegReqForAppId(@PathParam("username") String username, 
-			@PathParam("appId") String appId) {
-		RegistrationRequest[] regReq = getRegisReqPublic(username);
-		setAppId(appId, regReq[0].header);
-		return gson.toJson(regReq);
-	}
-
-	@GET
+	@POST
 	@Path("/public/regRequest")
 	@Produces(MediaType.APPLICATION_JSON)
-	public RegistrationRequest[] postRegisReqPublic(String username) {
-		return regReqPublic(username);
+	@ApiOperation(value = "Initiate a new registration")
+	public RegistrationRequest[] getRegisReqPublic(UserRegRequest regRequest) {
+		return regReqPublic(regRequest);
+	}
+
+	private RegistrationRequest[] regReqPublic(UserRegRequest regRequest){
+		RegistrationRequest[] regReq = new RegistrationRequest[1];
+		regReq[0] = new FetchRequest(getAppId(), getAllowedAaids())
+				.getRegistrationRequest(regRequest);
+		StorageImpl.getInstance().storeRegReq(regReq);
+		Dash.getInstance().addStats("", Dash.LAST_REG_REQ, regReq);
+//		Dash.getInstance().stats.put(Dash.LAST_REG_REQ, regReq);
+		Dash.getInstance().history.add(regReq);
+		return regReq;
 	}
 
 	/**
@@ -189,12 +177,8 @@ public class FidoUafResource {
 	@Produces("application/fido.trusted-apps+json")
 	public Facets facets() {
 		String timestamp = new Date().toString();
-		Dash.getInstance().stats.put(Dash.LAST_REG_REQ, timestamp);
-		String[] trustedIds = { "https://www.head2toes.org",
-				"android:apk-key-hash:Df+2X53Z0UscvUu6obxC3rIfFyk",
-				"android:apk-key-hash:bE0f1WtRJrZv/C0y9CM73bAUqiI",
-				"android:apk-key-hash:Lir5oIjf552K/XN4bTul0VS3GfM",
-				"https://openidconnect.ebay.com" };
+//		Dash.getInstance().stats.put(Dash.LAST_REG_REQ, timestamp);
+		String[] trustedIds = { "https://ms.com" };
 		List<String> trustedIdsList = new ArrayList<String>(Arrays.asList(trustedIds));
 		trustedIdsList.addAll(Dash.getInstance().facetIds);
 		trustedIdsList.add(readFacet());
@@ -217,7 +201,7 @@ public class FidoUafResource {
 		} catch (IOException e) {
 			e.printStackTrace();
 		} 
-		return facetVal.toString();
+		return facetVal;
 	}
 
 	/**
@@ -235,23 +219,25 @@ public class FidoUafResource {
 //		return "https://www.head2toes.org/fidouaf/v1/public/uaf/facets";
 	}
 
-	@POST
+	@PUT
 	@Path("/public/regResponse")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public RegistrationRecord[] processRegResponse(String payload) {
-		RegistrationRecord[] result = null;
+		RegistrationRecord[] result;
 		if (! payload.isEmpty()) {
 			RegistrationResponse[] fromJson = (new Gson()).fromJson(payload,
 					RegistrationResponse[].class);
-			Dash.getInstance().stats.put(Dash.LAST_REG_RES, fromJson);
+
+			Dash.getInstance().addStats("", Dash.LAST_REG_RES, fromJson);
 			Dash.getInstance().history.add(fromJson);
 
 			RegistrationResponse registrationResponse = fromJson[0];
 			result = new ProcessResponse().processRegResponse(registrationResponse);
 			if (result[0].status.equals("SUCCESS")) {
 				try {
-					StorageImpl.getInstance().store(result);
+					StorageImpl.getInstance().storeRegRecord(result);
+					StorageImpl.getInstance().storeRegReq(null);
 				} catch (DuplicateKeyException e) {
 					result = new RegistrationRecord[1];
 					result[0] = new RegistrationRecord();
@@ -280,53 +266,53 @@ public class FidoUafResource {
 		return new DeregRequestProcessor().process(payload);
 	}
 
-	@GET
-	@Path("/public/authRequest")
-	@Produces(MediaType.APPLICATION_JSON)
-	public String getAuthReq() {
-		return gson.toJson(getAuthReqObj());
-	}
+	// WE only want the one with tx content
+//	@GET
+//	@Path("/public/authRequest/{registrationId}")
+//	@Produces(MediaType.APPLICATION_JSON)
+//	public AuthenticationRequest[] getAuthForAppIdReq(@PathParam("registrationId") String registrationId) {
+//		AuthenticationRequest[] authReqObj = getAuthReqObj();
+////		setAppId(appId, authReqObj[0].header);
+//
+//		return authReqObj;
+//	}
+//
+//	private void setAppId(String appId, OperationHeader header) {
+//		if (appId == null || appId.isEmpty()){
+//			return;
+//		}
+//		String decodedAppId = new String (Base64.decodeBase64(appId));
+//		Facets facets = facets();
+//		if (facets == null || facets.trustedFacets == null || facets.trustedFacets.length == 0
+//				 || facets.trustedFacets[0] == null || facets.trustedFacets[0].ids == null){
+//			return;
+//		}
+//		String[] ids = facets.trustedFacets[0].ids;
+//		for (int i = 0; i < ids.length; i++) {
+//
+//			if (decodedAppId.equals(ids[i])){
+//				header.appID = decodedAppId;
+//				break;
+//			}
+//		}
+//	}
 
-	@GET
-	@Path("/public/authRequest/{appId}")
+
+	// we need an endpoint to get authentication requests by registrationId
+	// and it will use the 3 way auth system described in the issue in github
+	// @Path
+
+	@POST
+	@Path("/public/authRequest/{registrationId}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public String getAuthForAppIdReq(@PathParam("appId") String appId) {
+	public AuthenticationRequest[] getAuthTrxReq(@PathParam("registrationId") String registrationId, String trxContent) {
 		AuthenticationRequest[] authReqObj = getAuthReqObj();
-		setAppId(appId, authReqObj[0].header);
-		
-		return gson.toJson(authReqObj);
-	}
-
-	private void setAppId(String appId, OperationHeader header) {
-		if (appId == null || appId.isEmpty()){
-			return;
-		}
-		String decodedAppId = new String (Base64.decodeBase64(appId));
-		Facets facets = facets();
-		if (facets == null || facets.trustedFacets == null || facets.trustedFacets.length == 0
-				 || facets.trustedFacets[0] == null || facets.trustedFacets[0].ids == null){
-			return;
-		}
-		String[] ids = facets.trustedFacets[0].ids;
-		for (int i = 0; i < ids.length; i++) {
-			
-			if (decodedAppId.equals(ids[i])){
-				header.appID = decodedAppId;
-				break;
-			}
-		}
-	}
-
-	@GET
-	@Path("/public/authRequest/{appId}/{trxContent}")
-	@Produces(MediaType.APPLICATION_JSON)
-	public String getAuthTrxReq(@PathParam("appId") String appId,
-			@PathParam("trxContent") String trxContent) {
-		AuthenticationRequest[] authReqObj = getAuthReqObj();
-		setAppId(appId, authReqObj[0].header);
+//		setAppId(registrationId, authReqObj[0].header);
 		setTransaction(trxContent, authReqObj);
-		
-		return gson.toJson(authReqObj);
+		Dash.getInstance().addStats(registrationId, Dash.LAST_AUTH_REQ, authReqObj[0]);
+        Dash.getInstance().history.add(authReqObj);
+
+		return authReqObj;
 	}
 
 	private void setTransaction(String trxContent, AuthenticationRequest[] authReqObj) {
@@ -334,6 +320,7 @@ public class FidoUafResource {
 		Transaction t = new Transaction();
 		t.content = trxContent;
 		t.contentType = MediaType.TEXT_PLAIN;
+		t.id = System.currentTimeMillis();
 		authReqObj[0].transaction[0] = t;
 	}
 
@@ -341,8 +328,6 @@ public class FidoUafResource {
 		AuthenticationRequest[] ret = new AuthenticationRequest[1];
 		ret[0] = new FetchRequest(getAppId(), getAllowedAaids())
 				.getAuthenticationRequest();
-		Dash.getInstance().stats.put(Dash.LAST_AUTH_REQ, ret);
-		Dash.getInstance().history.add(ret);
 		return ret;
 	}
 
@@ -350,272 +335,86 @@ public class FidoUafResource {
 	@Path("/public/authResponse")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public AuthenticatorRecord[] processAuthResponse(String payload) {
+	public AuthenticationRequest[] processAuthResponse(String payload) {
 		if (!payload.isEmpty()) {
-			Dash.getInstance().stats.put(Dash.LAST_AUTH_RES, payload);
+//			Dash.getInstance().stats.put(Dash.LAST_AUTH_RES, payload);
 			Gson gson = new Gson();
 			AuthenticationResponse[] authResp = gson.fromJson(payload,
 					AuthenticationResponse[].class);
-			Dash.getInstance().stats.put(Dash.LAST_AUTH_RES, authResp);
+
+//			Dash.getInstance().stats.put(Dash.LAST_AUTH_RES, authResp);
+//			Dash.getInstance().addStats(authResp[0].registrationID, Dash.LAST_AUTH_RES, authResp);
 			Dash.getInstance().history.add(authResp);
 			AuthenticatorRecord[] result = new ProcessResponse()
 					.processAuthResponse(authResp[0]);
-			return result;
-		}
-		return new AuthenticatorRecord[0];
-	}
-
-	@POST
-	@Path("/public/uafRegRequest")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	public ReturnUAFRegistrationRequest GetUAFRegistrationRequest(String payload) {
-		RegistrationRequest[] result = getRegisReqPublic("iafuser01");
-		ReturnUAFRegistrationRequest uafReq = null;
-		if (result != null) {
-			uafReq = new ReturnUAFRegistrationRequest();
-			uafReq.statusCode = 1200;
-			uafReq.uafRequest = result;
-			uafReq.op = Operation.Reg;
-			uafReq.lifetimeMillis = 5 * 60 * 1000;
-		}
-		return uafReq;
-	}
-
-	@POST
-	@Path("/public/uafAuthRequest")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	public ReturnUAFAuthenticationRequest GetUAFAuthenticationRequest(
-			String payload) {
-		AuthenticationRequest[] result = getAuthReqObj();
-		ReturnUAFAuthenticationRequest uafReq = null;
-		if (result != null) {
-			uafReq = new ReturnUAFAuthenticationRequest();
-			uafReq.statusCode = 1200;
-			uafReq.uafRequest = result;
-			uafReq.op = Operation.Auth;
-			uafReq.lifetimeMillis = 5 * 60 * 1000;
-		}
-		return uafReq;
-	}
-
-	@POST
-	@Path("/public/uafDeregRequest")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	public ReturnUAFDeregistrationRequest GetUAFDeregistrationRequest(
-			String payload) {
-		String result = deregRequestPublic(payload);
-		ReturnUAFDeregistrationRequest uafReq = new ReturnUAFDeregistrationRequest();
-		if (result.equalsIgnoreCase("Success")) {
-			uafReq.statusCode = 1200;
-		} else if (result
-				.equalsIgnoreCase("Failure: Problem in deleting record from local DB")) {
-			uafReq.statusCode = 1404;
-		} else if (result
-				.equalsIgnoreCase("Failure: problem processing deregistration request")) {
-			uafReq.statusCode = 1491;
-		} else {
-			uafReq.statusCode = 1500;
-
-		}
-		uafReq.uafRequest = null;
-		uafReq.op = Operation.Dereg;
-		uafReq.lifetimeMillis = 0;
-		return uafReq;
-	}
-
-	@POST
-	@Path("/public/uafAuthResponse")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	public ServerResponse UAFAuthResponse(String payload) {
-		ServerResponse servResp = new ServerResponse();
-		if (!payload.isEmpty()) {
-			String findOp = payload;
-			findOp = findOp.substring(findOp.indexOf("op") + 6,
-					findOp.indexOf(",", findOp.indexOf("op")) - 1);
-			System.out.println("findOp=" + findOp);
-
-			AuthenticatorRecord[] result = processAuthResponse(payload);
-
-			if (result[0].status.equals("SUCCESS")) {
-				servResp.statusCode = 1200;
-				servResp.Description = "OK. Operation completed";
-			} else if (result[0].status.equals("FAILED_SIGNATURE_NOT_VALID")
-					|| result[0].status.equals("FAILED_SIGNATURE_VERIFICATION")
-					|| result[0].status.equals("FAILED_ASSERTION_VERIFICATION")) {
-				servResp.statusCode = 1496;
-				servResp.Description = result[0].status;
-			} else if (result[0].status.equals("INVALID_SERVER_DATA_EXPIRED")
-					|| result[0].status
-					.equals("INVALID_SERVER_DATA_SIGNATURE_NO_MATCH")
-					|| result[0].status.equals("INVALID_SERVER_DATA_CHECK_FAILED")) {
-				servResp.statusCode = 1491;
-				servResp.Description = result[0].status;
-			} else {
-				servResp.statusCode = 1500;
-				servResp.Description = result[0].status;
+			if(result[0].status.equals("SUCCESS")) {
+				AuthenticationRequest[] response = Dash.getInstance().getAuthReqests(authResp[0].registrationID);
+				return response;
 			}
-		}else{
-			servResp.Description = "Error: payload is empty";
+			return new AuthenticationRequest[0];
 		}
-
-		return servResp;
+		return new AuthenticationRequest[0];
 	}
 
-	@POST
-	@Path("/public/uafRegResponse")
+	@PUT
+	@Path("/public/authResponse/{registrationId}/{txIndex}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public ServerResponse UAFRegResponse(String payload) {
-		ServerResponse servResp = new ServerResponse();
+	public TransactionResponse[] processTxData(@PathParam("registrationId") String registrationId,
+											   @PathParam("txIndex") Long txIndex, String payload) {
 		if (!payload.isEmpty()) {
-			String findOp = payload;
-			findOp = findOp.substring(findOp.indexOf("op") + 6,
-					findOp.indexOf(",", findOp.indexOf("op")) - 1);
-			System.out.println("findOp=" + findOp);
+			TransactionAction[] txAction = gson.fromJson(payload,
+					TransactionAction[].class);
 
-			RegistrationRecord[] result = processRegResponse(payload);
+			if(new ProcessResponse().processTxResponse(txAction[0], registrationId)) {
 
-			if (result[0].status.equals("SUCCESS")) {
-				servResp.statusCode = 1200;
-				servResp.Description = "OK. Operation completed";
-			} else if (result[0].status.equals("ASSERTIONS_CHECK_FAILED")) {
-				servResp.statusCode = 1496;
-				servResp.Description = result[0].status;
-			} else if (result[0].status.equals("INVALID_SERVER_DATA_EXPIRED")
-					|| result[0].status
-					.equals("INVALID_SERVER_DATA_SIGNATURE_NO_MATCH")
-					|| result[0].status.equals("INVALID_SERVER_DATA_CHECK_FAILED")) {
-				servResp.statusCode = 1491;
-				servResp.Description = result[0].status;
-			} else {
-				servResp.statusCode = 1500;
-				servResp.Description = result[0].status;
-			}
-		}else{
-			servResp.Description = "Error: payload is empty";
-		}
+				TransactionResponse[] txResp = new TransactionResponse[1];
+				txResp[0] = new TransactionResponse();
 
-		return servResp;
-	}
-
-	@POST
-	@Path("/public/uafRequest")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	public String GetUAFRequest(String payload) {
-		String uafReq = null;
-		if (!payload.isEmpty()) {
-			Gson gson = new Gson();
-			GetUAFRequest req = gson.fromJson(payload, GetUAFRequest.class);
-
-			if (req.op.name().equals("Reg")) {
-				RegistrationRequest[] result = getRegisReqPublic("iafuser01");
-				ReturnUAFRegistrationRequest uafRegReq = null;
-				if (result != null) {
-					uafRegReq = new ReturnUAFRegistrationRequest();
-					uafRegReq.statusCode = 1200;
-					uafRegReq.uafRequest = result;
-					uafRegReq.op = Operation.Reg;
-					uafRegReq.lifetimeMillis = 5 * 60 * 1000;
+				AuthenticationRequest[] requests = Dash.getInstance().getAuthReqests(registrationId);
+				AuthenticationRequest authReq = new AuthenticationRequest();
+				for (AuthenticationRequest r : requests) {
+					if (r.transaction[0].id.equals(txIndex)) {
+						authReq = r;
+						break;
+					}
 				}
-				uafReq = gson.toJson(uafRegReq);
-			} else if (req.op.name().equals("Auth")) {
-				AuthenticationRequest[] result = getAuthReqObj();
-				ReturnUAFAuthenticationRequest uafAuthReq = null;
-				if (result != null) {
-					uafAuthReq = new ReturnUAFAuthenticationRequest();
-					uafAuthReq.statusCode = 1200;
-					uafAuthReq.uafRequest = result;
-					uafAuthReq.op = Operation.Auth;
-					uafAuthReq.lifetimeMillis = 5 * 60 * 1000;
-				}
-				uafReq = gson.toJson(uafAuthReq);
-			} else if (req.op.name().equals("Dereg")) {
-				String result = deregRequestPublic(payload);
-				ReturnUAFDeregistrationRequest uafDeregReq = new ReturnUAFDeregistrationRequest();
-				if (result.equalsIgnoreCase("Success")) {
-					uafDeregReq.statusCode = 1200;
-				} else if (result
-						.equalsIgnoreCase("Failure: Problem in deleting record from local DB")) {
-					uafDeregReq.statusCode = 1404;
-				} else if (result
-						.equalsIgnoreCase("Failure: problem processing deregistration request")) {
-					uafDeregReq.statusCode = 1491;
-				} else {
-					uafDeregReq.statusCode = 1500;
+				if (Dash.getInstance().removeAuthRequest(registrationId, authReq)) {
 
+                    if (txAction[0].response.equals("U0lHTkVEX1RY")) {
+                        Dash.getInstance().addTxResponse("SIGNED_TX", authReq.transaction[0]);
+                        txResp[0].response = "SIGNED_TX";
+                    }
+                    else if (txAction[0].response.equals("REVDTElORURfVFg=")) {
+                        Dash.getInstance().addTxResponse("DECLINED_TX", authReq.transaction[0]);
+                        txResp[0].response = "DECLINED_TX";
+                    }
+                    else
+                        return new TransactionResponse[0];
+//                    Dash.getInstance().history.add(txResp);
+					txResp[0].transactionId = txIndex;
+					txResp[0].transaction = authReq.transaction[0];
+
+					return txResp;
 				}
-				uafDeregReq.uafRequest = null;
-				uafDeregReq.op = Operation.Dereg;
-				uafDeregReq.lifetimeMillis = 0;
-				uafReq = gson.toJson(uafDeregReq);
 			}
 		}
-		return uafReq;
+		return new TransactionResponse[0];
 	}
 
-	@POST
-	@Path("/public/uafResponse")
-	@Consumes(MediaType.APPLICATION_JSON)
+	@GET
+	@Path("/public/getTransactions/{registrationId}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public ServerResponse UAFResponse(String payload) {
-		ServerResponse servResp = new ServerResponse();
-		if (!payload.isEmpty()) {
-			String findOp = payload;
-			findOp = findOp.substring(findOp.indexOf("op") + 6,
-					findOp.indexOf(",", findOp.indexOf("op")) - 1);
-			System.out.println("findOp=" + findOp);
-
-			if (findOp.equals("Reg")) {
-				RegistrationRecord[] result = processRegResponse(payload);
-
-				if (result[0].status.equals("SUCCESS")) {
-					servResp.statusCode = 1200;
-					servResp.Description = "OK. Operation completed";
-				} else if (result[0].status.equals("ASSERTIONS_CHECK_FAILED")) {
-					servResp.statusCode = 1496;
-					servResp.Description = result[0].status;
-				} else if (result[0].status.equals("INVALID_SERVER_DATA_EXPIRED")
-						|| result[0].status
-						.equals("INVALID_SERVER_DATA_SIGNATURE_NO_MATCH")
-						|| result[0].status
-						.equals("INVALID_SERVER_DATA_CHECK_FAILED")) {
-					servResp.statusCode = 1491;
-					servResp.Description = result[0].status;
-				} else {
-					servResp.statusCode = 1500;
-					servResp.Description = result[0].status;
-				}
-			} else if (findOp.equals("Auth")) {
-				AuthenticatorRecord[] result = processAuthResponse(payload);
-
-				if (result[0].status.equals("SUCCESS")) {
-					servResp.statusCode = 1200;
-					servResp.Description = "OK. Operation completed";
-				} else if (result[0].status.equals("FAILED_SIGNATURE_NOT_VALID")
-						|| result[0].status.equals("FAILED_SIGNATURE_VERIFICATION")
-						|| result[0].status.equals("FAILED_ASSERTION_VERIFICATION")) {
-					servResp.statusCode = 1496;
-					servResp.Description = result[0].status;
-				} else if (result[0].status.equals("INVALID_SERVER_DATA_EXPIRED")
-						|| result[0].status
-						.equals("INVALID_SERVER_DATA_SIGNATURE_NO_MATCH")
-						|| result[0].status
-						.equals("INVALID_SERVER_DATA_CHECK_FAILED")) {
-					servResp.statusCode = 1491;
-					servResp.Description = result[0].status;
-				} else {
-					servResp.statusCode = 1500;
-					servResp.Description = result[0].status;
-				}
+	public Transaction[] getTransactions(@PathParam("registrationId") String registrationId) {
+		AuthenticationRequest[] requests = Dash.getInstance().getAuthReqests(registrationId);
+		if (requests != null) {
+			List<Transaction> transactions = new ArrayList<Transaction>();
+			for (AuthenticationRequest r : requests) {
+				transactions.add(r.transaction[0]);
 			}
-		}else{
-			servResp.Description = "Error: payload is empty";
+//			Dash.getInstance().history.add(transactions);
+			return transactions.toArray(new Transaction[transactions.size()]);
 		}
-		return servResp;
+		return new Transaction[0];
 	}
 }

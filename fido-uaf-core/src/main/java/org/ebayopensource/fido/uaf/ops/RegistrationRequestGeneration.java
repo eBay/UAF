@@ -19,12 +19,7 @@ package org.ebayopensource.fido.uaf.ops;
 import org.apache.commons.codec.binary.Base64;
 import org.ebayopensource.fido.uaf.crypto.BCrypt;
 import org.ebayopensource.fido.uaf.crypto.Notary;
-import org.ebayopensource.fido.uaf.msg.MatchCriteria;
-import org.ebayopensource.fido.uaf.msg.Operation;
-import org.ebayopensource.fido.uaf.msg.OperationHeader;
-import org.ebayopensource.fido.uaf.msg.Policy;
-import org.ebayopensource.fido.uaf.msg.RegistrationRequest;
-import org.ebayopensource.fido.uaf.msg.Version;
+import org.ebayopensource.fido.uaf.msg.*;
 
 public class RegistrationRequestGeneration {
 
@@ -63,12 +58,12 @@ public class RegistrationRequestGeneration {
 		return p;
 	}
 
-	public RegistrationRequest createRegistrationRequest(String username,
+	public RegistrationRequest createRegistrationRequest(UserRegRequest regRequest,
 			Notary notary) {
 		String challenge = generateChallenge();
-		String serverDataString = generateServerData(username, challenge,
+		String serverDataString = generateServerData(regRequest.username, challenge,
 				notary);
-		return createRegistrationRequest(username, serverDataString, challenge);
+		return createRegistrationRequest(regRequest, serverDataString, challenge);
 	}
 
 	private String generateServerData(String username, String challenge,
@@ -85,7 +80,7 @@ public class RegistrationRequestGeneration {
 				.getBytes());
 	}
 
-	private RegistrationRequest createRegistrationRequest(String username,
+	private RegistrationRequest createRegistrationRequest(UserRegRequest request,
 			String serverData, String challenge) {
 		RegistrationRequest regRequest = new RegistrationRequest();
 		OperationHeader header = new OperationHeader();
@@ -96,7 +91,7 @@ public class RegistrationRequestGeneration {
 		regRequest.header.upv = new Version(1, 0);
 		regRequest.challenge = challenge;
 		regRequest.policy = constructAuthenticationPolicy();
-		regRequest.username = username;
+		regRequest.regRequest = request;
 		return regRequest;
 	}
 
