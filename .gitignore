@@ -3,3 +3,7 @@ gradle
 .gradle
 build
 .classes
+.idea
+.idea/*
+*.iml
+local.properties

@@ -32,7 +32,6 @@ import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.Provider;
 import java.security.PublicKey;
-import java.security.Security;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.security.interfaces.ECPrivateKey;
@@ -41,11 +40,7 @@ public class NamedCurve {
 	
 	private static final Provider BC = new BouncyCastleProvider();
   
-   static {
-		Security.addProvider(new org.spongycastle.jce.provider.BouncyCastleProvider());
-	}
-
-	/**
+   	/**
 	 * UAF_ALG_SIGN_SECP256R1_ECDSA_SHA256_RAW 0x01
 	 * An ECDSA signature on the NIST secp256r1 curve which MUST have raw R and S buffers, encoded in big-endian order.
 	 * I.e. [R (32 bytes), S (32 bytes)]
@@ -71,7 +66,7 @@ public class NamedCurve {
   
   
   public static boolean verify(byte[] pub, byte[] dataForSigning,
-			BigInteger[] rs) throws Exception {
+			BigInteger[] rs) {
 		ECDSASigner signer = new ECDSASigner();
 		X9ECParameters params = SECNamedCurves.getByName("secp256r1");
 		ECDomainParameters ecParams = new ECDomainParameters(params.getCurve(),

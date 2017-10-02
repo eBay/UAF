@@ -19,17 +19,28 @@ package org.ebayopensource.fido.uaf.client;
 import com.google.gson.Gson;
 
 import org.ebayopensource.fido.uaf.crypto.Base64url;
+import org.ebayopensource.fido.uaf.crypto.FidoSigner;
 import org.ebayopensource.fido.uaf.msg.AuthenticationRequest;
 import org.ebayopensource.fido.uaf.msg.AuthenticationResponse;
 import org.ebayopensource.fido.uaf.msg.AuthenticatorSignAssertion;
 import org.ebayopensource.fido.uaf.msg.FinalChallengeParams;
 import org.ebayopensource.fido.uaf.msg.OperationHeader;
 
+import java.security.KeyPair;
+
 public class AuthenticationRequestProcessor {
+
+	private FidoSigner fidoSigner;
+	private KeyPair signingKeyPair;
+
+	public AuthenticationRequestProcessor(FidoSigner fidoSigner, KeyPair signingKeyPair) {
+		this.fidoSigner = fidoSigner;
+		this.signingKeyPair = signingKeyPair;
+	}
 	
 	public AuthenticationResponse processRequest(AuthenticationRequest request) {
 		AuthenticationResponse response = new AuthenticationResponse();
-		AuthAssertionBuilder builder = new AuthAssertionBuilder();
+		AuthAssertionBuilder builder = new AuthAssertionBuilder(fidoSigner, signingKeyPair);
 		Gson gson = new Gson();
 
 

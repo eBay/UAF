@@ -16,9 +16,6 @@
 
 package org.ebayopensource.fido.uaf.tlv;
 
-import org.apache.commons.codec.binary.Base64;
-
-
 public class Tag {
 	public int statusId = 0x00;
 	public int id;
@@ -29,7 +26,7 @@ public class Tag {
 		String ret = "Tag id:"+id;
 		ret = ret + " Tag name: " + TagsEnum.get(id);
 		if (value != null){
-			ret = ret + " Tag value:"+ Base64.encodeBase64URLSafeString(value);
+			ret = ret + " Tag value:"+ android.util.Base64.encode(value, android.util.Base64.URL_SAFE);
 		}
 		return ret;
 	}

@@ -16,41 +16,43 @@
 
 package org.ebayopensource.fido.uaf.client;
 
-import org.ebayopensource.fido.uaf.crypto.Base64url;
-import org.ebayopensource.fidouafclient.util.Preferences;
-import org.ebayopensource.fido.uaf.crypto.Asn1;
+import android.util.Log;
+
 import org.ebayopensource.fido.uaf.crypto.BCrypt;
+import org.ebayopensource.fido.uaf.crypto.Base64url;
+import org.ebayopensource.fido.uaf.crypto.FidoAttestationSigner;
+import org.ebayopensource.fido.uaf.crypto.FixedCertFidoAttestationSigner;
 import org.ebayopensource.fido.uaf.crypto.KeyCodec;
-import org.ebayopensource.fido.uaf.crypto.NamedCurve;
 import org.ebayopensource.fido.uaf.crypto.SHA;
 import org.ebayopensource.fido.uaf.msg.RegistrationResponse;
+import org.ebayopensource.fido.uaf.tlv.AlgAndEncodingEnum;
 import org.ebayopensource.fido.uaf.tlv.Tags;
 import org.ebayopensource.fido.uaf.tlv.TagsEnum;
 import org.ebayopensource.fido.uaf.tlv.TlvAssertionParser;
-import org.spongycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
-import org.spongycastle.jce.interfaces.ECPublicKey;
+import org.ebayopensource.fidouafclient.util.Preferences;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.math.BigInteger;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.security.GeneralSecurityException;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PrivateKey;
-import java.security.spec.InvalidKeySpecException;
+import java.security.PublicKey;
 import java.util.logging.Logger;
 
 
 public class RegAssertionBuilder {
+
+	private static final String TAG = RegAssertionBuilder.class.getSimpleName();
 
 	public static final String AAID = "EBA0#0001";
 	private Logger logger = Logger.getLogger(this.getClass().getName());
 	private KeyPair keyPair = null;
 	private TlvAssertionParser parser = new TlvAssertionParser();
 	
-	public RegAssertionBuilder (KeyPair keyPair){
-		this.keyPair  = keyPair;
-		
+	public RegAssertionBuilder (KeyPair keyPair) {
+		this.keyPair = keyPair;
 	}
 
 	public String getAssertions(RegistrationResponse response) throws Exception {
@@ -67,10 +69,13 @@ public class RegAssertionBuilder {
 		String ret = Base64url.encodeToString(byteout.toByteArray());
 		logger.info(" : assertion : " + ret);
 		Tags tags = parser.parse(ret);
+		Log.d(TAG, "tags: " + tags.toString());
 		String AAID = new String(tags.getTags().get(
 				TagsEnum.TAG_AAID.id).value);
+		Log.d(TAG, "AAID: " + AAID);
 		String KeyID = new String(tags.getTags()
 				.get(TagsEnum.TAG_KEYID.id).value);
+		Log.d(TAG, "keyID: " + KeyID);
 		return ret;
 	}
 
@@ -114,7 +119,7 @@ public class RegAssertionBuilder {
 		return byteout.toByteArray();
 	}
 
-	private byte[] getSignedData(RegistrationResponse response) throws IOException, InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException {
+	private byte[] getSignedData(RegistrationResponse response) throws IOException, GeneralSecurityException {
 		ByteArrayOutputStream byteout = new ByteArrayOutputStream();
 		byte[] value = null;
 		int length = 0;
@@ -126,8 +131,9 @@ public class RegAssertionBuilder {
 		byteout.write(value);
 
 		byteout.write(encodeInt(TagsEnum.TAG_ASSERTION_INFO.id));
-		//2 bytes - vendor; 1 byte Authentication Mode; 2 bytes Sig Alg; 2 bytes Pub Key Alg 
-		value = new byte[] { 0x00, 0x00, 0x01, 0x01, 0x00, 0x00, 0x01 };
+		value = makeAssertionInfo();
+
+
 		length = value.length;
 		byteout.write(encodeInt(length));
 		byteout.write(value);
@@ -159,42 +165,40 @@ public class RegAssertionBuilder {
 		return byteout.toByteArray();
 	}
 
+	private byte[] makeAssertionInfo() {
+		//2 bytes - vendor; 1 byte Authentication Mode; 2 bytes Sig Alg; 2 bytes Pub Key Alg
+		ByteBuffer bb = ByteBuffer.allocate(7);
+		bb.order(ByteOrder.LITTLE_ENDIAN);
+		// 2 bytes - vendor assigned version
+		bb.put((byte)0x0);
+		bb.put((byte)0x0);
+		// 1 byte Authentication Mode;
+		bb.put((byte)0x1);
+		// 2 bytes Sig Alg
+		bb.putShort((short) AlgAndEncodingEnum.UAF_ALG_SIGN_SECP256R1_ECDSA_SHA256_RAW.id);
+		// 2 bytes Pub Key Alg
+		bb.putShort((short) AlgAndEncodingEnum.UAF_ALG_KEY_ECC_X962_RAW.id);
+
+		return bb.array().clone();
+	}
+
 	private byte[] getFC(RegistrationResponse response) throws NoSuchAlgorithmException {
 		return SHA.sha(response.fcParams.getBytes(), "SHA-256");
 	}
 
-	private byte[] getPubKeyId() throws InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException, IOException {
-		return KeyCodec.getKeyAsRawBytes((BCECPublicKey)this.keyPair.getPublic());
+	private byte[] getPubKeyId() throws GeneralSecurityException, IOException {
+		PublicKey pubKey = keyPair.getPublic();
+		Log.d(TAG, String.format("key: alg: %s enc: %s", pubKey.getAlgorithm(), pubKey.getFormat()));
+
+		return KeyCodec.getPubKeyAsRawBytes(pubKey);
 	}
 
 	private byte[] getSignature(byte[] dataForSigning) throws Exception {
+		FidoAttestationSigner attestSigner = new FixedCertFidoAttestationSigner();
 
-//		PublicKey pub = KeyCodec.getPubKey(
-//				Base64.encode(this.keyPair.getPublic().getEncoded(), Base64.URL_SAFE))
-//				;
-//		PrivateKey priv = KeyCodec.getPrivKey(Base64
-//				.encode(this.keyPair.getPrivate().getEncoded(),Base64.URL_SAFE));
-//		PublicKey pub = this.keyPair.getPublic();
-		PrivateKey priv =
-				KeyCodec.getPrivKey(Base64url.decode(AttestCert.priv));
-				//this.keyPair.getPrivate();
-
-		logger.info(" : dataForSigning : "
-				+ Base64url.encodeToString(dataForSigning));
-
-		BigInteger[] signatureGen = NamedCurve.signAndFromatToRS(priv,
-				SHA.sha(dataForSigning, "SHA-256"));
-
-		boolean verify = NamedCurve.verify(
-				KeyCodec.getKeyAsRawBytes((ECPublicKey)KeyCodec.getPubKey(Base64url.decode(AttestCert.pubCert))),
-				//KeyCodec.getKeyAsRawBytes((ECPublicKey)this.keyPair.getPublic()),
-				SHA.sha(dataForSigning, "SHA-256"),
-				Asn1.decodeToBigIntegerArray(Asn1.getEncoded(signatureGen)));
-		if (!verify) {
-			throw new RuntimeException("Signatire match fail");
-		}
-		byte[] ret = Asn1.toRawSignatureBytes(signatureGen);
-		logger.info(" : signature : " + Base64url.encodeToString(ret));
+		Log.d(TAG, "dataForSigning : " + Base64url.encodeToString(dataForSigning));
+		byte[] ret = attestSigner.signWithAttestationCert(dataForSigning);
+		Log.d(TAG, "signature: " + Base64url.encodeToString(ret));
 
 		return ret;
 	}

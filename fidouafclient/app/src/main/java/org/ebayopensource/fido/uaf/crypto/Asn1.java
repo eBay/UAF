@@ -24,15 +24,10 @@ import org.spongycastle.asn1.DLSequence;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
-import java.security.Security;
 import java.util.Arrays;
 
 public class Asn1 {
-  
-    static {
-		Security.addProvider(new org.spongycastle.jce.provider.BouncyCastleProvider());
-	}
- 
+
   	/**
   	 * DER - From Big Integer rs to byte[]
   	 * UAF_ALG_SIGN_SECP256K1_ECDSA_SHA256_DER 0x06

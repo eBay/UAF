@@ -16,28 +16,39 @@
 
 package org.ebayopensource.fido.uaf.client;
 
-import org.ebayopensource.fido.uaf.crypto.Base64url;
-import org.ebayopensource.fidouafclient.util.Preferences;
-import org.ebayopensource.fido.uaf.crypto.Asn1;
+import android.os.Build;
+import android.util.Log;
+
 import org.ebayopensource.fido.uaf.crypto.BCrypt;
-import org.ebayopensource.fido.uaf.crypto.KeyCodec;
-import org.ebayopensource.fido.uaf.crypto.NamedCurve;
+import org.ebayopensource.fido.uaf.crypto.Base64url;
+import org.ebayopensource.fido.uaf.crypto.FidoSigner;
 import org.ebayopensource.fido.uaf.crypto.SHA;
 import org.ebayopensource.fido.uaf.msg.AuthenticationResponse;
+import org.ebayopensource.fido.uaf.tlv.AlgAndEncodingEnum;
 import org.ebayopensource.fido.uaf.tlv.TagsEnum;
-import org.spongycastle.jce.interfaces.ECPublicKey;
+import org.ebayopensource.fidouafclient.util.Preferences;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.math.BigInteger;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
 import java.util.logging.Logger;
 
 public class AuthAssertionBuilder {
 
-	private Logger logger = Logger.getLogger(this.getClass().getName());
+	private static final String TAG = AuthAssertionBuilder.class.getSimpleName();
+
+	private static final Logger logger = Logger.getLogger(AuthAssertionBuilder.class.getName());
+
+	private FidoSigner fidoSigner;
+	private KeyPair signingKeyPair;
+
+	public AuthAssertionBuilder(FidoSigner fidoSigner, KeyPair signingKeyPair) {
+		this.fidoSigner = fidoSigner;
+		this.signingKeyPair = signingKeyPair;
+	}
 
 	public String getAssertions(AuthenticationResponse response) throws Exception {
 		ByteArrayOutputStream byteout = new ByteArrayOutputStream();
@@ -77,6 +88,28 @@ public class AuthAssertionBuilder {
 		return byteout.toByteArray();
 	}
 
+	private static byte[] makeAssertionInfo() {
+		//2 bytes - vendor; 1 byte Authentication Mode; 2 bytes Sig Alg
+		// XXX -- ugly. make this smarter and use consts
+		ByteBuffer bb = ByteBuffer.allocate(5);
+		bb.order(ByteOrder.LITTLE_ENDIAN);
+		//2 bytes - vendor
+		bb.put((byte)0x0);
+		bb.put((byte)0x0);
+		// 1 byte Authentication Mode;
+		bb.put((byte)0x1);
+		// 2 bytes Sig Alg
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+			bb.putShort((short)AlgAndEncodingEnum.UAF_ALG_SIGN_SECP256R1_ECDSA_SHA256_DER.id);
+			//value = new byte[] { 0x00, 0x00, 0x01, 0x02, 0x00 };
+		} else {
+			//value = new byte[] { 0x00, 0x00, 0x01, 0x01, 0x00 };
+			bb.putShort((short)AlgAndEncodingEnum.UAF_ALG_SIGN_SECP256R1_ECDSA_SHA256_RAW.id);
+		}
+
+		return bb.array().clone();
+	}
+
 	private byte[] getSignedData(AuthenticationResponse response) throws IOException, NoSuchAlgorithmException {
 		ByteArrayOutputStream byteout = new ByteArrayOutputStream();
 		byte[] value = null;
@@ -89,8 +122,8 @@ public class AuthAssertionBuilder {
 		byteout.write(value);
 
 		byteout.write(encodeInt(TagsEnum.TAG_ASSERTION_INFO.id));
-		//2 bytes - vendor; 1 byte Authentication Mode; 2 bytes Sig Alg 
-		value = new byte[] { 0x00, 0x00, 0x01, 0x01, 0x00 };
+		value = makeAssertionInfo();
+
 		length = value.length;
 		byteout.write(encodeInt(length));
 		byteout.write(value);
@@ -138,32 +171,12 @@ public class AuthAssertionBuilder {
 	}
 
 	private byte[] getSignature(byte[] dataForSigning) throws Exception {
+		Log.d(TAG, "getSignature");
 
-//		PublicKey pub = KeyCodec.getPubKey(Base64
-//				.decodeBase64(TestData.TEST_PUB_KEY));
-		
-		PublicKey pub =
-				KeyCodec.getPubKey(Base64url.decode(Preferences.getSettingsParam("pub")));
-		PrivateKey priv =
-				KeyCodec.getPrivKey(Base64url.decode(Preferences.getSettingsParam("priv")));
-//				KeyCodec.getPrivKey(Base64
-//				.decodeBase64(TestData.TEST_PRIV_KEY));
+		Log.i(TAG, "dataForSigning : " + Base64url.encode(dataForSigning));
+		byte[] ret = fidoSigner.sign(dataForSigning, signingKeyPair);
 
-		logger.info(" : dataForSigning : "
-				+ Base64url.encode(dataForSigning));
-
-		BigInteger[] signatureGen = NamedCurve.signAndFromatToRS(priv,
-				SHA.sha(dataForSigning, "SHA-256"));
-
-		boolean verify = NamedCurve.verify(
-				KeyCodec.getKeyAsRawBytes((ECPublicKey)pub),
-				SHA.sha(dataForSigning, "SHA-256"),
-				Asn1.decodeToBigIntegerArray(Asn1.getEncoded(signatureGen)));
-		if (!verify) {
-			throw new RuntimeException("Signatire match fail");
-		}
-		byte[] ret = Asn1.toRawSignatureBytes(signatureGen);
-		logger.info(" : signature : " + Base64url.encode(ret));
+		Log.i(TAG, " : signature : " + Base64url.encode(ret));
 
 		return ret;
 	}
