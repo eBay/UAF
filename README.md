@@ -5,6 +5,7 @@
 
 [News & Release Notes](RELEASE.md)
 
+- [2017.10.02 - Updated Android RP app to utilize Android 6.0 secure storage](https://github.com/eBay/UAF/commit/cabc4be435b9c24ed7ac4f677b5e1bfce73a379d)
 - [2016.10.14 - Added endpoints for whitelisting AAID, and Facet Ids](https://github.com/eBay/UAF/blob/master/RELEASE.md#20161014)
 - [2016.05.20 - Added wiki page for Maven build and Tomcat setup/run (using CLI only)](https://github.com/eBay/UAF/wiki/BuildingAndRunningUAFServerUsingMaven(CLIonly))
 - [2016.03.28 - Started wiki pages](https://github.com/eBay/UAF/wiki)
