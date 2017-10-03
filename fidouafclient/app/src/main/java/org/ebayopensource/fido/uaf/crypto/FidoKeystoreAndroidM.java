@@ -20,10 +20,6 @@ import java.security.Signature;
 import java.security.cert.X509Certificate;
 import java.security.spec.ECGenParameterSpec;
 
-/**
- * Created by JP20818 on 2017/09/25.
- */
-
 @RequiresApi(api = Build.VERSION_CODES.M)
 public class FidoKeystoreAndroidM extends FidoKeystore {
 

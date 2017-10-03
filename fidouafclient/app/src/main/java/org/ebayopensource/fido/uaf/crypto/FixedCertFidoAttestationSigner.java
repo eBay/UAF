@@ -10,10 +10,6 @@ import java.math.BigInteger;
 import java.security.GeneralSecurityException;
 import java.security.PrivateKey;
 
-/**
- * Created by JP20818 on 2017/09/25.
- */
-
 public class FixedCertFidoAttestationSigner implements FidoAttestationSigner {
 
     private static final String TAG = FixedCertFidoAttestationSigner.class.getSimpleName();

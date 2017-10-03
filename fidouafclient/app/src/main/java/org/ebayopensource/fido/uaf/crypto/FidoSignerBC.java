@@ -5,10 +5,6 @@ import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 
-/**
- * Created by JP20818 on 2017/09/25.
- */
-
 public class FidoSignerBC implements FidoSigner {
 
     @Override

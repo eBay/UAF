@@ -8,10 +8,6 @@ import java.security.KeyPair;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 
-/**
- * Created by JP20818 on 2017/09/25.
- */
-
 public abstract class FidoKeystore {
 
     public static FidoKeystore createKeyStore(Context context) {

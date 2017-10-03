@@ -169,7 +169,7 @@ public class ExampleFidoUafActivity extends Activity implements FingerprintAuthP
         Signature signature = Signature.getInstance("SHA256withECDSA");
         PrivateKey privateKey = fidoKeystore.getKeyPair(Preferences.getSettingsParam("username")).getPrivate();
         signature.initSign(privateKey);
-        
+
         return new FidoSignerAndroidM(signature);
     }
 
