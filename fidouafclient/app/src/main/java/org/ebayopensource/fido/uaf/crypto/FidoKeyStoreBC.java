@@ -11,10 +11,6 @@ import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 import java.security.spec.ECGenParameterSpec;
 
-/**
- * Created by JP20818 on 2017/09/25.
- */
-
 public class FidoKeyStoreBC extends FidoKeystore {
 
     private static final String TAG = FidoKeyStoreBC.class.getSimpleName();

@@ -4,10 +4,6 @@ import java.security.KeyPair;
 import java.security.Signature;
 import java.security.SignatureException;
 
-/**
- * Created by JP20818 on 2017/09/25.
- */
-
 public class FidoSignerAndroidM implements FidoSigner {
 
     private static final String TAG = FidoSignerAndroidM.class.getSimpleName();
