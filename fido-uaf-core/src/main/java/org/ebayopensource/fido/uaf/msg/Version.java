@@ -24,4 +24,43 @@ public class Version {
 		this.major = major;
 		this.minor = minor;
     }
+
+    public Version() {
+    }
+
+    /**
+     * Getter for property 'major'.
+     *
+     * @return Value for property 'major'.
+     */
+    public int getMajor() {
+        return major;
+    }
+
+    /**
+     * Setter for property 'major'.
+     *
+     * @param major Value to set for property 'major'.
+     */
+    public void setMajor(int major) {
+        this.major = major;
+    }
+
+    /**
+     * Getter for property 'minor'.
+     *
+     * @return Value for property 'minor'.
+     */
+    public int getMinor() {
+        return minor;
+    }
+
+    /**
+     * Setter for property 'minor'.
+     *
+     * @param minor Value to set for property 'minor'.
+     */
+    public void setMinor(int minor) {
+        this.minor = minor;
+    }
 }
