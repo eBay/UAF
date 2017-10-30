@@ -20,7 +20,7 @@ import lombok.Data;
 
 @Data
 public class AuthenticationResponse {
-	public OperationHeader header;
-	public String fcParams;
-	public AuthenticatorSignAssertion[] assertions;
+    private OperationHeader header;
+	private String fcParams;
+	private AuthenticatorSignAssertion[] assertions;
 }

@@ -16,14 +16,13 @@
 
 package org.ebayopensource.fido.uaf.ri.client;
 
+import com.google.gson.Gson;
 import org.apache.commons.codec.binary.Base64;
 import org.ebayopensource.fido.uaf.msg.AuthenticatorRegistrationAssertion;
 import org.ebayopensource.fido.uaf.msg.FinalChallengeParams;
 import org.ebayopensource.fido.uaf.msg.OperationHeader;
 import org.ebayopensource.fido.uaf.msg.RegistrationRequest;
 import org.ebayopensource.fido.uaf.msg.RegistrationResponse;
-
-import com.google.gson.Gson;
 
 public class RegistrationRequestProcessing {
 
@@ -48,36 +47,36 @@ public class RegistrationRequestProcessing {
 		}
 
 		setAppId(regRequest, response);
-		response.header = new OperationHeader();
-		response.header.serverData = regRequest.header.serverData;
-		response.header.op = regRequest.header.op;
-		response.header.upv = regRequest.header.upv;
+        response.setHeader(new OperationHeader());
+        response.getHeader().setServerData(regRequest.getHeader().getServerData());
+        response.getHeader().setOp(regRequest.getHeader().getOp());
+        response.getHeader().setUpv(regRequest.getHeader().getUpv());
 
 		FinalChallengeParams fcParams = new FinalChallengeParams();
-		fcParams.appID = regRequest.header.appID;
-		fcParams.facetID = Constants.FACET_ID;
-		fcParams.challenge = regRequest.challenge;
-		response.fcParams = Base64.encodeBase64URLSafeString(gson.toJson(
-				fcParams).getBytes());
-		setAssertions(response);
+        fcParams.setAppID(regRequest.getHeader().getAppID());
+        fcParams.setFacetID(Constants.FACET_ID);
+        fcParams.setChallenge(regRequest.getChallenge());
+        response.setFcParams(Base64.encodeBase64URLSafeString(gson.toJson(
+            fcParams).getBytes()));
+        setAssertions(response);
 		return response;
 	}
 
 	private void setAssertions(RegistrationResponse response) {
 		AuthenticatorRegistrationAssertion assertion = new AuthenticatorRegistrationAssertion();
-		assertion.assertionScheme = "UAFV1TLV";
-		assertion.assertion = this.assertion;
-		AuthenticatorRegistrationAssertion[] assertions = new AuthenticatorRegistrationAssertion[1];
+        assertion.setAssertionScheme("UAFV1TLV");
+        assertion.setAssertion(this.assertion);
+        AuthenticatorRegistrationAssertion[] assertions = new AuthenticatorRegistrationAssertion[1];
 		assertions[0] = assertion;
-		response.assertions = assertions;
-	}
+        response.setAssertions(assertions);
+    }
 
 	private void setAppId(RegistrationRequest regRequest,
 			RegistrationResponse response) {
-		if (regRequest.header.appID == null
-				&& regRequest.header.appID.isEmpty()) {
-			response.header.appID = Constants.APP_ID;
-		} else {
+        if (regRequest.getHeader().getAppID() == null
+            && regRequest.getHeader().getAppID().isEmpty()) {
+            response.getHeader().setAppID(Constants.APP_ID);
+        } else {
 			setAppID(regRequest, response);
 		}
 	}

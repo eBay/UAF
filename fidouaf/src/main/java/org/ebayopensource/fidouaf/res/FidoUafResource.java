@@ -16,6 +16,8 @@
 
 package org.ebayopensource.fidouaf.res;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -24,7 +26,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -34,7 +35,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
-
 import org.apache.commons.codec.binary.Base64;
 import org.ebayopensource.fido.uaf.msg.AuthenticationRequest;
 import org.ebayopensource.fido.uaf.msg.AuthenticationResponse;
@@ -48,11 +48,11 @@ import org.ebayopensource.fido.uaf.storage.AuthenticatorRecord;
 import org.ebayopensource.fido.uaf.storage.DuplicateKeyException;
 import org.ebayopensource.fido.uaf.storage.RegistrationRecord;
 import org.ebayopensource.fido.uaf.storage.SystemErrorException;
+import org.ebayopensource.fidouaf.RPserver.msg.GetUAFRequest;
 import org.ebayopensource.fidouaf.RPserver.msg.ReturnUAFAuthenticationRequest;
 import org.ebayopensource.fidouaf.RPserver.msg.ReturnUAFDeregistrationRequest;
 import org.ebayopensource.fidouaf.RPserver.msg.ReturnUAFRegistrationRequest;
 import org.ebayopensource.fidouaf.RPserver.msg.ServerResponse;
-import org.ebayopensource.fidouaf.RPserver.msg.GetUAFRequest;
 import org.ebayopensource.fidouaf.facets.Facets;
 import org.ebayopensource.fidouaf.facets.TrustedFacets;
 import org.ebayopensource.fidouaf.res.util.DeregRequestProcessor;
@@ -61,9 +61,6 @@ import org.ebayopensource.fidouaf.res.util.ProcessResponse;
 import org.ebayopensource.fidouaf.res.util.StorageImpl;
 import org.ebayopensource.fidouaf.stats.Dash;
 import org.ebayopensource.fidouaf.stats.Info;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 @Path("/v1")
 public class FidoUafResource {
@@ -138,8 +135,8 @@ public class FidoUafResource {
 	public String getRegReqForAppId(@PathParam("username") String username, 
 			@PathParam("appId") String appId) {
 		RegistrationRequest[] regReq = getRegisReqPublic(username);
-		setAppId(appId, regReq[0].header);
-		return gson.toJson(regReq);
+        setAppId(appId, regReq[0].getHeader());
+        return gson.toJson(regReq);
 	}
 
 	@GET
@@ -249,25 +246,25 @@ public class FidoUafResource {
 
 			RegistrationResponse registrationResponse = fromJson[0];
 			result = new ProcessResponse().processRegResponse(registrationResponse);
-			if (result[0].status.equals("SUCCESS")) {
-				try {
+            if (result[0].getStatus().equals("SUCCESS")) {
+                try {
 					StorageImpl.getInstance().store(result);
 				} catch (DuplicateKeyException e) {
 					result = new RegistrationRecord[1];
 					result[0] = new RegistrationRecord();
-					result[0].status = "Error: Duplicate Key";
-				} catch (SystemErrorException e1) {
+                    result[0].setStatus("Error: Duplicate Key");
+                } catch (SystemErrorException e1) {
 					result = new RegistrationRecord[1];
 					result[0] = new RegistrationRecord();
-					result[0].status = "Error: Data couldn't be stored in DB";
-				}
+                    result[0].setStatus("Error: Data couldn't be stored in DB");
+                }
 			}
 		}else{
 			//TODO Could be interesting refactor this method (and its callers) and modify return type to javax.ws.rs.core.Response and send Response.Status.PRECONDITION_FAILED error code.
 			result = new RegistrationRecord[1];
 			result[0] = new RegistrationRecord();
-			result[0].status = "Error: payload could not be empty";
-		}
+            result[0].setStatus("Error: payload could not be empty");
+        }
 		return result;
 	}
 
@@ -292,9 +289,9 @@ public class FidoUafResource {
 	@Produces(MediaType.APPLICATION_JSON)
 	public String getAuthForAppIdReq(@PathParam("appId") String appId) {
 		AuthenticationRequest[] authReqObj = getAuthReqObj();
-		setAppId(appId, authReqObj[0].header);
-		
-		return gson.toJson(authReqObj);
+        setAppId(appId, authReqObj[0].getHeader());
+
+        return gson.toJson(authReqObj);
 	}
 
 	private void setAppId(String appId, OperationHeader header) {
@@ -311,8 +308,8 @@ public class FidoUafResource {
 		for (int i = 0; i < ids.length; i++) {
 			
 			if (decodedAppId.equals(ids[i])){
-				header.appID = decodedAppId;
-				break;
+                header.setAppID(decodedAppId);
+                break;
 			}
 		}
 	}
@@ -323,19 +320,19 @@ public class FidoUafResource {
 	public String getAuthTrxReq(@PathParam("appId") String appId,
 			@PathParam("trxContent") String trxContent) {
 		AuthenticationRequest[] authReqObj = getAuthReqObj();
-		setAppId(appId, authReqObj[0].header);
-		setTransaction(trxContent, authReqObj);
+        setAppId(appId, authReqObj[0].getHeader());
+        setTransaction(trxContent, authReqObj);
 		
 		return gson.toJson(authReqObj);
 	}
 
 	private void setTransaction(String trxContent, AuthenticationRequest[] authReqObj) {
-		authReqObj[0].transaction = new Transaction[1];
-		Transaction t = new Transaction();
-		t.content = trxContent;
-		t.contentType = MediaType.TEXT_PLAIN;
-		authReqObj[0].transaction[0] = t;
-	}
+        authReqObj[0].setTransaction(new Transaction[1]);
+        Transaction t = new Transaction();
+        t.setContent(trxContent);
+        t.setContentType(MediaType.TEXT_PLAIN);
+        authReqObj[0].getTransaction()[0] = t;
+    }
 
 	public AuthenticationRequest[] getAuthReqObj() {
 		AuthenticationRequest[] ret = new AuthenticationRequest[1];
@@ -440,24 +437,24 @@ public class FidoUafResource {
 
 			AuthenticatorRecord[] result = processAuthResponse(payload);
 
-			if (result[0].status.equals("SUCCESS")) {
-				servResp.statusCode = 1200;
+            if (result[0].getStatus().equals("SUCCESS")) {
+                servResp.statusCode = 1200;
 				servResp.Description = "OK. Operation completed";
-			} else if (result[0].status.equals("FAILED_SIGNATURE_NOT_VALID")
-					|| result[0].status.equals("FAILED_SIGNATURE_VERIFICATION")
-					|| result[0].status.equals("FAILED_ASSERTION_VERIFICATION")) {
-				servResp.statusCode = 1496;
-				servResp.Description = result[0].status;
-			} else if (result[0].status.equals("INVALID_SERVER_DATA_EXPIRED")
-					|| result[0].status
-					.equals("INVALID_SERVER_DATA_SIGNATURE_NO_MATCH")
-					|| result[0].status.equals("INVALID_SERVER_DATA_CHECK_FAILED")) {
-				servResp.statusCode = 1491;
-				servResp.Description = result[0].status;
-			} else {
+            } else if (result[0].getStatus().equals("FAILED_SIGNATURE_NOT_VALID")
+                || result[0].getStatus().equals("FAILED_SIGNATURE_VERIFICATION")
+                || result[0].getStatus().equals("FAILED_ASSERTION_VERIFICATION")) {
+                servResp.statusCode = 1496;
+                servResp.Description = result[0].getStatus();
+            } else if (result[0].getStatus().equals("INVALID_SERVER_DATA_EXPIRED")
+                || result[0].getStatus()
+                            .equals("INVALID_SERVER_DATA_SIGNATURE_NO_MATCH")
+                || result[0].getStatus().equals("INVALID_SERVER_DATA_CHECK_FAILED")) {
+                servResp.statusCode = 1491;
+                servResp.Description = result[0].getStatus();
+            } else {
 				servResp.statusCode = 1500;
-				servResp.Description = result[0].status;
-			}
+                servResp.Description = result[0].getStatus();
+            }
 		}else{
 			servResp.Description = "Error: payload is empty";
 		}
@@ -479,22 +476,22 @@ public class FidoUafResource {
 
 			RegistrationRecord[] result = processRegResponse(payload);
 
-			if (result[0].status.equals("SUCCESS")) {
-				servResp.statusCode = 1200;
+            if (result[0].getStatus().equals("SUCCESS")) {
+                servResp.statusCode = 1200;
 				servResp.Description = "OK. Operation completed";
-			} else if (result[0].status.equals("ASSERTIONS_CHECK_FAILED")) {
-				servResp.statusCode = 1496;
-				servResp.Description = result[0].status;
-			} else if (result[0].status.equals("INVALID_SERVER_DATA_EXPIRED")
-					|| result[0].status
-					.equals("INVALID_SERVER_DATA_SIGNATURE_NO_MATCH")
-					|| result[0].status.equals("INVALID_SERVER_DATA_CHECK_FAILED")) {
-				servResp.statusCode = 1491;
-				servResp.Description = result[0].status;
-			} else {
+            } else if (result[0].getStatus().equals("ASSERTIONS_CHECK_FAILED")) {
+                servResp.statusCode = 1496;
+                servResp.Description = result[0].getStatus();
+            } else if (result[0].getStatus().equals("INVALID_SERVER_DATA_EXPIRED")
+                || result[0].getStatus()
+                            .equals("INVALID_SERVER_DATA_SIGNATURE_NO_MATCH")
+                || result[0].getStatus().equals("INVALID_SERVER_DATA_CHECK_FAILED")) {
+                servResp.statusCode = 1491;
+                servResp.Description = result[0].getStatus();
+            } else {
 				servResp.statusCode = 1500;
-				servResp.Description = result[0].status;
-			}
+                servResp.Description = result[0].getStatus();
+            }
 		}else{
 			servResp.Description = "Error: payload is empty";
 		}
@@ -573,45 +570,45 @@ public class FidoUafResource {
 			if (findOp.equals("Reg")) {
 				RegistrationRecord[] result = processRegResponse(payload);
 
-				if (result[0].status.equals("SUCCESS")) {
-					servResp.statusCode = 1200;
+                if (result[0].getStatus().equals("SUCCESS")) {
+                    servResp.statusCode = 1200;
 					servResp.Description = "OK. Operation completed";
-				} else if (result[0].status.equals("ASSERTIONS_CHECK_FAILED")) {
-					servResp.statusCode = 1496;
-					servResp.Description = result[0].status;
-				} else if (result[0].status.equals("INVALID_SERVER_DATA_EXPIRED")
-						|| result[0].status
-						.equals("INVALID_SERVER_DATA_SIGNATURE_NO_MATCH")
-						|| result[0].status
-						.equals("INVALID_SERVER_DATA_CHECK_FAILED")) {
-					servResp.statusCode = 1491;
-					servResp.Description = result[0].status;
-				} else {
+                } else if (result[0].getStatus().equals("ASSERTIONS_CHECK_FAILED")) {
+                    servResp.statusCode = 1496;
+                    servResp.Description = result[0].getStatus();
+                } else if (result[0].getStatus().equals("INVALID_SERVER_DATA_EXPIRED")
+                    || result[0].getStatus()
+                                .equals("INVALID_SERVER_DATA_SIGNATURE_NO_MATCH")
+                    || result[0].getStatus()
+                                .equals("INVALID_SERVER_DATA_CHECK_FAILED")) {
+                    servResp.statusCode = 1491;
+                    servResp.Description = result[0].getStatus();
+                } else {
 					servResp.statusCode = 1500;
-					servResp.Description = result[0].status;
-				}
+                    servResp.Description = result[0].getStatus();
+                }
 			} else if (findOp.equals("Auth")) {
 				AuthenticatorRecord[] result = processAuthResponse(payload);
 
-				if (result[0].status.equals("SUCCESS")) {
-					servResp.statusCode = 1200;
+                if (result[0].getStatus().equals("SUCCESS")) {
+                    servResp.statusCode = 1200;
 					servResp.Description = "OK. Operation completed";
-				} else if (result[0].status.equals("FAILED_SIGNATURE_NOT_VALID")
-						|| result[0].status.equals("FAILED_SIGNATURE_VERIFICATION")
-						|| result[0].status.equals("FAILED_ASSERTION_VERIFICATION")) {
-					servResp.statusCode = 1496;
-					servResp.Description = result[0].status;
-				} else if (result[0].status.equals("INVALID_SERVER_DATA_EXPIRED")
-						|| result[0].status
-						.equals("INVALID_SERVER_DATA_SIGNATURE_NO_MATCH")
-						|| result[0].status
-						.equals("INVALID_SERVER_DATA_CHECK_FAILED")) {
-					servResp.statusCode = 1491;
-					servResp.Description = result[0].status;
-				} else {
+                } else if (result[0].getStatus().equals("FAILED_SIGNATURE_NOT_VALID")
+                    || result[0].getStatus().equals("FAILED_SIGNATURE_VERIFICATION")
+                    || result[0].getStatus().equals("FAILED_ASSERTION_VERIFICATION")) {
+                    servResp.statusCode = 1496;
+                    servResp.Description = result[0].getStatus();
+                } else if (result[0].getStatus().equals("INVALID_SERVER_DATA_EXPIRED")
+                    || result[0].getStatus()
+                                .equals("INVALID_SERVER_DATA_SIGNATURE_NO_MATCH")
+                    || result[0].getStatus()
+                                .equals("INVALID_SERVER_DATA_CHECK_FAILED")) {
+                    servResp.statusCode = 1491;
+                    servResp.Description = result[0].getStatus();
+                } else {
 					servResp.statusCode = 1500;
-					servResp.Description = result[0].status;
-				}
+                    servResp.Description = result[0].getStatus();
+                }
 			}
 		}else{
 			servResp.Description = "Error: payload is empty";

@@ -54,12 +54,12 @@ public class RegistrationRequestGeneration {
 		for (int i = 0; i < accepted.length; i++) {
 			MatchCriteria[] a = new MatchCriteria[1];
 			MatchCriteria matchCriteria = new MatchCriteria();
-			matchCriteria.aaid = new String[1];
-			matchCriteria.aaid[0] = acceptedAaids[i];
+            matchCriteria.setAaid(new String[1]);
+			matchCriteria.getAaid()[0] = acceptedAaids[i];
 			a[0] = matchCriteria;
 			accepted[i] = a;
 		}
-		p.accepted = accepted;
+        p.setAccepted(accepted);
 		return p;
 	}
 
@@ -89,14 +89,14 @@ public class RegistrationRequestGeneration {
 			String serverData, String challenge) {
 		RegistrationRequest regRequest = new RegistrationRequest();
 		OperationHeader header = new OperationHeader();
-		header.serverData = serverData;
-		regRequest.header = header;
-		regRequest.header.op = Operation.Reg;
-		regRequest.header.appID = appId;
-		regRequest.header.upv = new Version(1, 0);
-		regRequest.challenge = challenge;
-		regRequest.policy = constructAuthenticationPolicy();
-		regRequest.username = username;
+        header.setServerData(serverData);
+		regRequest.setHeader(header);
+		regRequest.getHeader().setOp(Operation.Reg);
+		regRequest.getHeader().setAppID(appId);
+		regRequest.getHeader().setUpv(new Version(1, 0));
+		regRequest.setChallenge(challenge);
+		regRequest.setPolicy(constructAuthenticationPolicy());
+		regRequest.setUsername(username);
 		return regRequest;
 	}
 

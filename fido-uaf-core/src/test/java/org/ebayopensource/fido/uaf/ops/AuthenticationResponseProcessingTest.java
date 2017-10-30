@@ -2,15 +2,13 @@ package org.ebayopensource.fido.uaf.ops;
 
 import static org.junit.Assert.*;
 
+import com.google.gson.Gson;
+import java.util.logging.Logger;
 import org.ebayopensource.fido.uaf.msg.AuthenticationResponse;
 import org.ebayopensource.fido.uaf.storage.AuthenticatorRecord;
 import org.ebayopensource.fido.uaf.storage.RegistrationRecord;
 import org.ebayopensource.fido.uaf.storage.StorageInterface;
-import org.junit.Test;
-
-import java.util.logging.Logger;
-
-import com.google.gson.Gson;
+import org.junit.*;
 
 public class AuthenticationResponseProcessingTest {
   private Logger logger = Logger.getLogger(this.getClass().getName());
@@ -25,10 +23,10 @@ public class AuthenticationResponseProcessingTest {
 		StorageInterface serverData = new ServerDataImpl();
 		AuthenticatorRecord[] authenticatorRecords = p.verify(response, serverData);
 		assertTrue(authenticatorRecords.length == 1);
-		assertEquals(authenticatorRecords[0].username, TEST_USERNAME);
-		assertEquals(authenticatorRecords[0].status, "SUCCESS");
-		
-	}
+        assertEquals(authenticatorRecords[0].getUsername(), TEST_USERNAME);
+        assertEquals(authenticatorRecords[0].getStatus(), "SUCCESS");
+
+    }
 
 	private AuthenticationResponse getTestResponse() {
 		return gson.fromJson(getTestResponseAsJsonString(), AuthenticationResponse.class);
@@ -66,9 +64,9 @@ public class AuthenticationResponseProcessingTest {
 
 		public RegistrationRecord readRegistrationRecord(String key) {
 			RegistrationRecord r = new RegistrationRecord();
-			r.username = TEST_USERNAME;
-			r.publicKey =
-					"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEAN6POEisT65JDZ_oHBXreI59W3BpISIrmYu9MzDD8ec9BCEgEOolypVx291mPg_Hv61AWKjCA6w_DaLCNKKC3g";
+            r.setUsername(TEST_USERNAME);
+            r.setPublicKey(
+                "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEAN6POEisT65JDZ_oHBXreI59W3BpISIrmYu9MzDD8ec9BCEgEOolypVx291mPg_Hv61AWKjCA6w_DaLCNKKC3g");
 //					"BJsvEtUsVKh7tmYHhJ2FBm3kHU-OCdWiUYVijgYa81MfkjQ1z6UiHbKP9_nRzIN9anprHqDGcR6q7O20q_yctZA=";
 //			r.PublicKey = "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEKJFyB4AHNtBlqc555yF_Xg9m7SvkfrllBYDirfJdu0XK6zq6ieurgjHzrhuCNbrFFDmu3_wNfb--BQvh7kgedA==";
 			return r;

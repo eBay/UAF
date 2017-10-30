@@ -20,9 +20,9 @@ import lombok.Data;
 
 @Data
 public class ChannelBinding {
-    public String serverEndPoint;
-    public String tlsServerCertificate;
-    public String tlsUnique;
-    public String cid_pubkey;
+    private String serverEndPoint;
+    private String tlsServerCertificate;
+    private String tlsUnique;
+    private String cid_pubkey;
 
 }

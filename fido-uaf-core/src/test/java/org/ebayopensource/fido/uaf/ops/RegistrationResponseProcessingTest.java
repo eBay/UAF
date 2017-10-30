@@ -21,17 +21,17 @@ public class RegistrationResponseProcessingTest {
 		RegistrationResponseProcessing rrp = new RegistrationResponseProcessing();
 		RegistrationRecord[] processResponse = rrp.processResponse(getResponseWithLongerSignature());
 		assertTrue(processResponse.length == 1);
-        logger.info("AAID=" + processResponse[0].authenticator.aaid);
+        logger.info("AAID=" + processResponse[0].getAuthenticator().getAaid());
     }
 	
 	@Test
 	public void serverDataValidation() throws Exception{
 		RegistrationResponseProcessing rrp = new RegistrationResponseProcessing(5*60*1000, new NotaryImpl());
 		RegistrationResponse response = getResponse();
-		response.header.serverData = prepareServerData ();
+        response.getHeader().setServerData(prepareServerData());
 		RegistrationRecord[] processResponse = rrp.processResponse(response);
 		assertTrue(processResponse.length == 1);
-        logger.info("AAID=" + processResponse[0].authenticator.aaid);
+        logger.info("AAID=" + processResponse[0].getAuthenticator().getAaid());
     }
 
 	private String prepareServerData() {

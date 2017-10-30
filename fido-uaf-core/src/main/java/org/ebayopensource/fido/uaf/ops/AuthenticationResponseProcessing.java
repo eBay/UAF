@@ -67,14 +67,14 @@ public class AuthenticationResponseProcessing {
 
 	public AuthenticatorRecord[] verify(AuthenticationResponse response,
 			StorageInterface serverData) throws Exception {
-		AuthenticatorRecord[] result = new AuthenticatorRecord[response.assertions.length];
+        AuthenticatorRecord[] result = new AuthenticatorRecord[response.getAssertions().length];
 
-		checkVersion(response.header.upv);
-		checkServerData(response.header.serverData, result);
+		checkVersion(response.getHeader().getUpv());
+		checkServerData(response.getHeader().getServerData(), result);
 		FinalChallengeParams fcp = getFcp(response);
 		checkFcp(fcp);
 		for (int i = 0; i < result.length; i++) {
-			result[i] = processAssertions(response.assertions[i], serverData);
+            result[i] = processAssertions(response.getAssertions()[i], serverData);
 		}
 		return result;
 	}
@@ -87,11 +87,11 @@ public class AuthenticationResponseProcessing {
 		RegistrationRecord registrationRecord = null;
 
 		try {
-			Tags tags = parser.parse(authenticatorSignAssertion.assertion);
-            authRecord.aaid = new String(tags.getTags().get(
-                TagsEnum.TAG_AAID.id).value);
-            authRecord.keyID = Base64.encodeBase64URLSafeString(tags.getTags()
-                                                                    .get(TagsEnum.TAG_KEYID.id).value);
+            Tags tags = parser.parse(authenticatorSignAssertion.getAssertion());
+			authRecord.setAaid(new String(tags.getTags().get(
+				TagsEnum.TAG_AAID.id).value));
+			authRecord.setKeyID(Base64.encodeBase64URLSafeString(tags.getTags()
+																	 .get(TagsEnum.TAG_KEYID.id).value));
             // authRecord.KeyID = new String(
 			// tags.getTags().get(TagsEnum.TAG_KEYID.id).value);
 			registrationRecord = getRegistration(authRecord, storage);
@@ -100,31 +100,31 @@ public class AuthenticationResponseProcessing {
 			Tag signature = tags.getTags().get(TagsEnum.TAG_SIGNATURE.id);
 			Tag info = tags.getTags().get(TagsEnum.TAG_ASSERTION_INFO.id);
 			AlgAndEncodingEnum algAndEncoding = getAlgAndEncoding(info);
-			String pubKey = registrationRecord.publicKey;
+            String pubKey = registrationRecord.getPublicKey();
 			try {
 				if (!verifySignature(signnedData, signature, pubKey,
 						algAndEncoding)) {
 					logger.log(Level.INFO,
 							"Signature verification failed for authenticator: "
 									+ authRecord.toString());
-					authRecord.status = "FAILED_SIGNATURE_NOT_VALID";
+                    authRecord.setStatus("FAILED_SIGNATURE_NOT_VALID");
 					return authRecord;
 				}
 			} catch (Exception e) {
 				logger.log(Level.INFO,
 						"Signature verification failed for authenticator: "
 								+ authRecord.toString(), e);
-				authRecord.status = "FAILED_SIGNATURE_VERIFICATION";
+                authRecord.setStatus("FAILED_SIGNATURE_VERIFICATION");
 				return authRecord;
 			}
-			authRecord.username = registrationRecord.username;
-			authRecord.deviceId = registrationRecord.deviceId;
-			authRecord.status = "SUCCESS";
+            authRecord.setUsername(registrationRecord.getUsername());
+			authRecord.setDeviceId(registrationRecord.getDeviceId());
+			authRecord.setStatus("SUCCESS");
 			return authRecord;
 		} catch (IOException e) {
 			logger.log(Level.INFO, "Fail to parse assertion: "
-					+ authenticatorSignAssertion.assertion, e);
-			authRecord.status = "FAILED_ASSERTION_VERIFICATION";
+                + authenticatorSignAssertion.getAssertion(), e);
+			authRecord.setStatus("FAILED_ASSERTION_VERIFICATION");
 			return authRecord;
 		}
 	}
@@ -286,16 +286,16 @@ public class AuthenticationResponseProcessing {
 			if (rec == null) {
 				rec = new AuthenticatorRecord();
 			}
-			rec.status = status;
+            rec.setStatus(status);
 		}
 	}
 
 	private void checkVersion(Version upv) throws Exception {
-		if (upv.major == 1 && upv.minor == 0) {
+        if (upv.getMajor() == 1 && upv.getMinor() == 0) {
 			return;
 		} else {
-			throw new Exception("Invalid version: " + upv.major + "."
-					+ upv.minor);
+            throw new Exception("Invalid version: " + upv.getMajor() + "."
+									+ upv.getMinor());
 		}
 	}
 

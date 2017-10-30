@@ -20,9 +20,9 @@ import lombok.Data;
 
 @Data
 public class OperationHeader {
-	public Version upv;
-	public Operation op;
-	public String appID;
-	public String serverData;
+    private Version upv;
+	private Operation op;
+	private String appID;
+	private String serverData;
 	//public Extension[] exts;
 }

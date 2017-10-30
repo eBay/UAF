@@ -54,10 +54,10 @@ public class StorageImpl implements StorageInterface {
 			throws DuplicateKeyException, SystemErrorException {
 		if (records != null && records.length > 0) {
 			for (int i = 0; i < records.length; i++) {
-				if (db.containsKey(records[i].authenticator.toString())) {
+				if (db.containsKey(records[i].getAuthenticator().toString())) {
 					throw new DuplicateKeyException();
 				}
-				db.put(records[i].authenticator.toString(), records[i]);
+				db.put(records[i].getAuthenticator().toString(), records[i]);
 			}
 
 		}

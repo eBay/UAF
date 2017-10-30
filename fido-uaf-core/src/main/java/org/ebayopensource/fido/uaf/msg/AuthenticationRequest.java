@@ -20,8 +20,8 @@ import lombok.Data;
 
 @Data
 public class AuthenticationRequest {
-	public OperationHeader header;
-	public String challenge;
-	public Transaction[] transaction;
-	public Policy policy;
+	private OperationHeader header;
+	private String challenge;
+	private Transaction[] transaction;
+	private Policy policy;
 }

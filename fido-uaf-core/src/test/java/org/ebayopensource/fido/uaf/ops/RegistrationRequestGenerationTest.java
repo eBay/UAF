@@ -1,16 +1,13 @@
 package org.ebayopensource.fido.uaf.ops;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
+import com.google.gson.Gson;
 import java.util.logging.Logger;
-
 import org.bouncycastle.util.encoders.Base64;
 import org.ebayopensource.fido.uaf.crypto.Notary;
 import org.ebayopensource.fido.uaf.msg.RegistrationRequest;
-import org.junit.Test;
-
-import com.google.gson.Gson;
+import org.junit.*;
 
 public class RegistrationRequestGenerationTest {
 
@@ -30,12 +27,12 @@ public class RegistrationRequestGenerationTest {
 	public void basic() {
 		Notary notary = new NotaryImpl();
 		RegistrationRequest regReq = new RegistrationRequestGeneration().createRegistrationRequest("Username", notary);
-		
-		String serverData = regReq.header.serverData;
-		serverData = new String (Base64.decode(serverData));
+
+        String serverData = regReq.getHeader().getServerData();
+        serverData = new String (Base64.decode(serverData));
 		assertTrue(notary.verify(serverData,serverData));
-		assertTrue(RegistrationRequestGeneration.APP_ID.equals(regReq.header.appID));
-		logger.info(gson.toJson(regReq));
+        assertTrue(RegistrationRequestGeneration.APP_ID.equals(regReq.getHeader().getAppID()));
+        logger.info(gson.toJson(regReq));
 	}
 	
 	class NotaryImpl implements Notary {

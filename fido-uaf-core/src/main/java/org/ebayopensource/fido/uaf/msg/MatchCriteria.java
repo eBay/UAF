@@ -20,7 +20,7 @@ import lombok.Data;
 
 @Data
 public class MatchCriteria {
-	public String[] aaid;
+    private String[] aaid;
 	//public String[] vendorID;
 //	public String[] keyIDs;
 //	public long userVerification;

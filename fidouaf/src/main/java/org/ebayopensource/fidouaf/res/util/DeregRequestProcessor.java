@@ -33,9 +33,9 @@ public class DeregRequestProcessor {
 				DeregistrationRequest deregRequest = deregFromJson[0];
 				Dash.getInstance().stats.put(Dash.LAST_DEREG_REQ, deregFromJson);
 				AuthenticatorRecord authRecord = new AuthenticatorRecord();
-				for (DeregisterAuthenticator authenticator : deregRequest.authenticators) {
-                    authRecord.aaid = authenticator.aaid;
-                    authRecord.keyID = authenticator.keyID;
+                for (DeregisterAuthenticator authenticator : deregRequest.getAuthenticators()) {
+					authRecord.setAaid(authenticator.getAaid());
+					authRecord.setKeyID(authenticator.getKeyID());
                     try {
 						String Key = authRecord.toString();
 						StorageImpl.getInstance().deleteRegistrationRecord(Key);

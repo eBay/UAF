@@ -20,12 +20,12 @@ import lombok.Data;
 
 @Data
 public class DisplayPNGCharacteristicsDescriptor {
-	public long width;
-	public long height;
-	public String bitDepth;
-	public String colorType;
-	public String compression;
-	public String filter;
-	public String interlace;
-	public rgbPalletteEntry[] plte;
+    private long width;
+	private long height;
+	private String bitDepth;
+	private String colorType;
+	private String compression;
+	private String filter;
+	private String interlace;
+	private rgbPalletteEntry[] plte;
 }

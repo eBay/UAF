@@ -66,14 +66,14 @@ public class RegistrationResponseProcessing {
 	public RegistrationRecord[] processResponse(RegistrationResponse response)
 			throws Exception {
 		checkAssertions(response);
-		RegistrationRecord[] records = new RegistrationRecord[response.assertions.length];
+        RegistrationRecord[] records = new RegistrationRecord[response.getAssertions().length];
 
-		checkVersion(response.header.upv);
-		checkServerData(response.header.serverData, records);
+		checkVersion(response.getHeader().getUpv());
+		checkServerData(response.getHeader().getServerData(), records);
 		FinalChallengeParams fcp = getFcp(response);
 		checkFcp(fcp);
 		for (int i = 0; i < records.length; i++) {
-			records[i] = processAssertions(response.assertions[i], records[i]);
+            records[i] = processAssertions(response.getAssertions()[i], records[i]);
 		}
 
 		return records;
@@ -84,40 +84,37 @@ public class RegistrationResponseProcessing {
 			RegistrationRecord record) {
 		if (record == null) {
 			record = new RegistrationRecord();
-			record.status = "INVALID_USERNAME";
+            record.setStatus("INVALID_USERNAME");
 		}
 		TlvAssertionParser parser = new TlvAssertionParser();
 		try {
 			Tags tags = parser
-					.parse(authenticatorRegistrationAssertion.assertion);
+                .parse(authenticatorRegistrationAssertion.getAssertion());
 			try {
 				verifyAttestationSignature(tags, record);
 			} catch (Exception e) {
-				record.attestVerifiedStatus = "NOT_VERIFIED";
+                record.setAttestVerifiedStatus("NOT_VERIFIED");
 			}
 
 			AuthenticatorRecord authRecord = new AuthenticatorRecord();
-            authRecord.aaid = new String(tags.getTags().get(
-                TagsEnum.TAG_AAID.id).value);
-            authRecord.keyID =
-                // new String(tags.getTags().get(
-			// TagsEnum.TAG_KEYID.id).value);
-			Base64.encodeBase64URLSafeString(tags.getTags().get(
-					TagsEnum.TAG_KEYID.id).value);
-			record.authenticator = authRecord;
-			record.publicKey = Base64.encodeBase64URLSafeString(tags.getTags()
-																	.get(TagsEnum.TAG_PUB_KEY.id).value);
-			record.authenticatorVersion = getAuthenticatorVersion(tags);
+            authRecord.setAaid(new String(tags.getTags().get(
+				TagsEnum.TAG_AAID.id).value));
+			authRecord.setKeyID(Base64.encodeBase64URLSafeString(tags.getTags().get(
+				TagsEnum.TAG_KEYID.id).value));
+			record.setAuthenticator(authRecord);
+			record.setPublicKey(Base64.encodeBase64URLSafeString(tags.getTags()
+																	 .get(TagsEnum.TAG_PUB_KEY.id).value));
+			record.setAuthenticatorVersion(getAuthenticatorVersion(tags));
 			String fc = Base64.encodeBase64URLSafeString(tags.getTags().get(
 					TagsEnum.TAG_FINAL_CHALLENGE.id).value);
 			logger.log(Level.INFO, "FC: " + fc);
-			if (record.status == null) {
-				record.status = "SUCCESS";
+            if (record.getStatus() == null) {
+				record.setStatus("SUCCESS");
 			}
 		} catch (Exception e) {
-			record.status = "ASSERTIONS_CHECK_FAILED";
+            record.setStatus("ASSERTIONS_CHECK_FAILED");
 			logger.log(Level.INFO, "Fail to parse assertion: "
-					+ authenticatorRegistrationAssertion.assertion, e);
+                + authenticatorRegistrationAssertion.getAssertion(), e);
 		}
 		return record;
 	}
@@ -125,7 +122,7 @@ public class RegistrationResponseProcessing {
 	private void verifyAttestationSignature(Tags tags, RegistrationRecord record)
 			throws NoSuchAlgorithmException, IOException, Exception {
 		byte[] certBytes = tags.getTags().get(TagsEnum.TAG_ATTESTATION_CERT.id).value;
-		record.attestCert = Base64.encodeBase64URLSafeString(certBytes);
+        record.setAttestCert(Base64.encodeBase64URLSafeString(certBytes));
 
 		Tag krd = tags.getTags().get(TagsEnum.TAG_UAFV1_KRD.id);
 		Tag signature = tags.getTags().get(TagsEnum.TAG_SIGNATURE.id);
@@ -136,16 +133,16 @@ public class RegistrationResponseProcessing {
 				2);
 		System.arraycopy(krd.value, 0, signedBytes, 4, krd.value.length);
 
-		record.attestDataToSign = Base64.encodeBase64URLSafeString(signedBytes);
-		record.attestSignature = Base64
-				.encodeBase64URLSafeString(signature.value);
-		record.attestVerifiedStatus = "FAILED_VALIDATION_ATTEMPT";
+		record.setAttestDataToSign(Base64.encodeBase64URLSafeString(signedBytes));
+        record.setAttestSignature(Base64
+									  .encodeBase64URLSafeString(signature.value));
+		record.setAttestVerifiedStatus("FAILED_VALIDATION_ATTEMPT");
 
 		if (certificateValidator.validate(certBytes, signedBytes,
 				signature.value)) {
-			record.attestVerifiedStatus = "VALID";
+            record.setAttestVerifiedStatus("VALID");
 		} else {
-			record.attestVerifiedStatus = "NOT_VERIFIED";
+            record.setAttestVerifiedStatus("NOT_VERIFIED");
 		}
 	}
 
@@ -157,7 +154,7 @@ public class RegistrationResponseProcessing {
 
 	private void checkAssertions(RegistrationResponse response)
 			throws Exception {
-		if (response.assertions != null && response.assertions.length > 0) {
+        if (response.getAssertions() != null && response.getAssertions().length > 0) {
 			return;
 		} else {
 			throw new Exception("Missing assertions in registration response");
@@ -165,8 +162,8 @@ public class RegistrationResponseProcessing {
 	}
 
 	private FinalChallengeParams getFcp(RegistrationResponse response) {
-		String fcp = new String(Base64.decodeBase64(response.fcParams
-				.getBytes()));
+        String fcp = new String(Base64.decodeBase64(response.getFcParams()
+															.getBytes()));
 		return gson.fromJson(fcp, FinalChallengeParams.class);
 	}
 
@@ -219,8 +216,8 @@ public class RegistrationResponseProcessing {
 			if (rec == null) {
 				rec = new RegistrationRecord();
 			}
-			rec.username = new String(Base64.decodeBase64(username));
-			rec.timeStamp = new String(Base64.decodeBase64(timeStamp));
+            rec.setUsername(new String(Base64.decodeBase64(username)));
+			rec.setTimeStamp(new String(Base64.decodeBase64(timeStamp)));
 			records[i] = rec;
 		}
 	}
@@ -233,16 +230,16 @@ public class RegistrationResponseProcessing {
 			if (rec == null) {
 				rec = new RegistrationRecord();
 			}
-			rec.status = status;
+            rec.setStatus(status);
 		}
 	}
 
 	private void checkVersion(Version upv) throws Exception {
-		if (upv.major == 1 && upv.minor == 0) {
+        if (upv.getMajor() == 1 && upv.getMinor() == 0) {
 			return;
 		} else {
-			throw new Exception("Invalid version: " + upv.major + "."
-					+ upv.minor);
+            throw new Exception("Invalid version: " + upv.getMajor() + "."
+									+ upv.getMinor());
 		}
 	}
 

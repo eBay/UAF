@@ -20,7 +20,7 @@ import lombok.Data;
 
 @Data
 public class rgbPalletteEntry {
-    public short r;
-    public short g;
-    public short b;
+    private short r;
+    private short g;
+    private short b;
 }

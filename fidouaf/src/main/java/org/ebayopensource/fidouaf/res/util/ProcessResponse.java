@@ -41,7 +41,7 @@ public class ProcessResponse {
 							+ e.getMessage());
 			result = new AuthenticatorRecord[1];
 			result[0] = new AuthenticatorRecord();
-			result[0].status = e.getMessage();
+			result[0].setStatus(e.getMessage());
 		}
 		return result;
 	}
@@ -58,7 +58,7 @@ public class ProcessResponse {
 							+ e.getMessage());
 			result = new RegistrationRecord[1];
 			result[0] = new RegistrationRecord();
-			result[0].status = e.getMessage();
+			result[0].setStatus(e.getMessage());
 		}
 		return result;
 	}

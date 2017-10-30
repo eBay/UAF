@@ -20,6 +20,6 @@ import lombok.Data;
 
 @Data
 public class AuthenticatorRegistrationAssertion {
-	public String assertionScheme;
-	public String assertion;
+    private String assertionScheme;
+	private String assertion;
 }

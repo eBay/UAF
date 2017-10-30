@@ -23,13 +23,17 @@ public class AuthenticatorRecord {
 
     private static final String DLM = "#";
 
-    public String aaid;
-    public String keyID;
-    public String deviceId;
-    public String username;
-    public String status;
+    private String aaid;
+    private String keyID;
+    private String deviceId;
+    private String username;
+    private String status;
+
+    public static String getDLM() {
+        return DLM;
+    }
 
     public String toString() {
-        return aaid + DLM + keyID;
+        return getAaid() + getDLM() + getKeyID();
     }
 }

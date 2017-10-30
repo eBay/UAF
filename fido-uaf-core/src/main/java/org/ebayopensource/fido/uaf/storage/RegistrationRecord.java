@@ -20,18 +20,18 @@ import lombok.Data;
 
 @Data
 public class RegistrationRecord {
-	public AuthenticatorRecord authenticator;
-	public String publicKey;
-	public String signCounter;
-	public String authenticatorVersion;
-	public String tcDisplayPNGCharacteristics;
-	public String username;
-	public String userId;
-	public String deviceId;
-	public String timeStamp;
-	public String status;
-	public String attestCert;
-	public String attestDataToSign;
-	public String attestSignature;
-	public String attestVerifiedStatus;
+	private AuthenticatorRecord authenticator;
+	private String publicKey;
+	private String signCounter;
+	private String authenticatorVersion;
+	private String tcDisplayPNGCharacteristics;
+	private String username;
+	private String userId;
+	private String deviceId;
+	private String timeStamp;
+	private String status;
+	private String attestCert;
+	private String attestDataToSign;
+	private String attestSignature;
+	private String attestVerifiedStatus;
 }

@@ -61,13 +61,15 @@ public class App {
 
 	private RegistrationRequest invokeRegistration() {
 		RegistrationRequest req = new RegistrationRequest();
-		req.header = new OperationHeader();
-		req.header.op = Operation.Reg;
-		req.header.appID = "https://uaf-test-1.noknoktest.com:8443/SampleApp/uaf/facets";
-		req.header.serverData = "IjycjPZYiWMaQ1tKLrJROiXQHmYG0tSSYGjP5mgjsDaM17RQgq0dl3NNDDTx9d-aSR_6hGgclrU2F2Yj-12S67v5VmQHj4eWVseLulHdpk2v_hHtKSvv_DFqL4n2IiUY6XZWVbOnvg";
-		req.challenge = "H9iW9yA9aAXF_lelQoi_DhUk514Ad8Tqv0zCnCqKDpo";
-		req.username = "apa";
-		req.header.upv = new Version(1, 0);
+        req.setHeader(new OperationHeader());
+		req.getHeader().setOp(Operation.Reg);
+		req.getHeader().setAppID("https://uaf-test-1.noknoktest.com:8443/SampleApp/uaf/facets");
+		req.getHeader().setServerData(
+			"IjycjPZYiWMaQ1tKLrJROiXQHmYG0tSSYGjP5mgjsDaM17RQgq0dl3NNDDTx9d-aSR_6hGgclrU2F2Yj"
+                + "-12S67v5VmQHj4eWVseLulHdpk2v_hHtKSvv_DFqL4n2IiUY6XZWVbOnvg");
+		req.setChallenge("H9iW9yA9aAXF_lelQoi_DhUk514Ad8Tqv0zCnCqKDpo");
+		req.setUsername("apa");
+		req.getHeader().setUpv(new Version(1, 0));
 		return req;
 	}
 
@@ -81,7 +83,7 @@ public class App {
 			throws Exception {
 		RegistrationResponseProcessing respProcessing = new RegistrationResponseProcessing();
 		RegistrationRecord[] regRecord = respProcessing.processResponse(resp);
-		storage = new Storage(regRecord[0].publicKey);
+        storage = new Storage(regRecord[0].getPublicKey());
 		logger.info(" : Reg records : "
 				+ gson.toJson(regRecord, RegistrationRecord[].class));
 
@@ -110,12 +112,16 @@ public class App {
 
 	private AuthenticationRequest invokeAuthentication() {
 		AuthenticationRequest req = new AuthenticationRequest();
-		req.header = new OperationHeader();
-		req.header.op = Operation.Auth;
-		req.header.appID = "https://uaf-test-1.noknoktest.com:8443/SampleApp/uaf/facets";
-		req.header.serverData = "5s7n8-7_LDAtRIKKYqbAtTTOezVKCjl2mPorYzbpxRrZ-_3wWroMXsF_pLYjNVm_l7bplAx4bkEwK6ibil9EHGfdfKOQ1q0tyEkNJFOgqdjVmLioroxgThlj8Istpt7q";
-		req.challenge = "HQ1VkTUQC1NJDOo6OOWdxewrb9i5WthjfKIehFxpeuU";
-		req.header.upv = new Version(1, 0);
+        req.setHeader(new OperationHeader());
+		req.getHeader().setOp(Operation.Auth);
+		req.getHeader().setAppID("https://uaf-test-1.noknoktest.com:8443/SampleApp/uaf/facets");
+		req
+			.getHeader()
+			.setServerData(
+				"5s7n8-7_LDAtRIKKYqbAtTTOezVKCjl2mPorYzbpxRrZ"
+                    + "-_3wWroMXsF_pLYjNVm_l7bplAx4bkEwK6ibil9EHGfdfKOQ1q0tyEkNJFOgqdjVmLioroxgThlj8Istpt7q");
+		req.setChallenge("HQ1VkTUQC1NJDOo6OOWdxewrb9i5WthjfKIehFxpeuU");
+		req.getHeader().setUpv(new Version(1, 0));
 		return req;
 	}
 
@@ -132,7 +138,7 @@ public class App {
 		AuthenticatorRecord[] authRec = respProcessing.verify(resp, storage);
 		logger.info(" : Auth records : "
 				+ gson.toJson(authRec, AuthenticatorRecord[].class));
-        if (authRec != null && authRec[0].aaid != null) {
+        if (authRec != null && authRec[0].getAaid() != null) {
             return "<access_token_goes_here>";
 		}
 		return null;
@@ -159,7 +165,7 @@ public class App {
 
 		public RegistrationRecord readRegistrationRecord(String key) {
 			RegistrationRecord r = new RegistrationRecord();
-			r.publicKey = b64PubKey;
+            r.setPublicKey(b64PubKey);
 			return r;
 		}
 

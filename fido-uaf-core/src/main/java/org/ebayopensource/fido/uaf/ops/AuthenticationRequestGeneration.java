@@ -46,14 +46,14 @@ public class AuthenticationRequestGeneration {
 	public AuthenticationRequest createAuthenticationRequest(Notary notary) {
 		AuthenticationRequest authRequest = new AuthenticationRequest();
 		OperationHeader header = new OperationHeader();
-		authRequest.challenge = generateChallenge();
-		header.serverData = generateServerData(authRequest.challenge, notary);
-		authRequest.header = header;
-		authRequest.header.op = Operation.Auth;
-		authRequest.header.appID = appId;
-		authRequest.header.upv = new Version(1, 0);
+        authRequest.setChallenge(generateChallenge());
+		header.setServerData(generateServerData(authRequest.getChallenge(), notary));
+		authRequest.setHeader(header);
+		authRequest.getHeader().setOp(Operation.Auth);
+		authRequest.getHeader().setAppID(appId);
+		authRequest.getHeader().setUpv(new Version(1, 0));
 
-		authRequest.policy = constructAuthenticationPolicy();
+		authRequest.setPolicy(constructAuthenticationPolicy());
 
 		return authRequest;
 	}
@@ -82,12 +82,12 @@ public class AuthenticationRequestGeneration {
 		for (int i = 0; i < accepted.length; i++) {
 			MatchCriteria[] a = new MatchCriteria[1];
 			MatchCriteria matchCriteria = new MatchCriteria();
-			matchCriteria.aaid = new String[1];
-			matchCriteria.aaid[0] = acceptedAaids[i];
+            matchCriteria.setAaid(new String[1]);
+			matchCriteria.getAaid()[0] = acceptedAaids[i];
 			a[0] = matchCriteria;
 			accepted[i] = a;
 		}
-		p.accepted = accepted;
+        p.setAccepted(accepted);
 		return p;
 	}
 

@@ -20,7 +20,7 @@ import lombok.Data;
 
 @Data
 public class AuthenticatorSignAssertion {
-	public String assertionScheme;
-	public String assertion;
-	public Extension[] exts;
+    private String assertionScheme;
+	private String assertion;
+	private Extension[] exts;
 }

@@ -20,6 +20,6 @@ import lombok.Data;
 
 @Data
 public class Policy {
-	public MatchCriteria[][] accepted;
+    private MatchCriteria[][] accepted;
 	//public MatchCriteria[] disallowed;
 }

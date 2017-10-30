@@ -2,11 +2,9 @@ package org.ebayopensource.fido.uaf.msg;
 
 import static org.junit.Assert.*;
 
-import java.util.logging.Logger;
-
-import org.junit.Test;
-
 import com.google.gson.Gson;
+import java.util.logging.Logger;
+import org.junit.*;
 
 public class AuthenticationResponseTest {
 	
@@ -32,10 +30,10 @@ public class AuthenticationResponseTest {
 	@Test
 	public void noNullInJson() {
 		AuthenticationResponse authResponse = new AuthenticationResponse();
-		authResponse.assertions = new AuthenticatorSignAssertion[1];
-		authResponse.assertions[0] = new AuthenticatorSignAssertion();
-		authResponse.assertions[0].assertion = "SOMETHING";
-		String json = gson.toJson(authResponse);
+        authResponse.setAssertions(new AuthenticatorSignAssertion[1]);
+        authResponse.getAssertions()[0] = new AuthenticatorSignAssertion();
+        authResponse.getAssertions()[0].setAssertion("SOMETHING");
+        String json = gson.toJson(authResponse);
 		logger.info(json);
 		assertTrue(!json.contains("null"));
 		assertTrue(json.contains("SOMETHING"));

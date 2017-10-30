@@ -20,8 +20,8 @@ import lombok.Data;
 
 @Data
 public class JwkKey {
-    public String kty = "EC";
-    public String crv = "P-256";
-    public String x;
-    public String y;
+    private String kty = "EC";
+    private String crv = "P-256";
+    private String x;
+    private String y;
 }

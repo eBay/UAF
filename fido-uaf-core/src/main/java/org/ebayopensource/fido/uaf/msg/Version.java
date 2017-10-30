@@ -22,6 +22,6 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class Version {
-    public int major;
-    public int minor;
+    private int major;
+    private int minor;
 }
