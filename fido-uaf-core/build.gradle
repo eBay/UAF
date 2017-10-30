@@ -54,3 +54,5 @@ publishing {
         }
     }
 }
+
+afterReleaseBuild.dependsOn artifactoryPublish
