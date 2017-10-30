@@ -1,20 +1,56 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath "org.jfrog.buildinfo:build-info-extractor-gradle:latest.release"
+    }
+}
+
 plugins {
-	id 'net.researchgate.release' version '2.4.0'
+    id 'net.researchgate.release' version '2.4.0'
 }
 apply plugin: 'java'
 apply plugin: 'maven'
+apply plugin: 'maven-publish'
+apply plugin: "com.jfrog.artifactory"
 
-group = 'org.ebayopensource'
-version = '0.0.1-SNAPSHOT'
 
 repositories {
-	mavenCentral()
+    mavenCentral()
 }
 
 dependencies {
-	compile 'com.google.code.gson:gson:2.3.1'
-	compile 'commons-codec:commons-codec:1.9'
-	compile 'org.bouncycastle:bcprov-jdk15on:1.51'
+    compile 'com.google.code.gson:gson:2.3.1'
+    compile 'commons-codec:commons-codec:1.9'
+    compile 'org.bouncycastle:bcprov-jdk15on:1.51'
 
-	testCompile 'junit:junit:4.12'
+    testCompile 'junit:junit:4.12'
+}
+
+artifactory {
+    contextUrl = "${artifactory_contextUrl}"
+    publish {
+        repository {
+            repoKey = 'gradle-dev'
+            username = "${artifactory_user}"
+            password = "${artifactory_password}"
+            maven = true
+
+        }
+        defaults {
+            publications ('mavenJava')
+        }
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            groupId "${project.groupId}"
+            artifactId "${artifactId}"
+
+            from components.java
+        }
+    }
 }
