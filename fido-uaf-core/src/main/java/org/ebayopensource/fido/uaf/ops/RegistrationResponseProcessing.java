@@ -16,6 +16,10 @@
 
 package org.ebayopensource.fido.uaf.ops;
 
+import static org.ebayopensource.fido.uaf.msg.RecordStatus.INVALID_SERVER_DATA_CHECK_FAILED;
+import static org.ebayopensource.fido.uaf.msg.RecordStatus.INVALID_SERVER_DATA_EXPIRED;
+import static org.ebayopensource.fido.uaf.msg.RecordStatus.INVALID_SERVER_DATA_SIGNATURE_NO_MATCH;
+
 import com.google.gson.Gson;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
@@ -27,6 +31,7 @@ import org.ebayopensource.fido.uaf.crypto.CertificateValidatorImpl;
 import org.ebayopensource.fido.uaf.crypto.Notary;
 import org.ebayopensource.fido.uaf.msg.AuthenticatorRegistrationAssertion;
 import org.ebayopensource.fido.uaf.msg.FinalChallengeParams;
+import org.ebayopensource.fido.uaf.msg.RecordStatus;
 import org.ebayopensource.fido.uaf.msg.RegistrationResponse;
 import org.ebayopensource.fido.uaf.msg.Version;
 import org.ebayopensource.fido.uaf.storage.AuthenticatorRecord;
@@ -40,7 +45,7 @@ import org.ebayopensource.fido.uaf.tlv.UnsignedUtil;
 public class RegistrationResponseProcessing {
 
 	private Logger logger = Logger.getLogger(this.getClass().getName());
-	private long serverDataExpiryInMs = 5 * 60 * 1000;
+    private long serverDataExpiryInMs = 5 * 60 * 1000;
 	private Notary notary = null;
 	private Gson gson = new Gson();
 	private CertificateValidator certificateValidator;
@@ -50,55 +55,55 @@ public class RegistrationResponseProcessing {
 	}
 
 	public RegistrationResponseProcessing(long serverDataExpiryInMs,
-			Notary notary) {
+										  Notary notary) {
 		this.serverDataExpiryInMs = serverDataExpiryInMs;
 		this.notary = notary;
 		this.certificateValidator = new CertificateValidatorImpl();
 	}
 
 	public RegistrationResponseProcessing(long serverDataExpiryInMs,
-			Notary notary, CertificateValidator certificateValidator) {
+										  Notary notary, CertificateValidator certificateValidator) {
 		this.serverDataExpiryInMs = serverDataExpiryInMs;
 		this.notary = notary;
 		this.certificateValidator = certificateValidator;
 	}
 
 	public RegistrationRecord[] processResponse(RegistrationResponse response)
-			throws Exception {
+		throws Exception {
 		checkAssertions(response);
         RegistrationRecord[] records = new RegistrationRecord[response.getAssertions().length];
 
 		checkVersion(response.getHeader().getUpv());
-		checkServerData(response.getHeader().getServerData(), records);
+        checkServerData(response.getHeader().getServerData(), records);
 		FinalChallengeParams fcp = getFcp(response);
 		checkFcp(fcp);
 		for (int i = 0; i < records.length; i++) {
             records[i] = processAssertions(response.getAssertions()[i], records[i]);
-		}
+        }
 
 		return records;
 	}
 
 	private RegistrationRecord processAssertions(
-			AuthenticatorRegistrationAssertion authenticatorRegistrationAssertion,
-			RegistrationRecord record) {
+		AuthenticatorRegistrationAssertion authenticatorRegistrationAssertion,
+		RegistrationRecord record) {
 		if (record == null) {
 			record = new RegistrationRecord();
-            record.setStatus("INVALID_USERNAME");
+			record.setStatus(RecordStatus.INVALID_USERNAME);
 		}
 		TlvAssertionParser parser = new TlvAssertionParser();
 		try {
 			Tags tags = parser
                 .parse(authenticatorRegistrationAssertion.getAssertion());
-			try {
+            try {
 				verifyAttestationSignature(tags, record);
 			} catch (Exception e) {
                 record.setAttestVerifiedStatus("NOT_VERIFIED");
-			}
+            }
 
 			AuthenticatorRecord authRecord = new AuthenticatorRecord();
             authRecord.setAaid(new String(tags.getTags().get(
-				TagsEnum.TAG_AAID.id).value));
+                TagsEnum.TAG_AAID.id).value));
 			authRecord.setKeyID(Base64.encodeBase64URLSafeString(tags.getTags().get(
 				TagsEnum.TAG_KEYID.id).value));
 			record.setAuthenticator(authRecord);
@@ -106,56 +111,56 @@ public class RegistrationResponseProcessing {
 																	 .get(TagsEnum.TAG_PUB_KEY.id).value));
 			record.setAuthenticatorVersion(getAuthenticatorVersion(tags));
 			String fc = Base64.encodeBase64URLSafeString(tags.getTags().get(
-					TagsEnum.TAG_FINAL_CHALLENGE.id).value);
+				TagsEnum.TAG_FINAL_CHALLENGE.id).value);
 			logger.log(Level.INFO, "FC: " + fc);
             if (record.getStatus() == null) {
-				record.setStatus("SUCCESS");
+                record.setStatus(RecordStatus.SUCCESS);
 			}
 		} catch (Exception e) {
-            record.setStatus("ASSERTIONS_CHECK_FAILED");
+			record.setStatus(RecordStatus.ASSERTIONS_CHECK_FAILED);
 			logger.log(Level.INFO, "Fail to parse assertion: "
                 + authenticatorRegistrationAssertion.getAssertion(), e);
-		}
+        }
 		return record;
 	}
 
 	private void verifyAttestationSignature(Tags tags, RegistrationRecord record)
-			throws NoSuchAlgorithmException, IOException, Exception {
+		throws NoSuchAlgorithmException, IOException, Exception {
 		byte[] certBytes = tags.getTags().get(TagsEnum.TAG_ATTESTATION_CERT.id).value;
         record.setAttestCert(Base64.encodeBase64URLSafeString(certBytes));
 
 		Tag krd = tags.getTags().get(TagsEnum.TAG_UAFV1_KRD.id);
-		Tag signature = tags.getTags().get(TagsEnum.TAG_SIGNATURE.id);
+        Tag signature = tags.getTags().get(TagsEnum.TAG_SIGNATURE.id);
 
 		byte[] signedBytes = new byte[krd.value.length + 4];
 		System.arraycopy(UnsignedUtil.encodeInt(krd.id), 0, signedBytes, 0, 2);
 		System.arraycopy(UnsignedUtil.encodeInt(krd.length), 0, signedBytes, 2,
-				2);
+						 2);
 		System.arraycopy(krd.value, 0, signedBytes, 4, krd.value.length);
 
 		record.setAttestDataToSign(Base64.encodeBase64URLSafeString(signedBytes));
         record.setAttestSignature(Base64
-									  .encodeBase64URLSafeString(signature.value));
+                                      .encodeBase64URLSafeString(signature.value));
 		record.setAttestVerifiedStatus("FAILED_VALIDATION_ATTEMPT");
 
 		if (certificateValidator.validate(certBytes, signedBytes,
-				signature.value)) {
+										  signature.value)) {
             record.setAttestVerifiedStatus("VALID");
-		} else {
+        } else {
             record.setAttestVerifiedStatus("NOT_VERIFIED");
-		}
+        }
 	}
 
 	private String getAuthenticatorVersion(Tags tags) {
 		return "" + tags.getTags().get(TagsEnum.TAG_ASSERTION_INFO.id).value[0]
-				+ "."
-				+ tags.getTags().get(TagsEnum.TAG_ASSERTION_INFO.id).value[1];
+			+ "."
+			+ tags.getTags().get(TagsEnum.TAG_ASSERTION_INFO.id).value[1];
 	}
 
 	private void checkAssertions(RegistrationResponse response)
-			throws Exception {
+		throws Exception {
         if (response.getAssertions() != null && response.getAssertions().length > 0) {
-			return;
+            return;
 		} else {
 			throw new Exception("Missing assertions in registration response");
 		}
@@ -163,12 +168,12 @@ public class RegistrationResponseProcessing {
 
 	private FinalChallengeParams getFcp(RegistrationResponse response) {
         String fcp = new String(Base64.decodeBase64(response.getFcParams()
-															.getBytes()));
+                                                            .getBytes()));
 		return gson.fromJson(fcp, FinalChallengeParams.class);
 	}
 
 	private void checkServerData(String serverDataB64,
-			RegistrationRecord[] records) throws Exception {
+								 RegistrationRecord[] records) throws Exception {
 		if (notary == null) {
 			return;
 		}
@@ -181,7 +186,7 @@ public class RegistrationResponseProcessing {
 			username = tokens[2];
 			challenge = tokens[3];
 			dataToSign = timeStamp + "." + username + "." + challenge;
-			if (!notary.verify(dataToSign, signature)) {
+			if (! notary.verify(dataToSign, signature)) {
 				throw new ServerDataSignatureNotMatchException();
 			}
 			if (isExpired(timeStamp)) {
@@ -189,13 +194,13 @@ public class RegistrationResponseProcessing {
 			}
 			setUsernameAndTimeStamp(username, timeStamp, records);
 		} catch (ServerDataExpiredException e) {
-			setErrorStatus(records, "INVALID_SERVER_DATA_EXPIRED");
+			setErrorStatus(records, INVALID_SERVER_DATA_EXPIRED);
 			throw new Exception("Invalid server data - Expired data");
 		} catch (ServerDataSignatureNotMatchException e) {
-			setErrorStatus(records, "INVALID_SERVER_DATA_SIGNATURE_NO_MATCH");
+			setErrorStatus(records, INVALID_SERVER_DATA_SIGNATURE_NO_MATCH);
 			throw new Exception("Invalid server data - Signature not match");
 		} catch (Exception e) {
-			setErrorStatus(records, "INVALID_SERVER_DATA_CHECK_FAILED");
+			setErrorStatus(records, INVALID_SERVER_DATA_CHECK_FAILED);
 			throw new Exception("Server data check failed");
 		}
 
@@ -203,11 +208,11 @@ public class RegistrationResponseProcessing {
 
 	private boolean isExpired(String timeStamp) {
 		return Long.parseLong(new String(Base64.decodeBase64(timeStamp)))
-				+ serverDataExpiryInMs < System.currentTimeMillis();
+			+ serverDataExpiryInMs < System.currentTimeMillis();
 	}
 
 	private void setUsernameAndTimeStamp(String username, String timeStamp,
-			RegistrationRecord[] records) {
+										 RegistrationRecord[] records) {
 		if (records == null || records.length == 0) {
 			return;
 		}
@@ -217,12 +222,12 @@ public class RegistrationResponseProcessing {
 				rec = new RegistrationRecord();
 			}
             rec.setUsername(new String(Base64.decodeBase64(username)));
-			rec.setTimeStamp(new String(Base64.decodeBase64(timeStamp)));
+            rec.setTimeStamp(new String(Base64.decodeBase64(timeStamp)));
 			records[i] = rec;
 		}
 	}
 
-	private void setErrorStatus(RegistrationRecord[] records, String status) {
+	private void setErrorStatus(RegistrationRecord[] records, RecordStatus status) {
 		if (records == null || records.length == 0) {
 			return;
 		}
@@ -231,15 +236,15 @@ public class RegistrationResponseProcessing {
 				rec = new RegistrationRecord();
 			}
             rec.setStatus(status);
-		}
+        }
 	}
 
 	private void checkVersion(Version upv) throws Exception {
         if (upv.getMajor() == 1 && upv.getMinor() == 0) {
-			return;
+            return;
 		} else {
             throw new Exception("Invalid version: " + upv.getMajor() + "."
-									+ upv.getMinor());
+                                    + upv.getMinor());
 		}
 	}
 

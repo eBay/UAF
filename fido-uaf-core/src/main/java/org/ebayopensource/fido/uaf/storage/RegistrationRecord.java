@@ -17,21 +17,22 @@
 package org.ebayopensource.fido.uaf.storage;
 
 import lombok.Data;
+import org.ebayopensource.fido.uaf.msg.RecordStatus;
 
 @Data
 public class RegistrationRecord {
-	private AuthenticatorRecord authenticator;
-	private String publicKey;
-	private String signCounter;
-	private String authenticatorVersion;
-	private String tcDisplayPNGCharacteristics;
-	private String username;
-	private String userId;
-	private String deviceId;
-	private String timeStamp;
-	private String status;
-	private String attestCert;
-	private String attestDataToSign;
-	private String attestSignature;
-	private String attestVerifiedStatus;
+    private AuthenticatorRecord authenticator;
+    private String publicKey;
+    private String signCounter;
+    private String authenticatorVersion;
+    private String tcDisplayPNGCharacteristics;
+    private String username;
+    private String userId;
+    private String deviceId;
+    private String timeStamp;
+    private RecordStatus status;
+    private String attestCert;
+    private String attestDataToSign;
+    private String attestSignature;
+    private String attestVerifiedStatus;
 }

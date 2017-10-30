@@ -1,0 +1,10 @@
+package org.ebayopensource.fido.uaf.msg;
+
+public enum RecordStatus {
+    INVALID_USERNAME,
+    SUCCESS,
+    ASSERTIONS_CHECK_FAILED,
+    INVALID_SERVER_DATA_EXPIRED,
+    INVALID_SERVER_DATA_SIGNATURE_NO_MATCH,
+    INVALID_SERVER_DATA_CHECK_FAILED
+}
