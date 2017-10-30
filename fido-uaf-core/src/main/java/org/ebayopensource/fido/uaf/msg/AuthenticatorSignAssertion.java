@@ -16,6 +16,9 @@
 
 package org.ebayopensource.fido.uaf.msg;
 
+import lombok.Data;
+
+@Data
 public class AuthenticatorSignAssertion {
 	public String assertionScheme;
 	public String assertion;

@@ -16,10 +16,13 @@
 
 package org.ebayopensource.fido.uaf.msg;
 
+import lombok.Data;
+
+@Data
 public class ChannelBinding {
-	public String serverEndPoint;
-	public String tlsServerCertificate;
-	public String tlsUnique;
-	public String cid_pubkey;
+    public String serverEndPoint;
+    public String tlsServerCertificate;
+    public String tlsUnique;
+    public String cid_pubkey;
 
 }

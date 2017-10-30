@@ -16,6 +16,9 @@
 
 package org.ebayopensource.fido.uaf.storage;
 
+import lombok.Data;
+
+@Data
 public class RegistrationRecord {
 	public AuthenticatorRecord authenticator;
 	public String PublicKey;

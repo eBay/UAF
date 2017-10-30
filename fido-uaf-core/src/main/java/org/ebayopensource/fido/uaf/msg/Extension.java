@@ -16,8 +16,11 @@
 
 package org.ebayopensource.fido.uaf.msg;
 
+import lombok.Data;
+
+@Data
 public class Extension {
-	public String id;
-	public String data;
-	public boolean fail_if_unknown;
+	private String id;
+	private String data;
+	private boolean fail_if_unknown;
 }

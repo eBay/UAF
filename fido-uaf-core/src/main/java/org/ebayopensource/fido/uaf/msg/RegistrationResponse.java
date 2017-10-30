@@ -16,6 +16,9 @@
 
 package org.ebayopensource.fido.uaf.msg;
 
+import lombok.Data;
+
+@Data
 public class RegistrationResponse {
 	public OperationHeader header;
 	public String fcParams;

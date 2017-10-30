@@ -16,6 +16,9 @@
 
 package org.ebayopensource.fido.uaf.storage;
 
+import lombok.Data;
+
+@Data
 public class AuthenticatorRecord {
 
 	private static final String DLM = "#";

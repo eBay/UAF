@@ -16,6 +16,9 @@
 
 package org.ebayopensource.fido.uaf.msg;
 
+import lombok.Data;
+
+@Data
 public class MatchCriteria {
 	public String[] aaid;
 	//public String[] vendorID;

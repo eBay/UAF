@@ -25,6 +25,8 @@ dependencies {
     compile 'commons-codec:commons-codec:1.9'
     compile 'org.bouncycastle:bcprov-jdk15on:1.51'
 
+    compileOnly 'org.projectlombok:lombok:1.16.18'
+
     testCompile 'junit:junit:4.12'
 }
 

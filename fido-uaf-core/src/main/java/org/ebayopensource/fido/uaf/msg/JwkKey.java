@@ -16,6 +16,9 @@
 
 package org.ebayopensource.fido.uaf.msg;
 
+import lombok.Data;
+
+@Data
 public class JwkKey {
     public String kty = "EC";
     public String crv = "P-256";
