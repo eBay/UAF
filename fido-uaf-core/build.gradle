@@ -41,7 +41,7 @@ artifactory {
 
         }
         defaults {
-            publications ('mavenJava')
+            publications('mavenJava')
         }
     }
 }
@@ -53,8 +53,14 @@ publishing {
             artifactId "${artifactId}"
 
             from components.java
+            artifact sourceJar
         }
     }
+}
+
+task sourceJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allJava
 }
 
 afterReleaseBuild.dependsOn artifactoryPublish
