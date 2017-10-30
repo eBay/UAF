@@ -16,11 +16,11 @@
 
 package org.ebayopensource.fido.uaf.ops;
 
+import com.google.gson.Gson;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import org.apache.commons.codec.binary.Base64;
 import org.ebayopensource.fido.uaf.crypto.CertificateValidator;
 import org.ebayopensource.fido.uaf.crypto.CertificateValidatorImpl;
@@ -36,8 +36,6 @@ import org.ebayopensource.fido.uaf.tlv.Tags;
 import org.ebayopensource.fido.uaf.tlv.TagsEnum;
 import org.ebayopensource.fido.uaf.tlv.TlvAssertionParser;
 import org.ebayopensource.fido.uaf.tlv.UnsignedUtil;
-
-import com.google.gson.Gson;
 
 public class RegistrationResponseProcessing {
 
@@ -99,10 +97,10 @@ public class RegistrationResponseProcessing {
 			}
 
 			AuthenticatorRecord authRecord = new AuthenticatorRecord();
-			authRecord.AAID = new String(tags.getTags().get(
-					TagsEnum.TAG_AAID.id).value);
-			authRecord.KeyID =
-			// new String(tags.getTags().get(
+            authRecord.aaid = new String(tags.getTags().get(
+                TagsEnum.TAG_AAID.id).value);
+            authRecord.keyID =
+                // new String(tags.getTags().get(
 			// TagsEnum.TAG_KEYID.id).value);
 			Base64.encodeBase64URLSafeString(tags.getTags().get(
 					TagsEnum.TAG_KEYID.id).value);

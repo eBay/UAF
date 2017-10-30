@@ -16,12 +16,11 @@
 
 package org.ebayopensource.fidouaf.res.util;
 
+import com.google.gson.Gson;
 import org.ebayopensource.fido.uaf.msg.DeregisterAuthenticator;
 import org.ebayopensource.fido.uaf.msg.DeregistrationRequest;
 import org.ebayopensource.fido.uaf.storage.AuthenticatorRecord;
 import org.ebayopensource.fidouaf.stats.Dash;
-
-import com.google.gson.Gson;
 
 public class DeregRequestProcessor {
 	private Gson gson = new Gson();
@@ -35,9 +34,9 @@ public class DeregRequestProcessor {
 				Dash.getInstance().stats.put(Dash.LAST_DEREG_REQ, deregFromJson);
 				AuthenticatorRecord authRecord = new AuthenticatorRecord();
 				for (DeregisterAuthenticator authenticator : deregRequest.authenticators) {
-					authRecord.AAID = authenticator.aaid;
-					authRecord.KeyID = authenticator.keyID;
-					try {
+                    authRecord.aaid = authenticator.aaid;
+                    authRecord.keyID = authenticator.keyID;
+                    try {
 						String Key = authRecord.toString();
 						StorageImpl.getInstance().deleteRegistrationRecord(Key);
 					} catch (Exception e) {

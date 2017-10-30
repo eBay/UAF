@@ -16,8 +16,8 @@
 
 package org.ebayopensource.fido.uaf.ri.client;
 
+import com.google.gson.Gson;
 import java.util.logging.Logger;
-
 import org.ebayopensource.fido.uaf.msg.AuthenticationRequest;
 import org.ebayopensource.fido.uaf.msg.AuthenticationResponse;
 import org.ebayopensource.fido.uaf.msg.Operation;
@@ -30,8 +30,6 @@ import org.ebayopensource.fido.uaf.ops.RegistrationResponseProcessing;
 import org.ebayopensource.fido.uaf.storage.AuthenticatorRecord;
 import org.ebayopensource.fido.uaf.storage.RegistrationRecord;
 import org.ebayopensource.fido.uaf.storage.StorageInterface;
-
-import com.google.gson.Gson;
 
 public class App {
 
@@ -134,8 +132,8 @@ public class App {
 		AuthenticatorRecord[] authRec = respProcessing.verify(resp, storage);
 		logger.info(" : Auth records : "
 				+ gson.toJson(authRec, AuthenticatorRecord[].class));
-		if (authRec != null && authRec[0].AAID != null) {
-			return "<access_token_goes_here>";
+        if (authRec != null && authRec[0].aaid != null) {
+            return "<access_token_goes_here>";
 		}
 		return null;
 	}

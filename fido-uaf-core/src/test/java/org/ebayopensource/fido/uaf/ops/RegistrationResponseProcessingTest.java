@@ -2,16 +2,14 @@ package org.ebayopensource.fido.uaf.ops;
 
 import static org.junit.Assert.*;
 
+import com.google.gson.Gson;
 import java.util.logging.Logger;
-
 import org.apache.commons.codec.binary.Base64;
 import org.ebayopensource.fido.uaf.crypto.Notary;
 import org.ebayopensource.fido.uaf.crypto.SHA;
 import org.ebayopensource.fido.uaf.msg.RegistrationResponse;
 import org.ebayopensource.fido.uaf.storage.RegistrationRecord;
-import org.junit.Test;
-
-import com.google.gson.Gson;
+import org.junit.*;
 
 public class RegistrationResponseProcessingTest {
 	
@@ -23,8 +21,8 @@ public class RegistrationResponseProcessingTest {
 		RegistrationResponseProcessing rrp = new RegistrationResponseProcessing();
 		RegistrationRecord[] processResponse = rrp.processResponse(getResponseWithLongerSignature());
 		assertTrue(processResponse.length == 1);
-		logger.info("AAID="+processResponse[0].authenticator.AAID);
-	}
+        logger.info("AAID=" + processResponse[0].authenticator.aaid);
+    }
 	
 	@Test
 	public void serverDataValidation() throws Exception{
@@ -33,8 +31,8 @@ public class RegistrationResponseProcessingTest {
 		response.header.serverData = prepareServerData ();
 		RegistrationRecord[] processResponse = rrp.processResponse(response);
 		assertTrue(processResponse.length == 1);
-		logger.info("AAID="+processResponse[0].authenticator.AAID);
-	}
+        logger.info("AAID=" + processResponse[0].authenticator.aaid);
+    }
 
 	private String prepareServerData() {
 		return generateServerData("testUsername", "challengeString", new NotaryImpl());

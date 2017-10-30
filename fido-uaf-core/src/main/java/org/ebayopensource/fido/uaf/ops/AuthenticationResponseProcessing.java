@@ -26,7 +26,6 @@ import java.security.PublicKey;
 import java.security.SignatureException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import org.apache.commons.codec.binary.Base64;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.jce.interfaces.ECPublicKey;
@@ -89,11 +88,11 @@ public class AuthenticationResponseProcessing {
 
 		try {
 			Tags tags = parser.parse(authenticatorSignAssertion.assertion);
-			authRecord.AAID = new String(tags.getTags().get(
-					TagsEnum.TAG_AAID.id).value);
-			authRecord.KeyID = Base64.encodeBase64URLSafeString(tags.getTags()
-					.get(TagsEnum.TAG_KEYID.id).value);
-			// authRecord.KeyID = new String(
+            authRecord.aaid = new String(tags.getTags().get(
+                TagsEnum.TAG_AAID.id).value);
+            authRecord.keyID = Base64.encodeBase64URLSafeString(tags.getTags()
+                                                                    .get(TagsEnum.TAG_KEYID.id).value);
+            // authRecord.KeyID = new String(
 			// tags.getTags().get(TagsEnum.TAG_KEYID.id).value);
 			registrationRecord = getRegistration(authRecord, storage);
 			Tag signnedData = tags.getTags().get(
