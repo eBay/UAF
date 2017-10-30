@@ -107,9 +107,9 @@ public class RegistrationResponseProcessing {
 			Base64.encodeBase64URLSafeString(tags.getTags().get(
 					TagsEnum.TAG_KEYID.id).value);
 			record.authenticator = authRecord;
-			record.PublicKey = Base64.encodeBase64URLSafeString(tags.getTags()
-					.get(TagsEnum.TAG_PUB_KEY.id).value);
-			record.AuthenticatorVersion = getAuthenticatorVersion(tags);
+			record.publicKey = Base64.encodeBase64URLSafeString(tags.getTags()
+																	.get(TagsEnum.TAG_PUB_KEY.id).value);
+			record.authenticatorVersion = getAuthenticatorVersion(tags);
 			String fc = Base64.encodeBase64URLSafeString(tags.getTags().get(
 					TagsEnum.TAG_FINAL_CHALLENGE.id).value);
 			logger.log(Level.INFO, "FC: " + fc);

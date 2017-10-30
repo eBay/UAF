@@ -21,9 +21,9 @@ import lombok.Data;
 @Data
 public class RegistrationRecord {
 	public AuthenticatorRecord authenticator;
-	public String PublicKey;
-	public String SignCounter;
-	public String AuthenticatorVersion;
+	public String publicKey;
+	public String signCounter;
+	public String authenticatorVersion;
 	public String tcDisplayPNGCharacteristics;
 	public String username;
 	public String userId;

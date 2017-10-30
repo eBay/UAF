@@ -83,7 +83,7 @@ public class App {
 			throws Exception {
 		RegistrationResponseProcessing respProcessing = new RegistrationResponseProcessing();
 		RegistrationRecord[] regRecord = respProcessing.processResponse(resp);
-		storage = new Storage(regRecord[0].PublicKey);
+		storage = new Storage(regRecord[0].publicKey);
 		logger.info(" : Reg records : "
 				+ gson.toJson(regRecord, RegistrationRecord[].class));
 
@@ -161,7 +161,7 @@ public class App {
 
 		public RegistrationRecord readRegistrationRecord(String key) {
 			RegistrationRecord r = new RegistrationRecord();
-			r.PublicKey = b64PubKey;
+			r.publicKey = b64PubKey;
 			return r;
 		}
 

@@ -101,7 +101,7 @@ public class AuthenticationResponseProcessing {
 			Tag signature = tags.getTags().get(TagsEnum.TAG_SIGNATURE.id);
 			Tag info = tags.getTags().get(TagsEnum.TAG_ASSERTION_INFO.id);
 			AlgAndEncodingEnum algAndEncoding = getAlgAndEncoding(info);
-			String pubKey = registrationRecord.PublicKey;
+			String pubKey = registrationRecord.publicKey;
 			try {
 				if (!verifySignature(signnedData, signature, pubKey,
 						algAndEncoding)) {
