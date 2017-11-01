@@ -162,7 +162,7 @@ public class RegistrationResponseProcessing {
     }
 
     private void checkAssertions(RegistrationResponse response) throws AssertionException {
-        if (response.getAssertions() == null && response.getAssertions().length <= 0) {
+        if (response.getAssertions() == null || response.getAssertions().length <= 0) {
             throw new AssertionException("Missing assertions in registration response");
         }
     }
