@@ -39,6 +39,8 @@ import org.ebayopensource.fido.uaf.msg.AuthenticationResponse;
 import org.ebayopensource.fido.uaf.msg.AuthenticatorSignAssertion;
 import org.ebayopensource.fido.uaf.msg.FinalChallengeParams;
 import org.ebayopensource.fido.uaf.msg.Version;
+import org.ebayopensource.fido.uaf.ops.exception.ServerDataExpiredException;
+import org.ebayopensource.fido.uaf.ops.exception.ServerDataSignatureNotMatchException;
 import org.ebayopensource.fido.uaf.storage.AuthenticatorRecord;
 import org.ebayopensource.fido.uaf.storage.RegistrationRecord;
 import org.ebayopensource.fido.uaf.storage.StorageInterface;
