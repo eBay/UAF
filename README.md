@@ -9,6 +9,37 @@ This projects provides a Java implementation of the [UAF protocol][uaf-protocol-
 
 The goal of the Universal Authentication Framework is to provide a unified and extensible authentication mechanism that supplants passwords while avoiding the shortcomings of current alternative authentication approaches. Read more at the [UAF Specification][uaf-specification-v1.0].
 
+# Usage
+
+## Integration
+
+### Gradle
+```groovy
+repositories {
+    maven {
+        url  "http://dl.bintray.com/neXenio/UAF"
+    }
+}
+dependencies {
+    compile 'package.id.placeholder:0.0.0.0'
+}
+```
+
+### Maven
+```xml
+<dependency>
+  <groupId>package.id.placeholder</groupId>
+  <artifactId>uaf</artifactId>
+  <version>0.0.0.0</version>
+</dependency>
+```
+
+### JAR
+You can download the latest .jar files from [GitHub][releases] or [Bintray][bintray].
+
+
+[releases]: https://github.com/neXenio/UAF/releases
+[bintray]: https://bintray.com/neXenio/UAF/
 
 [fido]: https://fidoalliance.org/
 [fido-specifications-overview]: https://fidoalliance.org/specifications/overview/
