@@ -66,7 +66,7 @@ task sourceJar(type: Jar) {
 // configure release plugin. See https://github.com/researchgate/gradle-release#configuration
 release {
     git {
-        requireBranch = /master|dev/
+        requireBranch = 'master'
     }
 }
 
