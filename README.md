@@ -2,7 +2,7 @@
 
 # FIDO UAF - Universal Authentication Framework
 
-This projects provides a Java implementation of the [UAF protocol][uaf-protocol-overview] (as defined per [specification][uaf-specification-v1.0]) that can be used by [UAF Clients][uaf-client-overview] and [UAF Servers][uaf-server-overview].
+This projects provides a Java implementation of the [UAF protocol][uaf-protocol-overview] (as defined per [specification][uaf-specification-v1.0]) that can be used by [UAF Clients][uaf-client-overview] and [UAF Servers][uaf-server-overview]. The repository is forked from [eBay UAF][ebay-uaf-repo] because of the lack of maintenance.
 
 
 ## What is UAF?
@@ -49,3 +49,4 @@ You can download the latest .jar files from [GitHub][releases] or [Bintray][bint
 [uaf-server-overview]: https://fidoalliance.org/specs/fido-uaf-v1.0-ps-20141208/fido-uaf-overview-v1.0-ps-20141208.html#fido-uaf-server
 [uaf-protocol-overview]: https://fidoalliance.org/specs/fido-uaf-v1.0-ps-20141208/fido-uaf-overview-v1.0-ps-20141208.html#fido-uaf-protocols
 [tizen-uaf-guide]: https://developer.tizen.org/development/guides/native-application/personal-data/authentication-and-authorization/fido-universal-authentication-framework
+[ebay-uaf-repo]: https://github.com/eBay/UAF
