@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.security.Security;
 import java.util.Arrays;
-
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.DERSequenceGenerator;
@@ -38,10 +37,6 @@ public class Asn1 {
 	 * UAF_ALG_SIGN_SECP256K1_ECDSA_SHA256_DER 0x06 DER [ITU-X690-2008] encoded
 	 * ECDSA signature [RFC5480] on the secp256k1 curve. I.e. a DER encoded
 	 * SEQUENCE { r INTEGER, s INTEGER }
-	 * 
-	 * @param signature
-	 * @return
-	 * @throws IOException
 	 */
 	public static byte[] getEncoded(BigInteger[] sigs) throws IOException {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream(72);
