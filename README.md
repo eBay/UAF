@@ -1,4 +1,4 @@
-[![Build Status](https://secure.travis-ci.org/neXenio/UAF.svg?branch=master)](https://travis-ci.org/eBay/UAF)
+[![Build Status](https://secure.travis-ci.org/neXenio/UAF.svg?branch=master)](https://travis-ci.org/neXenio/UAF)
 
 # FIDO UAF - Universal Authentication Framework
 
@@ -39,7 +39,7 @@ You can download the latest .jar files from [GitHub][releases] or [Bintray][bint
 
 
 [releases]: https://github.com/neXenio/UAF/releases
-[bintray]: https://bintray.com/neXenio/UAF/
+[bintray]: https://bintray.com/nexenio/UAF-Java/
 
 [fido]: https://fidoalliance.org/
 [fido-specifications-overview]: https://fidoalliance.org/specifications/overview/

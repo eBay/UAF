@@ -30,9 +30,7 @@ dependencies {
     testCompile 'junit:junit:4.12'
 }
 
-ext {
-    releaseVersionName = "1.0.4"
-}
+def releaseVersionName = "1.0.4"
 
 bintray {
     user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
@@ -48,10 +46,10 @@ bintray {
         githubRepo = 'neXenio/UAF/'
         githubReleaseNotesFile = 'README.md'
         version {
-            name = "${it.releaseVersionName}"
-            desc = "UAF Java ${it.releaseVersionName}"
+            name = "${releaseVersionName}"
+            desc = "UAF Java ${releaseVersionName}"
             released = new Date()
-            vcsTag = "${it.releaseVersionName}"
+            vcsTag = "${releaseVersionName}"
             gpg {
                 sign = true
             }
@@ -92,7 +90,7 @@ publishing {
             artifactId "${artifactId}"
 
             from components.java
-            artifact sourceJar
+            artifact sourcesJar
         }
         BintrayPublication(MavenPublication) {
             from components.java
@@ -100,7 +98,7 @@ publishing {
             artifact javadocJar
             groupId 'com.nexenio.fido'
             artifactId 'uaf-core'
-            version "${it.releaseVersionName}"
+            version "${releaseVersionName}"
             pom.withXml {
                 def root = asNode()
                 root.appendNode('description', 'Java implementation of the UAF protocol')
@@ -112,9 +110,19 @@ publishing {
     }
 }
 
-task sourceJar(type: Jar) {
+task sourcesJar(type: Jar) {
     classifier = 'sources'
     from sourceSets.main.allJava
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives sourcesJar
+    archives javadocJar
 }
 
 // configure release plugin. See https://github.com/researchgate/gradle-release#configuration
