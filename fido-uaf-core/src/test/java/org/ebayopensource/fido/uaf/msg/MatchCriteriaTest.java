@@ -2,11 +2,9 @@ package org.ebayopensource.fido.uaf.msg;
 
 import static org.junit.Assert.*;
 
-import java.util.logging.Logger;
-
-import org.junit.Test;
-
 import com.google.gson.Gson;
+import java.util.logging.Logger;
+import org.junit.*;
 
 public class MatchCriteriaTest {
 
@@ -20,8 +18,11 @@ public class MatchCriteriaTest {
 		logger.info(gson.toJson(matchCrit));
 	}
 
-	String getTestMatchCrit (){
-		return "{\"aaid\": [\"1234#5678\"], \"vendorID\": [\"1234\"], \"userVerificationDetails\": [ [ { \"userVerification\": 2, \"baDesc\": { \"FAR\": 0.001 } } ] ], \"keyProtection\": 6, \"matcherProtection\": 2, \"attachmentHint\": 1, \"tcDisplay\": 4, \"authenticationAlgorithms\": [1], \"assertionScheme\": \"UAFV1TLV\", \"attestationTypes\": [15879], \"authenticatorVersion\": 2 }";
-	}
+    private String getTestMatchCrit() {
+        return "{\"aaid\": [\"1234#5678\"], \"vendorID\": [\"1234\"], \"userVerificationDetails\": [ [ { "
+            + "\"userVerification\": 2, \"baDesc\": { \"FAR\": 0.001 } } ] ], \"keyProtection\": 6, "
+            + "\"matcherProtection\": 2, \"attachmentHint\": 1, \"tcDisplay\": 4, \"authenticationAlgorithms\": [1], "
+            + "\"assertionScheme\": \"UAFV1TLV\", \"attestationTypes\": [15879], \"authenticatorVersion\": 2 }";
+    }
 
 }
