@@ -16,7 +16,6 @@
 
 package org.ebayopensource.fido.uaf.ops;
 
-import static org.ebayopensource.fido.uaf.msg.RecordStatus.INVALID_SERVER_DATA_CHECK_FAILED;
 import static org.ebayopensource.fido.uaf.msg.RecordStatus.INVALID_SERVER_DATA_EXPIRED;
 import static org.ebayopensource.fido.uaf.msg.RecordStatus.INVALID_SERVER_DATA_SIGNATURE_NO_MATCH;
 
@@ -34,6 +33,9 @@ import org.ebayopensource.fido.uaf.msg.FinalChallengeParams;
 import org.ebayopensource.fido.uaf.msg.RecordStatus;
 import org.ebayopensource.fido.uaf.msg.RegistrationResponse;
 import org.ebayopensource.fido.uaf.msg.Version;
+import org.ebayopensource.fido.uaf.ops.exception.AssertionException;
+import org.ebayopensource.fido.uaf.ops.exception.ServerDataExpiredException;
+import org.ebayopensource.fido.uaf.ops.exception.ServerDataSignatureNotMatchException;
 import org.ebayopensource.fido.uaf.ops.exception.VersionException;
 import org.ebayopensource.fido.uaf.storage.AuthenticatorRecord;
 import org.ebayopensource.fido.uaf.storage.RegistrationRecord;
@@ -70,7 +72,8 @@ public class RegistrationResponseProcessing {
     }
 
     public RegistrationRecord[] processResponse(RegistrationResponse response)
-        throws Exception {
+        throws AssertionException, VersionException, ServerDataSignatureNotMatchException, ServerDataExpiredException {
+
         checkAssertions(response);
         RegistrationRecord[] records = new RegistrationRecord[response.getAssertions().length];
 
@@ -158,12 +161,9 @@ public class RegistrationResponseProcessing {
             + tags.getTags().get(TagsEnum.TAG_ASSERTION_INFO.id).value[1];
     }
 
-    private void checkAssertions(RegistrationResponse response)
-        throws Exception {
-        if (response.getAssertions() != null && response.getAssertions().length > 0) {
-            return;
-        } else {
-            throw new Exception("Missing assertions in registration response");
+    private void checkAssertions(RegistrationResponse response) throws AssertionException {
+        if (response.getAssertions() == null && response.getAssertions().length <= 0) {
+            throw new AssertionException("Missing assertions in registration response");
         }
     }
 
@@ -173,38 +173,30 @@ public class RegistrationResponseProcessing {
         return gson.fromJson(fcp, FinalChallengeParams.class);
     }
 
-    private void checkServerData(String serverDataB64,
-                                 RegistrationRecord[] records) throws Exception {
+    private void checkServerData(String serverDataB64, RegistrationRecord[] records)
+        throws ServerDataSignatureNotMatchException, ServerDataExpiredException {
+
         if (notary == null) {
             return;
         }
         String serverData = new String(Base64.decodeBase64(serverDataB64));
         String[] tokens = serverData.split("\\.");
         String signature, timeStamp, username, challenge, dataToSign;
-        try {
-            signature = tokens[0];
-            timeStamp = tokens[1];
-            username = tokens[2];
-            challenge = tokens[3];
-            dataToSign = timeStamp + "." + username + "." + challenge;
-            if (! notary.verify(dataToSign, signature)) {
-                throw new ServerDataSignatureNotMatchException();
-            }
-            if (isExpired(timeStamp)) {
-                throw new ServerDataExpiredException();
-            }
-            setUsernameAndTimeStamp(username, timeStamp, records);
-        } catch (ServerDataExpiredException e) {
-            setErrorStatus(records, INVALID_SERVER_DATA_EXPIRED);
-            throw new Exception("Invalid server data - Expired data");
-        } catch (ServerDataSignatureNotMatchException e) {
-            setErrorStatus(records, INVALID_SERVER_DATA_SIGNATURE_NO_MATCH);
-            throw new Exception("Invalid server data - Signature not match");
-        } catch (Exception e) {
-            setErrorStatus(records, INVALID_SERVER_DATA_CHECK_FAILED);
-            throw new Exception("Server data check failed");
-        }
+        signature = tokens[0];
+        timeStamp = tokens[1];
+        username = tokens[2];
+        challenge = tokens[3];
+        dataToSign = timeStamp + "." + username + "." + challenge;
 
+        if (! notary.verify(dataToSign, signature)) {
+            setErrorStatus(records, INVALID_SERVER_DATA_SIGNATURE_NO_MATCH);
+            throw new ServerDataSignatureNotMatchException("Invalid server data - Signature not match");
+        }
+        if (isExpired(timeStamp)) {
+            setErrorStatus(records, INVALID_SERVER_DATA_EXPIRED);
+            throw new ServerDataExpiredException("Invalid server data - Expired data");
+        }
+        setUsernameAndTimeStamp(username, timeStamp, records);
     }
 
     private boolean isExpired(String timeStamp) {
