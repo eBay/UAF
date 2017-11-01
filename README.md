@@ -2,7 +2,7 @@
 
 # FIDO UAF - Universal Authentication Framework
 
-This projects provides a Java implementation of the [UAF protocol][uaf-protocol-overview] (as defined per [specification][uaf-specification-v1.0]) that can be used by [UAF Clients][uaf-client-overview] and [UAF Servers][uaf-server-overview]. The repository is forked from [eBay UAF][ebay-uaf-repo] because of the lack of maintenance.
+This project provides a Java implementation of the [UAF protocol][uaf-protocol-overview] (as defined per [specification][uaf-specification-v1.0]) that can be used by [UAF Clients][uaf-client-overview] and [UAF Servers][uaf-server-overview]. The repository is forked from [eBay UAF][ebay-uaf-repo] because of the lack of maintenance.
 
 
 ## What is UAF?
@@ -17,20 +17,20 @@ The goal of the Universal Authentication Framework is to provide a unified and e
 ```groovy
 repositories {
     maven {
-        url  "http://dl.bintray.com/neXenio/UAF"
+        url  "http://dl.bintray.com/nexenio/UAF-Java"
     }
 }
 dependencies {
-    compile 'package.id.placeholder:0.0.0.0'
+    compile 'com.nexenio.fido:uaf-core:1.0.4'
 }
 ```
 
 ### Maven
 ```xml
 <dependency>
-  <groupId>package.id.placeholder</groupId>
-  <artifactId>uaf</artifactId>
-  <version>0.0.0.0</version>
+  <groupId>com.nexenio.fido</groupId>
+  <artifactId>uaf-core</artifactId>
+  <version>1.0.4</version>
 </dependency>
 ```
 

@@ -9,12 +9,12 @@ buildscript {
 
 plugins {
     id 'net.researchgate.release' version '2.4.0'
+    id "com.jfrog.bintray" version "1.7.3"
 }
 apply plugin: 'java'
 apply plugin: 'maven'
 apply plugin: 'maven-publish'
 apply plugin: "com.jfrog.artifactory"
-
 
 repositories {
     mavenCentral()
@@ -28,6 +28,45 @@ dependencies {
     compileOnly 'org.projectlombok:lombok:1.16.18'
 
     testCompile 'junit:junit:4.12'
+}
+
+ext {
+    releaseVersionName = "1.0.4"
+}
+
+bintray {
+    user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
+    key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_API_KEY')
+    publications = ['BintrayPublication']
+    pkg {
+        repo = 'UAF-Java'
+        name = 'UAF-Java'
+        licenses = ['Apache-2.0']
+        labels = ['FIDO', 'UAF']
+        vcsUrl = 'https://github.com/neXenio/UAF.git'
+        websiteUrl = 'https://github.com/neXenio/UAF/'
+        githubRepo = 'neXenio/UAF/'
+        githubReleaseNotesFile = 'README.md'
+        version {
+            name = "${it.releaseVersionName}"
+            desc = "UAF Java ${it.releaseVersionName}"
+            released = new Date()
+            vcsTag = "${it.releaseVersionName}"
+            gpg {
+                sign = true
+            }
+            mavenCentralSync {
+                sync = true
+                user = project.hasProperty('mavenCentralUser') ? project.property('mavenCentralUser') : System.getenv('MAVEN_CENTRAL_USER')
+                password = project.hasProperty('mavenCentralPassword') ? project.property('mavenCentralPassword') : System.getenv('MAVEN_CENTRAL_PASSWORD')
+                close = '1'
+            }
+        }
+    }
+    filesSpec {
+        from 'build/libs'
+        into 'libs/'
+    }
 }
 
 artifactory {
@@ -54,6 +93,21 @@ publishing {
 
             from components.java
             artifact sourceJar
+        }
+        BintrayPublication(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+            artifact javadocJar
+            groupId 'com.nexenio.fido'
+            artifactId 'uaf-core'
+            version "${it.releaseVersionName}"
+            pom.withXml {
+                def root = asNode()
+                root.appendNode('description', 'Java implementation of the UAF protocol')
+                root.appendNode('name', 'UAF Java')
+                root.appendNode('url', 'https://github.com/neXenio/UAF/')
+                root.children().last() + pomConfig
+            }
         }
     }
 }
