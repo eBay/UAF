@@ -63,4 +63,12 @@ task sourceJar(type: Jar) {
     from sourceSets.main.allJava
 }
 
+// configure release plugin. See https://github.com/researchgate/gradle-release#configuration
+release {
+    git {
+        requireBranch = '/master|dev/'
+    }
+}
+
+// deploy artifacts when releasing
 afterReleaseBuild.dependsOn artifactoryPublish
