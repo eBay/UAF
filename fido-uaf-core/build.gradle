@@ -30,7 +30,7 @@ dependencies {
     testCompile 'junit:junit:4.12'
 }
 
-def releaseVersionName = "1.0.4"
+def releaseVersionName = "1.0.7"
 
 bintray {
     user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
@@ -39,12 +39,13 @@ bintray {
     pkg {
         repo = 'UAF-Java'
         name = 'UAF-Java'
+        userOrg = 'nexenio'
         licenses = ['Apache-2.0']
         labels = ['FIDO', 'UAF']
         vcsUrl = 'https://github.com/neXenio/UAF.git'
         websiteUrl = 'https://github.com/neXenio/UAF/'
         githubRepo = 'neXenio/UAF/'
-        githubReleaseNotesFile = 'README.md'
+        githubReleaseNotesFile = 'fido-uaf-core/README.md'
         version {
             name = "${releaseVersionName}"
             desc = "UAF Java ${releaseVersionName}"
@@ -64,6 +65,28 @@ bintray {
     filesSpec {
         from 'build/libs'
         into 'libs/'
+    }
+}
+
+def pomConfig = {
+    licenses {
+        license {
+            name "The Apache Software License, Version 2.0"
+            url "http://www.apache.org/licenses/LICENSE-2.0.txt"
+            distribution "repo"
+        }
+    }
+    developers {
+        developer {
+            id "neXenio"
+            name "neXenio"
+            email "info@nexenio.com"
+        }
+    }
+    scm {
+        connection 'https://github.com/neXenio/UAF.git'
+        developerConnection 'https://github.com/neXenio/UAF.git'
+        url "https://github.com/neXenio/UAF.git"
     }
 }
 
@@ -128,7 +151,7 @@ artifacts {
 // configure release plugin. See https://github.com/researchgate/gradle-release#configuration
 release {
     git {
-        requireBranch = 'master'
+        requireBranch = 'release/setup-bintray'
     }
 }
 
