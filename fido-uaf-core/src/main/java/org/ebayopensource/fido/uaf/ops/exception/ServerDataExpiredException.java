@@ -14,13 +14,16 @@
  * limitations under the License.
  */
 
-package org.ebayopensource.fido.uaf.ops;
+package org.ebayopensource.fido.uaf.ops.exception;
 
-public class ServerDataSignatureNotMatchException extends Exception {
+import lombok.NoArgsConstructor;
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
+@NoArgsConstructor
+public class ServerDataExpiredException extends Exception {
 
+    private static final long serialVersionUID = 1L;
+
+    public ServerDataExpiredException(String message) {
+        super(message);
+    }
 }
