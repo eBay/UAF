@@ -42,30 +42,30 @@ public class App {
     public void startRegistration() throws Exception {
         RegistrationRequest req = invokeRegistration();
         logger.info(" : RegistrationRequest obtained :");
-        logger.info(" : Reg request : "
+        logger.info(" : REGISTRATION request : "
                 + gson.toJson(req, RegistrationRequest.class));
         RegistrationRequestProcessing requestProcessor = new RegistrationRequestProcessing();
         RegistrationResponse resp = requestProcessor.processRequest(req);
         logger.info(" : RegistrationResponse created : ");
-        logger.info(" : Reg response : "
+        logger.info(" : REGISTRATION response : "
                 + gson.toJson(resp, RegistrationResponse.class));
         serverSideRegResponseProcessing(resp);
         logger.info(" : RegistrationResponse sent : ");
-        logger.info(" : Reg response : "
+        logger.info(" : REGISTRATION response : "
                 + gson.toJson(resp, RegistrationResponse.class));
     }
 
     private RegistrationRequest invokeRegistration() {
         RegistrationRequest req = new RegistrationRequest();
-        req.setHeader(new OperationHeader());
-        req.getHeader().setOp(Operation.Reg);
-        req.getHeader().setAppID("https://uaf-test-1.noknoktest.com:8443/SampleApp/uaf/facets");
-        req.getHeader().setServerData(
+        req.setOperationHeader(new OperationHeader());
+        req.getOperationHeader().setOperation(Operation.REGISTRATION);
+        req.getOperationHeader().setAppId("https://uaf-test-1.noknoktest.com:8443/SampleApp/uaf/facets");
+        req.getOperationHeader().setServerData(
                 "IjycjPZYiWMaQ1tKLrJROiXQHmYG0tSSYGjP5mgjsDaM17RQgq0dl3NNDDTx9d-aSR_6hGgclrU2F2Yj"
                         + "-12S67v5VmQHj4eWVseLulHdpk2v_hHtKSvv_DFqL4n2IiUY6XZWVbOnvg");
         req.setChallenge("H9iW9yA9aAXF_lelQoi_DhUk514Ad8Tqv0zCnCqKDpo");
-        req.setUsername("apa");
-        req.getHeader().setUpv(new Version(1, 0));
+        req.setUserName("apa");
+        req.getOperationHeader().setProtocolVersion(new Version(1, 0));
         return req;
     }
 
@@ -80,7 +80,7 @@ public class App {
         RegistrationResponseProcessing respProcessing = new RegistrationResponseProcessing();
         RegistrationRecord[] regRecord = respProcessing.processResponse(resp);
         storage = new Storage(regRecord[0].getPublicKey());
-        logger.info(" : Reg records : "
+        logger.info(" : REGISTRATION records : "
                 + gson.toJson(regRecord, RegistrationRecord[].class));
 
     }
@@ -96,12 +96,12 @@ public class App {
     public String uafAuthentication() throws Exception {
         AuthenticationRequest req = invokeAuthentication();
         logger.info(" : AuthenticationRequest obtained : ");
-        logger.info(" : Auth request : "
+        logger.info(" : AUTHENTICATION request : "
                 + gson.toJson(req, AuthenticationRequest.class));
         AuthenticationRequestProcessing authProcessor = new AuthenticationRequestProcessing();
         AuthenticationResponse resp = authProcessor.processRequest(req);
         logger.info(" : AuthenticationResponse created : ");
-        logger.info(" : Auth response : "
+        logger.info(" : AUTHENTICATION response : "
                 + gson.toJson(resp, AuthenticationResponse.class));
         String accessToken = serverSideAuthResponseProcessing(resp);
         return accessToken;
@@ -109,16 +109,16 @@ public class App {
 
     private AuthenticationRequest invokeAuthentication() {
         AuthenticationRequest req = new AuthenticationRequest();
-        req.setHeader(new OperationHeader());
-        req.getHeader().setOp(Operation.Auth);
-        req.getHeader().setAppID("https://uaf-test-1.noknoktest.com:8443/SampleApp/uaf/facets");
+        req.setOperationHeader(new OperationHeader());
+        req.getOperationHeader().setOperation(Operation.AUTHENTICATION);
+        req.getOperationHeader().setAppId("https://uaf-test-1.noknoktest.com:8443/SampleApp/uaf/facets");
         req
-                .getHeader()
+                .getOperationHeader()
                 .setServerData(
                         "5s7n8-7_LDAtRIKKYqbAtTTOezVKCjl2mPorYzbpxRrZ"
                                 + "-_3wWroMXsF_pLYjNVm_l7bplAx4bkEwK6ibil9EHGfdfKOQ1q0tyEkNJFOgqdjVmLioroxgThlj8Istpt7q");
         req.setChallenge("HQ1VkTUQC1NJDOo6OOWdxewrb9i5WthjfKIehFxpeuU");
-        req.getHeader().setUpv(new Version(1, 0));
+        req.getOperationHeader().setProtocolVersion(new Version(1, 0));
         return req;
     }
 
@@ -133,7 +133,7 @@ public class App {
         AuthenticationResponseProcessing respProcessing = new AuthenticationResponseProcessing();
 
         AuthenticatorRecord[] authRec = respProcessing.verify(resp, storage);
-        logger.info(" : Auth records : "
+        logger.info(" : AUTHENTICATION records : "
                 + gson.toJson(authRec, AuthenticatorRecord[].class));
         if (authRec != null && authRec[0].getAaid() != null) {
             return "<access_token_goes_here>";

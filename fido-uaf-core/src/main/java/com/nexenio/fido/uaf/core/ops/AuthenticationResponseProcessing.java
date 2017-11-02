@@ -59,8 +59,8 @@ public class AuthenticationResponseProcessing {
                                         StorageInterface serverData) throws Exception {
         AuthenticatorRecord[] result = new AuthenticatorRecord[response.getAssertions().length];
 
-        checkVersion(response.getHeader().getUpv());
-        checkServerData(response.getHeader().getServerData(), result);
+        checkVersion(response.getOperationHeader().getProtocolVersion());
+        checkServerData(response.getOperationHeader().getServerData(), result);
         FinalChallengeParams fcp = getFcp(response);
         checkFcp(fcp);
         for (int i = 0; i < result.length; i++) {

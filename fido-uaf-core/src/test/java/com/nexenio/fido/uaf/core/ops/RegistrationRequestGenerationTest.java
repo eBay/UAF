@@ -30,10 +30,10 @@ public class RegistrationRequestGenerationTest {
         Notary notary = new NotaryImpl();
         RegistrationRequest regReq = new RegistrationRequestGeneration().createRegistrationRequest("Username", notary);
 
-        String serverData = regReq.getHeader().getServerData();
+        String serverData = regReq.getOperationHeader().getServerData();
         serverData = new String(Base64.decode(serverData));
         assertTrue(notary.verify(serverData, serverData));
-        assertTrue(RegistrationRequestGeneration.APP_ID.equals(regReq.getHeader().getAppID()));
+        assertTrue(RegistrationRequestGeneration.APP_ID.equals(regReq.getOperationHeader().getAppId()));
         logger.info(gson.toJson(regReq));
     }
 

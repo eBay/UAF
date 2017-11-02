@@ -20,7 +20,20 @@ import lombok.Data;
 
 @Data
 public class RegistrationResponse {
-    private OperationHeader header;
-    private String fcParams;
+
+    /**
+     * Header.op must be "Reg".
+     */
+    private OperationHeader operationHeader;
+
+    /**
+     * The base64url-encoded serialized [RFC4627] FinalChallengeParams using UTF8 encoding (see FinalChallengeParams dictionary) which contains all parameters required for the server to verify the Final Challenge.
+     */
+    private String finalChallengeParams;
+
+    /**
+     * Response data for each Authenticator being registered.
+     */
     private AuthenticatorRegistrationAssertion[] assertions;
+
 }

@@ -43,16 +43,16 @@ public class RegistrationRequestProcessing {
         }
 
         setAppId(regRequest, response);
-        response.setHeader(new OperationHeader());
-        response.getHeader().setServerData(regRequest.getHeader().getServerData());
-        response.getHeader().setOp(regRequest.getHeader().getOp());
-        response.getHeader().setUpv(regRequest.getHeader().getUpv());
+        response.setOperationHeader(new OperationHeader());
+        response.getOperationHeader().setServerData(regRequest.getOperationHeader().getServerData());
+        response.getOperationHeader().setOperation(regRequest.getOperationHeader().getOperation());
+        response.getOperationHeader().setProtocolVersion(regRequest.getOperationHeader().getProtocolVersion());
 
         FinalChallengeParams fcParams = new FinalChallengeParams();
-        fcParams.setAppID(regRequest.getHeader().getAppID());
-        fcParams.setFacetID(Constants.FACET_ID);
+        fcParams.setAppId(regRequest.getOperationHeader().getAppId());
+        fcParams.setFacetId(Constants.FACET_ID);
         fcParams.setChallenge(regRequest.getChallenge());
-        response.setFcParams(Base64.encodeBase64URLSafeString(gson.toJson(
+        response.setFinalChallengeParams(Base64.encodeBase64URLSafeString(gson.toJson(
                 fcParams).getBytes()));
         setAssertions(response);
         return response;
@@ -69,9 +69,9 @@ public class RegistrationRequestProcessing {
 
     private void setAppId(RegistrationRequest regRequest,
                           RegistrationResponse response) {
-        if (regRequest.getHeader().getAppID() == null
-                && regRequest.getHeader().getAppID().isEmpty()) {
-            response.getHeader().setAppID(Constants.APP_ID);
+        if (regRequest.getOperationHeader().getAppId() == null
+                && regRequest.getOperationHeader().getAppId().isEmpty()) {
+            response.getOperationHeader().setAppId(Constants.APP_ID);
         } else {
             setAppID(regRequest, response);
         }

@@ -20,9 +20,25 @@ import lombok.Data;
 
 @Data
 public class FinalChallengeParams {
-    private String appID;
+
+    /**
+     * The value must be taken from the appId field of the OperationHeader
+     */
+    private String appId;
+
+    /**
+     * The value must be taken from the challenge field of the request (e.g. RegistrationRequest.challenge, AuthenticationRequest.challenge).
+     */
     private String challenge;
-    private String facetID;
+
+    /**
+     * The value is determined by the FIDO UAF Client and it depends on the calling application. See [FIDOAppIDAndFacets] for more details. Security Relevance: The facetID is determined by the FIDO UAF Client and verified against the list of trusted facets retrieved by dereferencing the appId of the calling application.
+     */
+    private String facetId;
+
+    /**
+     * Contains the TLS information to be sent by the FIDO Client to the FIDO Server, binding the TLS channel to the FIDO operation.
+     */
     private ChannelBinding channelBinding;
 
 }

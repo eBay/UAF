@@ -70,8 +70,8 @@ public class RegistrationResponseProcessing {
         checkAssertions(response);
         RegistrationRecord[] records = new RegistrationRecord[response.getAssertions().length];
 
-        checkVersion(response.getHeader().getUpv());
-        checkServerData(response.getHeader().getServerData(), records);
+        checkVersion(response.getOperationHeader().getProtocolVersion());
+        checkServerData(response.getOperationHeader().getServerData(), records);
         FinalChallengeParams fcp = getFcp(response);
         checkFcp(fcp);
         for (int i = 0; i < records.length; i++) {
@@ -161,7 +161,7 @@ public class RegistrationResponseProcessing {
     }
 
     private FinalChallengeParams getFcp(RegistrationResponse response) {
-        String fcp = new String(Base64.decodeBase64(response.getFcParams()
+        String fcp = new String(Base64.decodeBase64(response.getFinalChallengeParams()
                 .getBytes()));
         return gson.fromJson(fcp, FinalChallengeParams.class);
     }

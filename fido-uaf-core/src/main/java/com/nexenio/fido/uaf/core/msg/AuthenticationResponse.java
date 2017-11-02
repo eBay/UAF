@@ -20,7 +20,20 @@ import lombok.Data;
 
 @Data
 public class AuthenticationResponse {
-    private OperationHeader header;
-    private String fcParams;
+
+    /**
+     * Must be "AUTHENTICATION"
+     */
+    private OperationHeader operationHeader;
+
+    /**
+     * The field finalChallengeParams is the base64url-encoded serialized [RFC4627] FinalChallengeParams in UTF8 encoding (see FinalChallengeParams dictionary) which contains all parameters required for the server to verify the Final Challenge.
+     */
+    private String finalChallengeParams;
+
+    /**
+     * The list of authenticator responses related to this operation.
+     */
     private AuthenticatorSignAssertion[] assertions;
+
 }

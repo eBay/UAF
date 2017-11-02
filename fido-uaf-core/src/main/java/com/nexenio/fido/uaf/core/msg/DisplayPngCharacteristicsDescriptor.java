@@ -19,13 +19,46 @@ package com.nexenio.fido.uaf.core.msg;
 import lombok.Data;
 
 @Data
-public class DisplayPNGCharacteristicsDescriptor {
+public class DisplayPngCharacteristicsDescriptor {
+
+    /**
+     * Image width.
+     */
     private long width;
+
+    /**
+     * Image height.
+     */
     private long height;
+
+    /**
+     * Bit depth - bits per sample or per palette index.
+     */
     private String bitDepth;
+
+    /**
+     * Color type defines the PNG image type.
+     */
     private String colorType;
+
+    /**
+     * Compression method used to compress the image data.
+     */
     private String compression;
+
+    /**
+     * Filter method is the preprocessing method applied to the image data before compression.
+     */
     private String filter;
+
+    /**
+     * Interlace method is the transmission order of the image data.
+     */
     private String interlace;
-    private rgbPalletteEntry[] plte;
+
+    /**
+     * 1 to 256 palette entries
+     */
+    private RgbPaletteEntry[] rgbPalletteEntries;
+
 }

@@ -17,7 +17,7 @@
 package com.nexenio.fido.uaf.core.msg;
 
 public enum Operation {
-    Reg,
-    Auth,
-    Dereg
+    REGISTRATION,
+    DEREGISTRATION,
+    AUTHENTICATION
 }

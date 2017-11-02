@@ -20,8 +20,26 @@ import lombok.Data;
 
 @Data
 public class AuthenticationRequest {
-    private OperationHeader header;
+
+    /**
+     * Must be "AUTHENTICATION"
+     */
+    private OperationHeader operationHeader;
+
+    /**
+     * Server-provided challenge value
+     */
     private String challenge;
-    private Transaction[] transaction;
+
+    /**
+     * Transaction data to be explicitly confirmed by the user.
+     * The list contains the same transactions content in various content types and various image sizes. Refer to UAFAuthnrMetadata for more information about Transaction Confirmation Display characteristics.
+     */
+    private Transaction[] transactions;
+
+    /**
+     * Server-provided policy defining what types of authenticators are acceptable for this authentication operation.
+     */
     private Policy policy;
+
 }

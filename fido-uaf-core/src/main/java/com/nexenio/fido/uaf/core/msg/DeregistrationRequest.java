@@ -20,6 +20,15 @@ import lombok.Data;
 
 @Data
 public class DeregistrationRequest {
+
+    /**
+     * Must be "DEREGISTRATION".
+     */
     private OperationHeader header;
+
+    /**
+     * List of authenticators to be deregistered.
+     */
     private DeregisterAuthenticator[] authenticators;
+
 }

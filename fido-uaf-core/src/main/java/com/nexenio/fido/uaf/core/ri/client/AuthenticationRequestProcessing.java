@@ -26,17 +26,18 @@ public class AuthenticationRequestProcessing {
         AuthenticationResponse response = new AuthenticationResponse();
         Gson gson = new Gson();
         setAppId(request, response);
-        response.setHeader(new OperationHeader());
-        response.getHeader().setServerData(request.getHeader().getServerData());
-        response.getHeader().setOp(request.getHeader().getOp());
-        response.getHeader().setUpv(request.getHeader().getUpv());
+        response.setOperationHeader(new OperationHeader());
+        response.getOperationHeader().setServerData(request.getOperationHeader().getServerData());
+        response.getOperationHeader().setOperation(request.getOperationHeader().getOperation());
+        response.getOperationHeader().setProtocolVersion(request.getOperationHeader().getProtocolVersion());
 
         FinalChallengeParams fcParams = new FinalChallengeParams();
-        fcParams.setAppID(Constants.APP_ID);
-        fcParams.setFacetID(Constants.FACET_ID);
+        fcParams.setAppId(Constants.APP_ID);
+        fcParams.setFacetId(Constants.FACET_ID);
         fcParams.setChallenge(request.getChallenge());
-        response.setFcParams(Base64.encodeBase64URLSafeString(gson.toJson(
-                fcParams).getBytes()));
+
+        String serializedFinalChallengeParams = gson.toJson(fcParams);
+        response.setFinalChallengeParams(Base64.encodeBase64URLSafeString(serializedFinalChallengeParams.getBytes()));
         setAssertions(response);
         return response;
     }
@@ -57,8 +58,8 @@ public class AuthenticationRequestProcessing {
 
     private void setAppId(AuthenticationRequest request,
                           AuthenticationResponse response) {
-        if (request.getHeader().getAppID() == null && request.getHeader().getAppID().isEmpty()) {
-            response.getHeader().setAppID(Constants.APP_ID);
+        if (request.getOperationHeader().getAppId() == null && request.getOperationHeader().getAppId().isEmpty()) {
+            response.getOperationHeader().setAppId(Constants.APP_ID);
         } else {
             setAppID(request, response);
         }

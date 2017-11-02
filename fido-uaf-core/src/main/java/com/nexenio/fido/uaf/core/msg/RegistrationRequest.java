@@ -20,8 +20,25 @@ import lombok.Data;
 
 @Data
 public class RegistrationRequest {
-    private OperationHeader header;
+
+    /**
+     * Operation operationHeader. Header.op must be "Reg".
+     */
+    private OperationHeader operationHeader;
+
+    /**
+     * Server-provided challenge value
+     */
     private String challenge;
-    private String username;
+
+    /**
+     * A human-readable user name intended to allow the user to distinguish and select from among different accounts at the same relying party.
+     */
+    private String userName;
+
+    /**
+     * Describes which types of authenticators are acceptable for this registration operation.
+     */
     private Policy policy;
+
 }

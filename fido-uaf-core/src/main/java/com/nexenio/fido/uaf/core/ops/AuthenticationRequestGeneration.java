@@ -43,10 +43,10 @@ public class AuthenticationRequestGeneration {
         OperationHeader header = new OperationHeader();
         authRequest.setChallenge(generateChallenge());
         header.setServerData(generateServerData(authRequest.getChallenge(), notary));
-        authRequest.setHeader(header);
-        authRequest.getHeader().setOp(Operation.Auth);
-        authRequest.getHeader().setAppID(appId);
-        authRequest.getHeader().setUpv(new Version(1, 0));
+        authRequest.setOperationHeader(header);
+        authRequest.getOperationHeader().setOperation(Operation.AUTHENTICATION);
+        authRequest.getOperationHeader().setAppId(appId);
+        authRequest.getOperationHeader().setProtocolVersion(new Version(1, 0));
 
         authRequest.setPolicy(constructAuthenticationPolicy());
 
@@ -77,8 +77,8 @@ public class AuthenticationRequestGeneration {
         for (int i = 0; i < accepted.length; i++) {
             MatchCriteria[] a = new MatchCriteria[1];
             MatchCriteria matchCriteria = new MatchCriteria();
-            matchCriteria.setAaid(new String[1]);
-            matchCriteria.getAaid()[0] = acceptedAaids[i];
+            matchCriteria.setAaids(new String[1]);
+            matchCriteria.getAaids()[0] = acceptedAaids[i];
             a[0] = matchCriteria;
             accepted[i] = a;
         }

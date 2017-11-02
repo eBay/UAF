@@ -19,8 +19,10 @@ package com.nexenio.fido.uaf.core.msg;
 import lombok.Data;
 
 @Data
-public class rgbPalletteEntry {
+public class RgbPaletteEntry {
+    
     private short r;
     private short g;
     private short b;
+    
 }

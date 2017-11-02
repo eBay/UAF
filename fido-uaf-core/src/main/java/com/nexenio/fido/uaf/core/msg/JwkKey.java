@@ -20,8 +20,25 @@ import lombok.Data;
 
 @Data
 public class JwkKey {
-    private String kty = "EC";
-    private String crv = "P-256";
+
+    /**
+     * Denotes the key type used for Channel ID. At this time only elliptic curve is supported by [ChannelID], so it must be set to "EC" [JWA].
+     */
+    private String keyType = "EC";
+
+    /**
+     * Denotes the elliptic curve on which this public key is defined. At this time only the NIST curve secp256r1 is supported by [ChannelID], so the ellipticCurve parameter must be set to "P-256".
+     */
+    private String ellipticCurve = "P-256";
+
+    /**
+     * Contains the base64url-encoding of the x coordinate of the public key (big-endian, 32-byte value).
+     */
     private String x;
+
+    /**
+     * Contains the base64url-encoding of the y coordinate of the public key (big-endian, 32-byte value).
+     */
     private String y;
+
 }

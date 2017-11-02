@@ -20,7 +20,22 @@ import lombok.Data;
 
 @Data
 public class Transaction {
+
+    /**
+     * Contains the MIME Content-Type supported by the authenticator according its metadata statement (see [UAFAuthnrMetadata]).
+     * This version of the specification only supports the values text/plain or image/png.
+     */
     private String contentType;
+
+    /**
+     * Contains the base64-url encoded transaction content according to the contentType to be shown to the user.
+     * If contentType is "text/plain" then the content must be the base64-url encoding of the ASCII encoded text with a maximum of 200 characters.
+     */
     private String content;
-    private DisplayPNGCharacteristicsDescriptor tcDisplayPNGCharacteristics;
+
+    /**
+     * Transaction content PNG characteristics. For the definition of the DisplayPNGCharacteristicsDescriptor structure See [UAFAuthnrMetadata]. This field must be present if the contentType is "image/png".
+     */
+    private DisplayPngCharacteristicsDescriptor displayPngCharacteristics;
+
 }
