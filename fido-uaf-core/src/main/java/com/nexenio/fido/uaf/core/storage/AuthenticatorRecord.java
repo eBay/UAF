@@ -21,19 +21,15 @@ import lombok.Data;
 @Data
 public class AuthenticatorRecord {
 
-    private static final String DLM = "#";
+    private static final String DELIMITER = "#";
 
     private String aaid;
-    private String keyID;
+    private String keyId;
     private String deviceId;
-    private String username;
+    private String userName;
     private String status;
 
-    public static String getDLM() {
-        return DLM;
-    }
-
     public String toString() {
-        return getAaid() + getDLM() + getKeyID();
+        return getAaid() + DELIMITER + getKeyId();
     }
 }

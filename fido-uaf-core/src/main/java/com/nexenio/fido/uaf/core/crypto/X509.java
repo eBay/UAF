@@ -53,7 +53,6 @@ public class X509 {
     }
 
     public static X509Certificate generateV3Cert(KeyPair pair) {
-
         X509Certificate cert = null;
         try {
             X509V3CertificateGenerator gen = new X509V3CertificateGenerator();

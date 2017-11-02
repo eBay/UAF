@@ -25,7 +25,7 @@ public class AuthenticationResponseProcessingTest {
         StorageInterface serverData = new ServerDataImpl();
         AuthenticatorRecord[] authenticatorRecords = p.verify(response, serverData);
         assertTrue(authenticatorRecords.length == 1);
-        assertEquals(authenticatorRecords[0].getUsername(), TEST_USERNAME);
+        assertEquals(authenticatorRecords[0].getUserName(), TEST_USERNAME);
         assertEquals(authenticatorRecords[0].getStatus(), "SUCCESS");
 
     }
@@ -47,13 +47,13 @@ public class AuthenticationResponseProcessingTest {
     class ServerDataImpl implements StorageInterface {
 
 
-        public void storeServerDataString(String username,
-                                          String serverDataString) {
+        public void storeServerDataString(String userName,
+                                          String serverData) {
             // TODO Auto-generated method stub
 
         }
 
-        public String getUsername(String serverDataString) {
+        public String getUsername(String serverData) {
             // TODO Auto-generated method stub
             return null;
         }
@@ -65,7 +65,7 @@ public class AuthenticationResponseProcessingTest {
 
         public RegistrationRecord readRegistrationRecord(String key) {
             RegistrationRecord r = new RegistrationRecord();
-            r.setUsername(TEST_USERNAME);
+            r.setUserName(TEST_USERNAME);
             r.setPublicKey(
                     "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEAN6POEisT65JDZ_oHBXreI59W3BpISIrmYu9MzDD8ec9BCEgEOolypVx291mPg_Hv61AWKjCA6w_DaLCNKKC3g");
 //					"BJsvEtUsVKh7tmYHhJ2FBm3kHU-OCdWiUYVijgYa81MfkjQ1z6UiHbKP9_nRzIN9anprHqDGcR6q7O20q_yctZA=";

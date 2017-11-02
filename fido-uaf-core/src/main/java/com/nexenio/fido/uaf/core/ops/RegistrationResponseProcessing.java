@@ -101,7 +101,7 @@ public class RegistrationResponseProcessing {
             AuthenticatorRecord authRecord = new AuthenticatorRecord();
             authRecord.setAaid(new String(tags.getTags().get(
                     TagsEnum.TAG_AAID.id).value));
-            authRecord.setKeyID(Base64.encodeBase64URLSafeString(tags.getTags().get(
+            authRecord.setKeyId(Base64.encodeBase64URLSafeString(tags.getTags().get(
                     TagsEnum.TAG_KEYID.id).value));
             record.setAuthenticator(authRecord);
             record.setPublicKey(Base64.encodeBase64URLSafeString(tags.getTags()
@@ -207,8 +207,8 @@ public class RegistrationResponseProcessing {
             if (rec == null) {
                 rec = new RegistrationRecord();
             }
-            rec.setUsername(new String(Base64.decodeBase64(username)));
-            rec.setTimeStamp(new String(Base64.decodeBase64(timeStamp)));
+            rec.setUserName(new String(Base64.decodeBase64(username)));
+            rec.setTimestamp(new String(Base64.decodeBase64(timeStamp)));
             records[i] = rec;
         }
     }

@@ -153,8 +153,8 @@ public class App {
         public void update(RegistrationRecord[] records) {
         }
 
-        public void storeServerDataString(String username,
-                                          String serverDataString) {
+        public void storeServerDataString(String userName,
+                                          String serverData) {
         }
 
         public void store(RegistrationRecord[] records) {
@@ -166,7 +166,7 @@ public class App {
             return r;
         }
 
-        public String getUsername(String serverDataString) {
+        public String getUsername(String serverData) {
             return null;
         }
     }

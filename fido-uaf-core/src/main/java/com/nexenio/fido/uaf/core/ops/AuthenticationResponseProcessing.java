@@ -80,7 +80,7 @@ public class AuthenticationResponseProcessing {
             Tags tags = parser.parse(authenticatorSignAssertion.getAssertion());
             authRecord.setAaid(new String(tags.getTags().get(
                     TagsEnum.TAG_AAID.id).value));
-            authRecord.setKeyID(Base64.encodeBase64URLSafeString(tags.getTags()
+            authRecord.setKeyId(Base64.encodeBase64URLSafeString(tags.getTags()
                     .get(TagsEnum.TAG_KEYID.id).value));
             // authRecord.KeyID = new String(
             // tags.getTags().get(TagsEnum.TAG_KEYID.id).value);
@@ -107,7 +107,7 @@ public class AuthenticationResponseProcessing {
                 authRecord.setStatus("FAILED_SIGNATURE_VERIFICATION");
                 return authRecord;
             }
-            authRecord.setUsername(registrationRecord.getUsername());
+            authRecord.setUserName(registrationRecord.getUserName());
             authRecord.setDeviceId(registrationRecord.getDeviceId());
             authRecord.setStatus("SUCCESS");
             return authRecord;

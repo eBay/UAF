@@ -18,14 +18,14 @@ package com.nexenio.fido.uaf.core.storage;
 
 public interface StorageInterface {
 
-    public void storeServerDataString(String username, String serverDataString);
+    void storeServerDataString(String userName, String serverData);
 
-    public String getUsername(String serverDataString);
+    String getUsername(String serverData);
 
-    public void store(RegistrationRecord[] records)
-            throws DuplicateKeyException, SystemErrorException;
+    void store(RegistrationRecord[] records) throws DuplicateKeyException, SystemErrorException;
 
-    public RegistrationRecord readRegistrationRecord(String key);
+    RegistrationRecord readRegistrationRecord(String key);
 
-    public void update(RegistrationRecord[] records);
+    void update(RegistrationRecord[] records);
+
 }
