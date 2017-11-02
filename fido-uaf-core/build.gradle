@@ -27,8 +27,6 @@ dependencies {
     testCompile 'junit:junit:4.12'
 }
 
-def releaseVersionName = "1.0.7"
-
 bintray {
     user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
     key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_API_KEY')
@@ -44,10 +42,10 @@ bintray {
         githubRepo = 'neXenio/UAF/'
         githubReleaseNotesFile = 'fido-uaf-core/README.md'
         version {
-            name = "${releaseVersionName}"
-            desc = "UAF Core ${releaseVersionName}"
+            name = "${version}"
+            desc = "UAF Core ${version}"
             released = new Date()
-            vcsTag = "${releaseVersionName}"
+            vcsTag = "${version}"
             gpg {
                 sign = true
             }
@@ -101,7 +99,7 @@ publishing {
             artifact javadocJar
             groupId 'com.nexenio.fido'
             artifactId 'uaf-core'
-            version "${releaseVersionName}"
+            version "${version}"
             pom.withXml {
                 def root = asNode()
                 root.appendNode('description', 'Java implementation of the UAF protocol')
