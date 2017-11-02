@@ -14,7 +14,6 @@ plugins {
 apply plugin: 'java'
 apply plugin: 'maven'
 apply plugin: 'maven-publish'
-apply plugin: "com.jfrog.artifactory"
 
 repositories {
     mavenCentral()
@@ -24,9 +23,7 @@ dependencies {
     compile 'com.google.code.gson:gson:2.3.1'
     compile 'commons-codec:commons-codec:1.9'
     compile 'org.bouncycastle:bcprov-jdk15on:1.51'
-
     compileOnly 'org.projectlombok:lombok:1.16.18'
-
     testCompile 'junit:junit:4.12'
 }
 
@@ -90,21 +87,6 @@ def pomConfig = {
     }
 }
 
-artifactory {
-    contextUrl = "${artifactory_contextUrl}"
-    publish {
-        repository {
-            repoKey = 'gradle-dev'
-            username = "${artifactory_user}"
-            password = "${artifactory_password}"
-            maven = true
-        }
-        defaults {
-            publications('mavenJava')
-        }
-    }
-}
-
 publishing {
     publications {
         mavenJava(MavenPublication) {
@@ -154,4 +136,4 @@ release {
 }
 
 // deploy artifacts when releasing
-afterReleaseBuild.dependsOn artifactoryPublish
+afterReleaseBuild.dependsOn bintrayUpload
