@@ -38,7 +38,7 @@ bintray {
     publications = ['BintrayPublication']
     pkg {
         repo = 'UAF-Java'
-        name = 'UAF-Java'
+        name = 'UAF-Core'
         userOrg = 'nexenio'
         licenses = ['Apache-2.0']
         labels = ['FIDO', 'UAF']
@@ -48,7 +48,7 @@ bintray {
         githubReleaseNotesFile = 'fido-uaf-core/README.md'
         version {
             name = "${releaseVersionName}"
-            desc = "UAF Java ${releaseVersionName}"
+            desc = "UAF Core ${releaseVersionName}"
             released = new Date()
             vcsTag = "${releaseVersionName}"
             gpg {
