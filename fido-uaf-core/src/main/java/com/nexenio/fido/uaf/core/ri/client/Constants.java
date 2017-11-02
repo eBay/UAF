@@ -17,9 +17,9 @@
 package com.nexenio.fido.uaf.core.ri.client;
 
 public interface Constants {
-	
-	public static final String APP_ID = "https://www.head2toes.org/fidouaf/v1/public/uaf/facets";
-	public static final String FACET_ID = "https://www.head2toes.org";
-	public static final String AAID = "EBA0#0101";
+
+    public static final String APP_ID = "https://www.head2toes.org/fidouaf/v1/public/uaf/facets";
+    public static final String FACET_ID = "https://www.head2toes.org";
+    public static final String AAID = "EBA0#0101";
 
 }

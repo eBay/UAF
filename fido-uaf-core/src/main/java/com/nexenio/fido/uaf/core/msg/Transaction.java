@@ -20,7 +20,7 @@ import lombok.Data;
 
 @Data
 public class Transaction {
-	private String contentType;
-	private String content;
-	private DisplayPNGCharacteristicsDescriptor tcDisplayPNGCharacteristics;
+    private String contentType;
+    private String content;
+    private DisplayPNGCharacteristicsDescriptor tcDisplayPNGCharacteristics;
 }

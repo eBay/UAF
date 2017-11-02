@@ -20,7 +20,7 @@ import lombok.Data;
 
 @Data
 public class Extension {
-	private String id;
-	private String data;
-	private boolean fail_if_unknown;
+    private String id;
+    private String data;
+    private boolean fail_if_unknown;
 }

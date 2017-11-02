@@ -21,5 +21,5 @@ import lombok.Data;
 @Data
 public class DeregisterAuthenticator {
     private String aaid;
-	private String keyID;
+    private String keyID;
 }

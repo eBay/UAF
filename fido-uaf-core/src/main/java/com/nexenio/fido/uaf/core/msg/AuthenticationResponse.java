@@ -21,6 +21,6 @@ import lombok.Data;
 @Data
 public class AuthenticationResponse {
     private OperationHeader header;
-	private String fcParams;
-	private AuthenticatorSignAssertion[] assertions;
+    private String fcParams;
+    private AuthenticatorSignAssertion[] assertions;
 }

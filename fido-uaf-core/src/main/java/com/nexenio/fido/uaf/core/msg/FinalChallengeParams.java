@@ -21,8 +21,8 @@ import lombok.Data;
 @Data
 public class FinalChallengeParams {
     private String appID;
-	private String challenge;
-	private String facetID;
-	private ChannelBinding channelBinding;
+    private String challenge;
+    private String facetID;
+    private ChannelBinding channelBinding;
 
 }

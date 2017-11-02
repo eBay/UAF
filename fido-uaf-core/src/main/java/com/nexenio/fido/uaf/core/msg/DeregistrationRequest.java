@@ -21,5 +21,5 @@ import lombok.Data;
 @Data
 public class DeregistrationRequest {
     private OperationHeader header;
-	private DeregisterAuthenticator[] authenticators;
+    private DeregisterAuthenticator[] authenticators;
 }

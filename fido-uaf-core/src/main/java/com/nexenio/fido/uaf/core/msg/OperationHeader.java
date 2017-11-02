@@ -21,8 +21,8 @@ import lombok.Data;
 @Data
 public class OperationHeader {
     private Version upv;
-	private Operation op;
-	private String appID;
-	private String serverData;
-	//public Extension[] exts;
+    private Operation op;
+    private String appID;
+    private String serverData;
+    //public Extension[] exts;
 }

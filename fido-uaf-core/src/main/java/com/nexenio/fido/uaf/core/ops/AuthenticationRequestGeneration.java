@@ -17,78 +17,73 @@
 package com.nexenio.fido.uaf.core.ops;
 
 import com.nexenio.fido.uaf.core.crypto.BCrypt;
-import com.nexenio.fido.uaf.core.msg.Operation;
-import com.nexenio.fido.uaf.core.msg.OperationHeader;
-import com.nexenio.fido.uaf.core.msg.Policy;
-import com.nexenio.fido.uaf.core.msg.Version;
-import org.apache.commons.codec.binary.Base64;
 import com.nexenio.fido.uaf.core.crypto.Notary;
-import com.nexenio.fido.uaf.core.msg.AuthenticationRequest;
-import com.nexenio.fido.uaf.core.msg.MatchCriteria;
+import com.nexenio.fido.uaf.core.msg.*;
+import org.apache.commons.codec.binary.Base64;
 
 public class AuthenticationRequestGeneration {
 
-	private String appId = RegistrationRequestGeneration.APP_ID;
-	private String[] acceptedAaids = null;
+    private String appId = RegistrationRequestGeneration.APP_ID;
+    private String[] acceptedAaids = null;
 
-	public AuthenticationRequestGeneration() {
-	}
+    public AuthenticationRequestGeneration() {
+    }
 
-	public AuthenticationRequestGeneration(String appId) {
-		this.appId = appId;
-	}
+    public AuthenticationRequestGeneration(String appId) {
+        this.appId = appId;
+    }
 
-	public AuthenticationRequestGeneration(String appId, String[] acceptedAaids) {
-		this.appId = appId;
-		this.acceptedAaids = acceptedAaids;
-	}
+    public AuthenticationRequestGeneration(String appId, String[] acceptedAaids) {
+        this.appId = appId;
+        this.acceptedAaids = acceptedAaids;
+    }
 
-	public AuthenticationRequest createAuthenticationRequest(Notary notary) {
-		AuthenticationRequest authRequest = new AuthenticationRequest();
-		OperationHeader header = new OperationHeader();
+    public AuthenticationRequest createAuthenticationRequest(Notary notary) {
+        AuthenticationRequest authRequest = new AuthenticationRequest();
+        OperationHeader header = new OperationHeader();
         authRequest.setChallenge(generateChallenge());
-		header.setServerData(generateServerData(authRequest.getChallenge(), notary));
-		authRequest.setHeader(header);
-		authRequest.getHeader().setOp(Operation.Auth);
-		authRequest.getHeader().setAppID(appId);
-		authRequest.getHeader().setUpv(new Version(1, 0));
+        header.setServerData(generateServerData(authRequest.getChallenge(), notary));
+        authRequest.setHeader(header);
+        authRequest.getHeader().setOp(Operation.Auth);
+        authRequest.getHeader().setAppID(appId);
+        authRequest.getHeader().setUpv(new Version(1, 0));
 
-		authRequest.setPolicy(constructAuthenticationPolicy());
+        authRequest.setPolicy(constructAuthenticationPolicy());
 
-		return authRequest;
-	}
+        return authRequest;
+    }
 
-	private String generateChallenge() {
-		return Base64.encodeBase64URLSafeString(BCrypt.gensalt().getBytes());
-	}
+    private String generateChallenge() {
+        return Base64.encodeBase64URLSafeString(BCrypt.gensalt().getBytes());
+    }
 
-	private String generateServerData(String challenge, Notary notary) {
-		String dataToSign = Base64.encodeBase64URLSafeString(("" + System
-				.currentTimeMillis()).getBytes())
-				+ "."
-				+ Base64.encodeBase64URLSafeString(challenge.getBytes());
-		String signature = notary.sign(dataToSign);
+    private String generateServerData(String challenge, Notary notary) {
+        String dataToSign = Base64.encodeBase64URLSafeString(("" + System
+                .currentTimeMillis()).getBytes())
+                + "."
+                + Base64.encodeBase64URLSafeString(challenge.getBytes());
+        String signature = notary.sign(dataToSign);
 
-		return Base64.encodeBase64URLSafeString((signature + "." + dataToSign)
-				.getBytes());
-	}
+        return Base64.encodeBase64URLSafeString((signature + "." + dataToSign)
+                .getBytes());
+    }
 
-	public Policy constructAuthenticationPolicy() {
-		if (acceptedAaids == null) {
-			return null;
-		}
-		Policy p = new Policy();
-		MatchCriteria[][] accepted = new MatchCriteria[acceptedAaids.length][1];
-		for (int i = 0; i < accepted.length; i++) {
-			MatchCriteria[] a = new MatchCriteria[1];
-			MatchCriteria matchCriteria = new MatchCriteria();
+    public Policy constructAuthenticationPolicy() {
+        if (acceptedAaids == null) {
+            return null;
+        }
+        Policy p = new Policy();
+        MatchCriteria[][] accepted = new MatchCriteria[acceptedAaids.length][1];
+        for (int i = 0; i < accepted.length; i++) {
+            MatchCriteria[] a = new MatchCriteria[1];
+            MatchCriteria matchCriteria = new MatchCriteria();
             matchCriteria.setAaid(new String[1]);
-			matchCriteria.getAaid()[0] = acceptedAaids[i];
-			a[0] = matchCriteria;
-			accepted[i] = a;
-		}
+            matchCriteria.getAaid()[0] = acceptedAaids[i];
+            a[0] = matchCriteria;
+            accepted[i] = a;
+        }
         p.setAccepted(accepted);
-		return p;
-	}
+        return p;
+    }
 
 }

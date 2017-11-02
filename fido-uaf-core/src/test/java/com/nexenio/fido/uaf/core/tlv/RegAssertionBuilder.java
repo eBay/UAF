@@ -1,5 +1,9 @@
 package com.nexenio.fido.uaf.core.tlv;
 
+import com.nexenio.fido.uaf.core.crypto.*;
+import org.apache.commons.codec.binary.Base64;
+import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -10,161 +14,152 @@ import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.util.logging.Logger;
 
-import org.apache.commons.codec.binary.Base64;
-import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
-import com.nexenio.fido.uaf.core.crypto.Asn1;
-import com.nexenio.fido.uaf.core.crypto.BCrypt;
-import com.nexenio.fido.uaf.core.crypto.KeyCodec;
-import com.nexenio.fido.uaf.core.crypto.NamedCurve;
-import com.nexenio.fido.uaf.core.crypto.SHA;
-import com.nexenio.fido.uaf.core.crypto.TestData;
-
 public class RegAssertionBuilder {
 
-	private Logger logger = Logger.getLogger(this.getClass().getName());
+    private Logger logger = Logger.getLogger(this.getClass().getName());
 
-	public String getAssertions() throws Exception {
-		ByteArrayOutputStream byteout = new ByteArrayOutputStream();
-		byte[] value = null;
-		int length = 0;
+    public String getAssertions() throws Exception {
+        ByteArrayOutputStream byteout = new ByteArrayOutputStream();
+        byte[] value = null;
+        int length = 0;
 
-		byteout.write(encodeInt(TagsEnum.TAG_UAFV1_REG_ASSERTION.id));
-		value = getRegAssertion();
-		length = value.length;
-		byteout.write(encodeInt(length));
-		byteout.write(value);
+        byteout.write(encodeInt(TagsEnum.TAG_UAFV1_REG_ASSERTION.id));
+        value = getRegAssertion();
+        length = value.length;
+        byteout.write(encodeInt(length));
+        byteout.write(value);
 
-		String ret = Base64.encodeBase64String(byteout.toByteArray());
-		logger.info(" : assertion : " + ret);
-		return ret;
-	}
+        String ret = Base64.encodeBase64String(byteout.toByteArray());
+        logger.info(" : assertion : " + ret);
+        return ret;
+    }
 
-	private byte[] getRegAssertion() throws Exception {
-		ByteArrayOutputStream byteout = new ByteArrayOutputStream();
-		byte[] value = null;
-		int length = 0;
+    private byte[] getRegAssertion() throws Exception {
+        ByteArrayOutputStream byteout = new ByteArrayOutputStream();
+        byte[] value = null;
+        int length = 0;
 
-		byteout.write(encodeInt(TagsEnum.TAG_UAFV1_KRD.id));
-		value = getSignedData();
-		length = value.length;
-		byteout.write(encodeInt(length));
-		byteout.write(value);
+        byteout.write(encodeInt(TagsEnum.TAG_UAFV1_KRD.id));
+        value = getSignedData();
+        length = value.length;
+        byteout.write(encodeInt(length));
+        byteout.write(value);
 
-		byte[] signedDataValue = byteout.toByteArray();
+        byte[] signedDataValue = byteout.toByteArray();
 
-		byteout.write(encodeInt(TagsEnum.TAG_SIGNATURE.id));
-		value = getSignature(signedDataValue);
-		length = value.length;
-		byteout.write(encodeInt(length));
-		byteout.write(value);
+        byteout.write(encodeInt(TagsEnum.TAG_SIGNATURE.id));
+        value = getSignature(signedDataValue);
+        length = value.length;
+        byteout.write(encodeInt(length));
+        byteout.write(value);
 
-		return byteout.toByteArray();
-	}
+        return byteout.toByteArray();
+    }
 
-	private byte[] getSignedData() throws IOException, InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException {
-		ByteArrayOutputStream byteout = new ByteArrayOutputStream();
-		byte[] value = null;
-		int length = 0;
+    private byte[] getSignedData() throws IOException, InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException {
+        ByteArrayOutputStream byteout = new ByteArrayOutputStream();
+        byte[] value = null;
+        int length = 0;
 
-		byteout.write(encodeInt(TagsEnum.TAG_AAID.id));
-		value = getAAID();
-		length = value.length;
-		byteout.write(encodeInt(length));
-		byteout.write(value);
+        byteout.write(encodeInt(TagsEnum.TAG_AAID.id));
+        value = getAAID();
+        length = value.length;
+        byteout.write(encodeInt(length));
+        byteout.write(value);
 
-		byteout.write(encodeInt(TagsEnum.TAG_ASSERTION_INFO.id));
-		value = new byte[] { 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00 };
-		length = value.length;
-		byteout.write(encodeInt(length));
-		byteout.write(value);
+        byteout.write(encodeInt(TagsEnum.TAG_ASSERTION_INFO.id));
+        value = new byte[]{0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00};
+        length = value.length;
+        byteout.write(encodeInt(length));
+        byteout.write(value);
 
-		byteout.write(encodeInt(TagsEnum.TAG_KEYID.id));
-		value = getKeyId();
-		length = value.length;
-		byteout.write(encodeInt(length));
-		byteout.write(value);
-		
-		byteout.write(encodeInt(TagsEnum.TAG_PUB_KEY.id));
-		value = getPubKeyId();
-		length = value.length;
-		byteout.write(encodeInt(length));
-		byteout.write(value);
+        byteout.write(encodeInt(TagsEnum.TAG_KEYID.id));
+        value = getKeyId();
+        length = value.length;
+        byteout.write(encodeInt(length));
+        byteout.write(value);
 
-		byteout.write(encodeInt(TagsEnum.TAG_AUTHENTICATOR_NONCE.id));
-		value = SHA.sha256(BCrypt.gensalt()).getBytes();
-		length = value.length;
-		byteout.write(encodeInt(length));
-		byteout.write(value);
+        byteout.write(encodeInt(TagsEnum.TAG_PUB_KEY.id));
+        value = getPubKeyId();
+        length = value.length;
+        byteout.write(encodeInt(length));
+        byteout.write(value);
 
-		return byteout.toByteArray();
-	}
+        byteout.write(encodeInt(TagsEnum.TAG_AUTHENTICATOR_NONCE.id));
+        value = SHA.sha256(BCrypt.gensalt()).getBytes();
+        length = value.length;
+        byteout.write(encodeInt(length));
+        byteout.write(value);
 
-	private byte[] getPubKeyId() throws InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException, IOException {
-		PublicKey pub = KeyCodec.getPubKey(Base64
-				.decodeBase64(TestData.TEST_PUB_KEY));
-		return KeyCodec.getKeyAsRawBytes((BCECPublicKey)pub);
-	}
+        return byteout.toByteArray();
+    }
 
-	private byte[] getSignature(byte[] dataForSigning) throws Exception {
+    private byte[] getPubKeyId() throws InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException, IOException {
+        PublicKey pub = KeyCodec.getPubKey(Base64
+                .decodeBase64(TestData.TEST_PUB_KEY));
+        return KeyCodec.getKeyAsRawBytes((BCECPublicKey) pub);
+    }
 
-		PublicKey pub = KeyCodec.getPubKey(Base64
-				.decodeBase64(TestData.TEST_PUB_KEY));
-		PrivateKey priv = KeyCodec.getPrivKey(Base64
-				.decodeBase64(TestData.TEST_PRIV_KEY));
+    private byte[] getSignature(byte[] dataForSigning) throws Exception {
 
-		logger.info(" : dataForSigning : "
-				+ Base64.encodeBase64URLSafeString(dataForSigning));
+        PublicKey pub = KeyCodec.getPubKey(Base64
+                .decodeBase64(TestData.TEST_PUB_KEY));
+        PrivateKey priv = KeyCodec.getPrivKey(Base64
+                .decodeBase64(TestData.TEST_PRIV_KEY));
 
-		BigInteger[] signatureGen = NamedCurve.signAndFromatToRS(priv,
-				dataForSigning);
+        logger.info(" : dataForSigning : "
+                + Base64.encodeBase64URLSafeString(dataForSigning));
 
-		boolean verify = NamedCurve.verify(
-				KeyCodec.getKeyAsRawBytes(TestData.TEST_PUB_KEY),
-				dataForSigning,
-				Asn1.decodeToBigIntegerArray(Asn1.getEncoded(signatureGen)));
-		if (!verify) {
-			throw new RuntimeException("Signatire match fail");
-		}
-		byte[] ret = Asn1.getEncoded(signatureGen);
-		logger.info(" : signature : " + Base64.encodeBase64URLSafeString(ret));
+        BigInteger[] signatureGen = NamedCurve.signAndFromatToRS(priv,
+                dataForSigning);
 
-		return ret;
-	}
+        boolean verify = NamedCurve.verify(
+                KeyCodec.getKeyAsRawBytes(TestData.TEST_PUB_KEY),
+                dataForSigning,
+                Asn1.decodeToBigIntegerArray(Asn1.getEncoded(signatureGen)));
+        if (!verify) {
+            throw new RuntimeException("Signatire match fail");
+        }
+        byte[] ret = Asn1.getEncoded(signatureGen);
+        logger.info(" : signature : " + Base64.encodeBase64URLSafeString(ret));
 
-	private byte[] getKeyId() throws IOException {
-		ByteArrayOutputStream byteout = new ByteArrayOutputStream();
-		byte[] value = "ebay-test-key".getBytes();
-		byteout.write(value);
-		return byteout.toByteArray();
-	}
+        return ret;
+    }
 
-	private byte[] getAAID() throws IOException {
-		ByteArrayOutputStream byteout = new ByteArrayOutputStream();
-		byte[] value = "EBAY#0001".getBytes();
-		byteout.write(value);
-		return byteout.toByteArray();
-	}
+    private byte[] getKeyId() throws IOException {
+        ByteArrayOutputStream byteout = new ByteArrayOutputStream();
+        byte[] value = "ebay-test-key".getBytes();
+        byteout.write(value);
+        return byteout.toByteArray();
+    }
 
-	private byte[] encodeInt(int id) {
+    private byte[] getAAID() throws IOException {
+        ByteArrayOutputStream byteout = new ByteArrayOutputStream();
+        byte[] value = "EBAY#0001".getBytes();
+        byteout.write(value);
+        return byteout.toByteArray();
+    }
 
-		byte[] bytes = new byte[2];
-		bytes[0] = (byte) (id & 0x00ff);
-		bytes[1] = (byte) ((id & 0xff00) >> 8);
-		return bytes;
-	}
+    private byte[] encodeInt(int id) {
 
-	
-	public static void main(String[] args) throws Exception {
-		RegAssertionBuilder builder = new RegAssertionBuilder();
-		String assertions = builder.getAssertions();
-		TlvAssertionParser parser = new TlvAssertionParser();
-		Tags tags = parser.parse(assertions);
-		String AAID = new String(tags.getTags().get(
-				TagsEnum.TAG_AAID.id).value);
-		String KeyID = new String(tags.getTags()
-				.get(TagsEnum.TAG_KEYID.id).value);
-		System.out.println (AAID);
-		System.out.println (KeyID);
-		
-	}
+        byte[] bytes = new byte[2];
+        bytes[0] = (byte) (id & 0x00ff);
+        bytes[1] = (byte) ((id & 0xff00) >> 8);
+        return bytes;
+    }
+
+
+    public static void main(String[] args) throws Exception {
+        RegAssertionBuilder builder = new RegAssertionBuilder();
+        String assertions = builder.getAssertions();
+        TlvAssertionParser parser = new TlvAssertionParser();
+        Tags tags = parser.parse(assertions);
+        String AAID = new String(tags.getTags().get(
+                TagsEnum.TAG_AAID.id).value);
+        String KeyID = new String(tags.getTags()
+                .get(TagsEnum.TAG_KEYID.id).value);
+        System.out.println(AAID);
+        System.out.println(KeyID);
+
+    }
 }

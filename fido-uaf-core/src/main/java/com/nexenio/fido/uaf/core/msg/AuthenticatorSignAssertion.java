@@ -21,6 +21,6 @@ import lombok.Data;
 @Data
 public class AuthenticatorSignAssertion {
     private String assertionScheme;
-	private String assertion;
-	private Extension[] exts;
+    private String assertion;
+    private Extension[] exts;
 }

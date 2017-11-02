@@ -21,5 +21,5 @@ import lombok.Data;
 @Data
 public class AuthenticatorRegistrationAssertion {
     private String assertionScheme;
-	private String assertion;
+    private String assertion;
 }

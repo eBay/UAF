@@ -16,41 +16,40 @@
 
 package com.nexenio.fido.uaf.core.crypto;
 
+import javax.crypto.Mac;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.InvalidParameterException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 
-import javax.crypto.Mac;
-import javax.crypto.SecretKey;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
-
 public class HMAC {
 
-	public static byte[] sign(String toSign, String secret) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, UnsupportedEncodingException {
-		validateParameters(toSign, secret);
-		String password = secret;
-		PBEKeySpec keySpec = new PBEKeySpec(password.toCharArray());
-		SecretKeyFactory kf = SecretKeyFactory
-				.getInstance("PBEWithMD5AndDES");
-		SecretKey passwordKey = kf.generateSecret(keySpec);
+    public static byte[] sign(String toSign, String secret) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, UnsupportedEncodingException {
+        validateParameters(toSign, secret);
+        String password = secret;
+        PBEKeySpec keySpec = new PBEKeySpec(password.toCharArray());
+        SecretKeyFactory kf = SecretKeyFactory
+                .getInstance("PBEWithMD5AndDES");
+        SecretKey passwordKey = kf.generateSecret(keySpec);
 
-		Mac mac = Mac.getInstance("HmacSHA256");
-		mac.init(passwordKey);
-		byte[] text = toSign.getBytes("UTF-8");
-		byte[] signatureBytes = mac.doFinal(text);
+        Mac mac = Mac.getInstance("HmacSHA256");
+        mac.init(passwordKey);
+        byte[] text = toSign.getBytes("UTF-8");
+        byte[] signatureBytes = mac.doFinal(text);
 
-		return signatureBytes;
-	}
+        return signatureBytes;
+    }
 
-	private static void validateParameters(String toSign, String secret) {
-		if (toSign == null || toSign.isEmpty()){
-			throw new InvalidParameterException("Empty string for signing");
-		}
-		if (secret == null || secret.isEmpty()){
-			throw new InvalidParameterException("Empty secret for signing");
-		}
-	}
+    private static void validateParameters(String toSign, String secret) {
+        if (toSign == null || toSign.isEmpty()) {
+            throw new InvalidParameterException("Empty string for signing");
+        }
+        if (secret == null || secret.isEmpty()) {
+            throw new InvalidParameterException("Empty secret for signing");
+        }
+    }
 }

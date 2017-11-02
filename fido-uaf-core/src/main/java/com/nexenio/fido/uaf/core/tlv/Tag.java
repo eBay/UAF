@@ -19,18 +19,18 @@ package com.nexenio.fido.uaf.core.tlv;
 import org.apache.commons.codec.binary.Base64;
 
 public class Tag {
-	public int statusId = 0x00;
-	public int id;
-	public int length;
-	public byte[] value;
+    public int statusId = 0x00;
+    public int id;
+    public int length;
+    public byte[] value;
 
-	public String toString() {
-		String ret = "Tag id:" + id;
-		ret = ret + " Tag name: " + TagsEnum.get(id);
-		if (value != null) {
-			ret = ret + " Tag value:" + Base64.encodeBase64URLSafeString(value);
-		}
-		return ret;
-	}
+    public String toString() {
+        String ret = "Tag id:" + id;
+        ret = ret + " Tag name: " + TagsEnum.get(id);
+        if (value != null) {
+            ret = ret + " Tag value:" + Base64.encodeBase64URLSafeString(value);
+        }
+        return ret;
+    }
 
 }

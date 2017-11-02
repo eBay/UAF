@@ -16,35 +16,27 @@
 
 package com.nexenio.fido.uaf.core.ops;
 
-import static com.nexenio.fido.uaf.core.msg.RecordStatus.INVALID_SERVER_DATA_EXPIRED;
-import static com.nexenio.fido.uaf.core.msg.RecordStatus.INVALID_SERVER_DATA_SIGNATURE_NO_MATCH;
-
 import com.google.gson.Gson;
+import com.nexenio.fido.uaf.core.crypto.CertificateValidator;
+import com.nexenio.fido.uaf.core.crypto.CertificateValidatorImpl;
+import com.nexenio.fido.uaf.core.crypto.Notary;
+import com.nexenio.fido.uaf.core.msg.*;
+import com.nexenio.fido.uaf.core.ops.exception.AssertionException;
+import com.nexenio.fido.uaf.core.ops.exception.ServerDataExpiredException;
+import com.nexenio.fido.uaf.core.ops.exception.ServerDataSignatureNotMatchException;
+import com.nexenio.fido.uaf.core.ops.exception.VersionException;
+import com.nexenio.fido.uaf.core.storage.AuthenticatorRecord;
+import com.nexenio.fido.uaf.core.storage.RegistrationRecord;
+import com.nexenio.fido.uaf.core.tlv.*;
+import org.apache.commons.codec.binary.Base64;
+
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.nexenio.fido.uaf.core.crypto.CertificateValidator;
-import com.nexenio.fido.uaf.core.msg.AuthenticatorRegistrationAssertion;
-import com.nexenio.fido.uaf.core.msg.FinalChallengeParams;
-import com.nexenio.fido.uaf.core.msg.RegistrationResponse;
-import com.nexenio.fido.uaf.core.msg.Version;
-import com.nexenio.fido.uaf.core.ops.exception.AssertionException;
-import com.nexenio.fido.uaf.core.ops.exception.ServerDataExpiredException;
-import com.nexenio.fido.uaf.core.ops.exception.ServerDataSignatureNotMatchException;
-import com.nexenio.fido.uaf.core.tlv.Tag;
-import com.nexenio.fido.uaf.core.tlv.Tags;
-import com.nexenio.fido.uaf.core.tlv.TlvAssertionParser;
-import org.apache.commons.codec.binary.Base64;
-import com.nexenio.fido.uaf.core.crypto.CertificateValidatorImpl;
-import com.nexenio.fido.uaf.core.crypto.Notary;
-import com.nexenio.fido.uaf.core.msg.RecordStatus;
-import com.nexenio.fido.uaf.core.ops.exception.VersionException;
-import com.nexenio.fido.uaf.core.storage.AuthenticatorRecord;
-import com.nexenio.fido.uaf.core.storage.RegistrationRecord;
-import com.nexenio.fido.uaf.core.tlv.TagsEnum;
-import com.nexenio.fido.uaf.core.tlv.UnsignedUtil;
+import static com.nexenio.fido.uaf.core.msg.RecordStatus.INVALID_SERVER_DATA_EXPIRED;
+import static com.nexenio.fido.uaf.core.msg.RecordStatus.INVALID_SERVER_DATA_SIGNATURE_NO_MATCH;
 
 public class RegistrationResponseProcessing {
 
@@ -73,7 +65,7 @@ public class RegistrationResponseProcessing {
     }
 
     public RegistrationRecord[] processResponse(RegistrationResponse response)
-        throws AssertionException, VersionException, ServerDataSignatureNotMatchException, ServerDataExpiredException {
+            throws AssertionException, VersionException, ServerDataSignatureNotMatchException, ServerDataExpiredException {
 
         checkAssertions(response);
         RegistrationRecord[] records = new RegistrationRecord[response.getAssertions().length];
@@ -90,8 +82,8 @@ public class RegistrationResponseProcessing {
     }
 
     private RegistrationRecord processAssertions(
-        AuthenticatorRegistrationAssertion authenticatorRegistrationAssertion,
-        RegistrationRecord record) {
+            AuthenticatorRegistrationAssertion authenticatorRegistrationAssertion,
+            RegistrationRecord record) {
         if (record == null) {
             record = new RegistrationRecord();
             record.setStatus(RecordStatus.INVALID_USERNAME);
@@ -99,7 +91,7 @@ public class RegistrationResponseProcessing {
         TlvAssertionParser parser = new TlvAssertionParser();
         try {
             Tags tags = parser
-                .parse(authenticatorRegistrationAssertion.getAssertion());
+                    .parse(authenticatorRegistrationAssertion.getAssertion());
             try {
                 verifyAttestationSignature(tags, record);
             } catch (Exception e) {
@@ -108,15 +100,15 @@ public class RegistrationResponseProcessing {
 
             AuthenticatorRecord authRecord = new AuthenticatorRecord();
             authRecord.setAaid(new String(tags.getTags().get(
-                TagsEnum.TAG_AAID.id).value));
+                    TagsEnum.TAG_AAID.id).value));
             authRecord.setKeyID(Base64.encodeBase64URLSafeString(tags.getTags().get(
-                TagsEnum.TAG_KEYID.id).value));
+                    TagsEnum.TAG_KEYID.id).value));
             record.setAuthenticator(authRecord);
             record.setPublicKey(Base64.encodeBase64URLSafeString(tags.getTags()
-                                                                     .get(TagsEnum.TAG_PUB_KEY.id).value));
+                    .get(TagsEnum.TAG_PUB_KEY.id).value));
             record.setAuthenticatorVersion(getAuthenticatorVersion(tags));
             String fc = Base64.encodeBase64URLSafeString(tags.getTags().get(
-                TagsEnum.TAG_FINAL_CHALLENGE.id).value);
+                    TagsEnum.TAG_FINAL_CHALLENGE.id).value);
             logger.log(Level.INFO, "FC: " + fc);
             if (record.getStatus() == null) {
                 record.setStatus(RecordStatus.SUCCESS);
@@ -124,13 +116,13 @@ public class RegistrationResponseProcessing {
         } catch (Exception e) {
             record.setStatus(RecordStatus.ASSERTIONS_CHECK_FAILED);
             logger.log(Level.INFO, "Fail to parse assertion: "
-                + authenticatorRegistrationAssertion.getAssertion(), e);
+                    + authenticatorRegistrationAssertion.getAssertion(), e);
         }
         return record;
     }
 
     private void verifyAttestationSignature(Tags tags, RegistrationRecord record)
-        throws NoSuchAlgorithmException, IOException, Exception {
+            throws NoSuchAlgorithmException, IOException, Exception {
         byte[] certBytes = tags.getTags().get(TagsEnum.TAG_ATTESTATION_CERT.id).value;
         record.setAttestCert(Base64.encodeBase64URLSafeString(certBytes));
 
@@ -140,16 +132,16 @@ public class RegistrationResponseProcessing {
         byte[] signedBytes = new byte[krd.value.length + 4];
         System.arraycopy(UnsignedUtil.encodeInt(krd.id), 0, signedBytes, 0, 2);
         System.arraycopy(UnsignedUtil.encodeInt(krd.length), 0, signedBytes, 2,
-                         2);
+                2);
         System.arraycopy(krd.value, 0, signedBytes, 4, krd.value.length);
 
         record.setAttestDataToSign(Base64.encodeBase64URLSafeString(signedBytes));
         record.setAttestSignature(Base64
-                                      .encodeBase64URLSafeString(signature.value));
+                .encodeBase64URLSafeString(signature.value));
         record.setAttestVerifiedStatus("FAILED_VALIDATION_ATTEMPT");
 
         if (certificateValidator.validate(certBytes, signedBytes,
-                                          signature.value)) {
+                signature.value)) {
             record.setAttestVerifiedStatus("VALID");
         } else {
             record.setAttestVerifiedStatus("NOT_VERIFIED");
@@ -158,8 +150,8 @@ public class RegistrationResponseProcessing {
 
     private String getAuthenticatorVersion(Tags tags) {
         return "" + tags.getTags().get(TagsEnum.TAG_ASSERTION_INFO.id).value[0]
-            + "."
-            + tags.getTags().get(TagsEnum.TAG_ASSERTION_INFO.id).value[1];
+                + "."
+                + tags.getTags().get(TagsEnum.TAG_ASSERTION_INFO.id).value[1];
     }
 
     private void checkAssertions(RegistrationResponse response) throws AssertionException {
@@ -170,12 +162,12 @@ public class RegistrationResponseProcessing {
 
     private FinalChallengeParams getFcp(RegistrationResponse response) {
         String fcp = new String(Base64.decodeBase64(response.getFcParams()
-                                                            .getBytes()));
+                .getBytes()));
         return gson.fromJson(fcp, FinalChallengeParams.class);
     }
 
     private void checkServerData(String serverDataB64, RegistrationRecord[] records)
-        throws ServerDataSignatureNotMatchException, ServerDataExpiredException {
+            throws ServerDataSignatureNotMatchException, ServerDataExpiredException {
 
         if (notary == null) {
             return;
@@ -189,7 +181,7 @@ public class RegistrationResponseProcessing {
         challenge = tokens[3];
         dataToSign = timeStamp + "." + username + "." + challenge;
 
-        if (! notary.verify(dataToSign, signature)) {
+        if (!notary.verify(dataToSign, signature)) {
             setErrorStatus(records, INVALID_SERVER_DATA_SIGNATURE_NO_MATCH);
             throw new ServerDataSignatureNotMatchException("Invalid server data - Signature not match");
         }
@@ -202,7 +194,7 @@ public class RegistrationResponseProcessing {
 
     private boolean isExpired(String timeStamp) {
         return Long.parseLong(new String(Base64.decodeBase64(timeStamp)))
-            + serverDataExpiryInMs < System.currentTimeMillis();
+                + serverDataExpiryInMs < System.currentTimeMillis();
     }
 
     private void setUsernameAndTimeStamp(String username, String timeStamp,
