@@ -98,7 +98,6 @@ artifactory {
             username = "${artifactory_user}"
             password = "${artifactory_password}"
             maven = true
-
         }
         defaults {
             publications('mavenJava')
@@ -111,7 +110,6 @@ publishing {
         mavenJava(MavenPublication) {
             groupId "${project.groupId}"
             artifactId "${artifactId}"
-
             from components.java
             artifact sourcesJar
         }
@@ -151,7 +149,7 @@ artifacts {
 // configure release plugin. See https://github.com/researchgate/gradle-release#configuration
 release {
     git {
-        requireBranch = 'release/setup-bintray'
+        requireBranch = 'master'
     }
 }
 
