@@ -33,4 +33,5 @@ public enum AlgAndEncodingEnum {
     AlgAndEncodingEnum(int id) {
         this.id = id;
     }
+
 }

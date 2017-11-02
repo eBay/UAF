@@ -20,30 +20,30 @@ import java.io.IOException;
 
 public class TagAssertionInfo {
 
-    private Tag t;
+    private Tag tag;
     private boolean isReg = false;
     private int authenticatorVersion = 0;
     private int authenticatorMode = 0;
     private int signatureAlgAndEncoding = 0;
     private int publicKeyAlgAndEncoding = 0;
 
-    public TagAssertionInfo(Tag t) throws InvalidArgumentException, IOException {
-        this.t = t;
-        if (t.id != TagsEnum.TAG_ASSERTION_INFO.id) {
+    public TagAssertionInfo(Tag tag) throws InvalidArgumentException, IOException {
+        this.tag = tag;
+        if (tag.id != TagsEnum.TAG_ASSERTION_INFO.id) {
             throw new InvalidArgumentException("Not TAG_ASSERTION_INFO tag");
         }
-        if (t.length != 5 && t.length != 7) {
+        if (tag.length != 5 && tag.length != 7) {
             throw new InvalidArgumentException(
-                    "Unrecognized tag structure. Length=" + t.length);
+                    "Unrecognized tag structure. Length=" + tag.length);
         }
-        if (t.length == 7) {
+        if (tag.length == 7) {
             isReg = true;
         }
         parse();
     }
 
     private void parse() throws IOException {
-        ByteInputStream bytes = new ByteInputStream(t.value);
+        ByteInputStream bytes = new ByteInputStream(tag.value);
         authenticatorVersion = UnsignedUtil.read_UAFV1_UINT16(bytes);
         authenticatorMode = bytes.readByte();
         signatureAlgAndEncoding = UnsignedUtil.read_UAFV1_UINT16(bytes);
@@ -52,8 +52,8 @@ public class TagAssertionInfo {
         }
     }
 
-    public Tag getT() {
-        return t;
+    public Tag getTag() {
+        return tag;
     }
 
     public boolean isReg() {

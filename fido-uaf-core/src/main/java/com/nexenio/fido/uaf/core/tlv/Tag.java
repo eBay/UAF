@@ -19,6 +19,7 @@ package com.nexenio.fido.uaf.core.tlv;
 import org.apache.commons.codec.binary.Base64;
 
 public class Tag {
+
     public int statusId = 0x00;
     public int id;
     public int length;
