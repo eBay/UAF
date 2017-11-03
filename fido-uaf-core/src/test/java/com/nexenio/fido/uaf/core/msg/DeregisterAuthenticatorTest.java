@@ -20,7 +20,7 @@ public class DeregisterAuthenticatorTest {
     }
 
     String getTestDeregAuth() {
-        return "{\"aaids\": \"ABCD#ABCD\",\"keyId\": \"ZMCPn92yHv1Ip-iCiBb6i4ADq6ZOv569KFQCvYSJfNg\"}";
+        return "{\"aaid\": \"ABCD#ABCD\",\"keyID\": \"ZMCPn92yHv1Ip-iCiBb6i4ADq6ZOv569KFQCvYSJfNg\"}";
     }
 
 

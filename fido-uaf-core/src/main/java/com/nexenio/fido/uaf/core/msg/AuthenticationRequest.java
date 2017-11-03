@@ -25,7 +25,7 @@ public class AuthenticationRequest {
     /**
      * Must be "AUTHENTICATION"
      */
-    @SerializedName("operationHeader")
+    @SerializedName("header")
     private OperationHeader operationHeader;
 
     /**

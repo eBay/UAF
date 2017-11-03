@@ -20,7 +20,7 @@ public class DeregistrationRequestTest {
     }
 
     String getTestDeregRequest() {
-        return "{\"operationHeader\": {\"operation\": \"DEREGISTRATION\",\"protocolVersion\": {\"major\": 1,\"minor\": 0},\"appId\": \"https://uaf-test-1.noknoktest.com:8443/SampleApp/uaf/facets\"},\"authenticators\": [{\"aaids\": \"ABCD#ABCD\",\"keyId\": \"ZMCPn92yHv1Ip-iCiBb6i4ADq6ZOv569KFQCvYSJfNg\"}]}";
+        return "{\"header\": {\"op\": \"Dereg\",\"upv\": {\"major\": 1,\"minor\": 0},\"appID\": \"https://uaf-test-1.noknoktest.com:8443/SampleApp/uaf/facets\"},\"authenticators\": [{\"aaid\": \"ABCD#ABCD\",\"keyID\": \"ZMCPn92yHv1Ip-iCiBb6i4ADq6ZOv569KFQCvYSJfNg\"}]}";
     }
 
 }

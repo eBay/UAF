@@ -16,6 +16,7 @@
 
 package com.nexenio.fido.uaf.core.msg;
 
+import com.google.gson.annotations.SerializedName;
 import lombok.Data;
 
 @Data
@@ -24,12 +25,14 @@ public class OperationHeader {
     /**
      * UAF protocol version. Major version must be 1 and minor version must be 0.
      */
+    @SerializedName("upv")
     private Version protocolVersion;
 
     /**
      * Name of FIDO operation this message relates to.
      * Note: "Auth" is used for both authentication and transaction confirmation.
      */
+    @SerializedName("op")
     private Operation operation;
 
     /**
@@ -44,6 +47,7 @@ public class OperationHeader {
      * The new key pair that the authenticator generates will be associated with this application identifier.
      * Security Relevance: The application identifier is used by the FIDO UAF Client to verify the eligibility of an application to trigger the use of a specific UAuth.Key. See [FIDOAppIDAndFacets].
      */
+    @SerializedName("appID")
     private String appId;
 
     /**
@@ -51,6 +55,7 @@ public class OperationHeader {
      * Note: The relying party can opaquely store things like expiration times for the registration session, protocol version used and other useful information in serverData. This data is opaque to FIDO UAF Clients. FIDO Servers may reject a response that is lacking this data or is containing unauthorized modifications to it.
      * Servers that depend on the integrity of serverData should apply appropriate security measures, as described in Registration Request Generation Rules for FIDO Server and section ServerData and KeyHandle.
      */
+    @SerializedName("serverData")
     private String serverData;
 
 }

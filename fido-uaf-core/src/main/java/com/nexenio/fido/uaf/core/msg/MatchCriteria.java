@@ -16,6 +16,7 @@
 
 package com.nexenio.fido.uaf.core.msg;
 
+import com.google.gson.annotations.SerializedName;
 import lombok.Data;
 
 @Data
@@ -26,6 +27,7 @@ public class MatchCriteria {
      * The match succeeds if at least one AAID entry in this array matches AuthenticatorInfo.aaids [UAFASM].
      * Note: This field corresponds to MetadataStatement.aaids [UAFAuthnrMetadata].
      */
+    @SerializedName("aaid")
     private String[] aaids;
 
 }

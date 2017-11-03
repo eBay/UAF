@@ -25,7 +25,7 @@ public class AuthenticationResponse {
     /**
      * Must be "AUTHENTICATION"
      */
-    @SerializedName("operationHeader")
+    @SerializedName("header")
     private OperationHeader operationHeader;
 
     /**

@@ -20,10 +20,7 @@ public class MatchCriteriaTest {
     }
 
     private String getTestMatchCrit() {
-        return "{\"aaid\": [\"1234#5678\"], \"vendorID\": [\"1234\"], \"userVerificationDetails\": [ [ { "
-                + "\"userVerification\": 2, \"baDesc\": { \"FAR\": 0.001 } } ] ], \"keyProtection\": 6, "
-                + "\"matcherProtection\": 2, \"attachmentHint\": 1, \"tcDisplay\": 4, \"authenticationAlgorithms\": [1], "
-                + "\"assertionScheme\": \"UAFV1TLV\", \"attestationTypes\": [15879], \"authenticatorVersion\": 2 }";
+        return "{\"aaid\": [\"1234#5678\"], \"vendorID\": [\"1234\"], \"userVerificationDetails\": [ [ { \"userVerification\": 2, \"baDesc\": { \"FAR\": 0.001 } } ] ], \"keyProtection\": 6, \"matcherProtection\": 2, \"attachmentHint\": 1, \"tcDisplay\": 4, \"authenticationAlgorithms\": [1], \"assertionScheme\": \"UAFV1TLV\", \"attestationTypes\": [15879], \"authenticatorVersion\": 2 }";
     }
 
 }

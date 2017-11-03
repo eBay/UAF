@@ -16,6 +16,7 @@
 
 package com.nexenio.fido.uaf.core.msg;
 
+import com.google.gson.annotations.SerializedName;
 import lombok.Data;
 
 @Data
@@ -29,11 +30,13 @@ public class Policy {
      * Sub-arrays of MatchCriteria in the second index (i.e. the set) indicate that multiple authenticators (i.e. each set element) must be registered or authenticated to be accepted by the server.
      * The MatchCriteria array represents ordered preferences by the server. Servers must put their preferred authenticators first, and FIDO UAF Clients should respect those preferences, either by presenting authenticator options to the user in the same order, or by offering to perform the operation using only the highest-preference authenticator(s).
      */
+    @SerializedName("accepted")
     private MatchCriteria[][] accepted;
 
     /**
      * Any authenticator that matches any of MatchCriteria contained in the field disallowed must be excluded from eligibility for the operation, regardless of whether it matches any MatchCriteria present in the accepted list, or not.
      */
+    @SerializedName("disallowed")
     public MatchCriteria[] disallowed;
 
 }
