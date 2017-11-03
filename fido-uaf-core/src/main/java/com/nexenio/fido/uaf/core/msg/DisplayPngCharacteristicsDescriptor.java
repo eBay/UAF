@@ -68,6 +68,6 @@ public class DisplayPngCharacteristicsDescriptor {
      * 1 to 256 palette entries
      */
     @SerializedName("plte")
-    private RgbPaletteEntry[] rgbPalletteEntries;
+    private RgbPaletteEntry[] rgbPaletteEntries;
 
 }
