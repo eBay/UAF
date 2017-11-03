@@ -16,6 +16,7 @@
 
 package com.nexenio.fido.uaf.core.msg;
 
+import com.google.gson.annotations.SerializedName;
 import lombok.Data;
 
 @Data
@@ -24,16 +25,20 @@ public class AuthenticationResponse {
     /**
      * Must be "AUTHENTICATION"
      */
+    @SerializedName("operationHeader")
     private OperationHeader operationHeader;
 
     /**
      * The field finalChallengeParams is the base64url-encoded serialized [RFC4627] FinalChallengeParams in UTF8 encoding (see FinalChallengeParams dictionary) which contains all parameters required for the server to verify the Final Challenge.
      */
+
+    @SerializedName("fcParams")
     private String finalChallengeParams;
 
     /**
      * The list of authenticator responses related to this operation.
      */
+    @SerializedName("assertions")
     private AuthenticatorSignAssertion[] assertions;
 
 }
