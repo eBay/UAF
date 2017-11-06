@@ -17,60 +17,57 @@
 package com.nexenio.fido.uaf.core.ri.client;
 
 import com.google.gson.Gson;
-import com.nexenio.fido.uaf.core.msg.AuthenticationResponse;
-import com.nexenio.fido.uaf.core.msg.AuthenticatorSignAssertion;
-import com.nexenio.fido.uaf.core.msg.FinalChallengeParams;
-import com.nexenio.fido.uaf.core.msg.OperationHeader;
+import com.nexenio.fido.uaf.core.msg.*;
 import org.apache.commons.codec.binary.Base64;
-import com.nexenio.fido.uaf.core.msg.AuthenticationRequest;
 
 public class AuthenticationRequestProcessing {
 
-	public AuthenticationResponse processRequest(AuthenticationRequest request) {
-		AuthenticationResponse response = new AuthenticationResponse();
-		Gson gson = new Gson();
-		setAppId(request, response);
-        response.setHeader(new OperationHeader());
-        response.getHeader().setServerData(request.getHeader().getServerData());
-        response.getHeader().setOp(request.getHeader().getOp());
-        response.getHeader().setUpv(request.getHeader().getUpv());
+    public AuthenticationResponse processRequest(AuthenticationRequest request) {
+        AuthenticationResponse response = new AuthenticationResponse();
+        Gson gson = new Gson();
+        setAppId(request, response);
+        response.setOperationHeader(new OperationHeader());
+        response.getOperationHeader().setServerData(request.getOperationHeader().getServerData());
+        response.getOperationHeader().setOperation(request.getOperationHeader().getOperation());
+        response.getOperationHeader().setProtocolVersion(request.getOperationHeader().getProtocolVersion());
 
-		FinalChallengeParams fcParams = new FinalChallengeParams();
-        fcParams.setAppID(Constants.APP_ID);
-        fcParams.setFacetID(Constants.FACET_ID);
+        FinalChallengeParams fcParams = new FinalChallengeParams();
+        fcParams.setAppId(Constants.APP_ID);
+        fcParams.setFacetId(Constants.FACET_ID);
         fcParams.setChallenge(request.getChallenge());
-        response.setFcParams(Base64.encodeBase64URLSafeString(gson.toJson(
-            fcParams).getBytes()));
-        setAssertions(response);
-		return response;
-	}
 
-	private void setAssertions(AuthenticationResponse response) {
-		AuthenticatorSignAssertion assertion = new AuthenticatorSignAssertion();
+        String serializedFinalChallengeParams = gson.toJson(fcParams);
+        response.setFinalChallengeParams(Base64.encodeBase64URLSafeString(serializedFinalChallengeParams.getBytes()));
+        setAssertions(response);
+        return response;
+    }
+
+    private void setAssertions(AuthenticationResponse response) {
+        AuthenticatorSignAssertion assertion = new AuthenticatorSignAssertion();
         assertion.setAssertionScheme("UAFV1TLV");
         // Example from specs doc
         assertion.setAssertion(
-            "Aj7WAAQ-jgALLgkAQUJDRCNBQkNEDi4FAAABAQEADy4gAHwyJAEX8t1b2wOxbaKOC5ZL7ACqbLo_TtiQfK3DzDsHCi4gAFwCUz"
-                + "-dOuafXKXJLbkUrIzjAU6oDbP8B9iLQRmCf58fEC4AAAkuIABkwI"
-                + "-f3bIe_Uin6IKIFvqLgAOrpk6_nr0oVAK9hIl82A0uBAACAAAABi5AADwDOcBvPslX2bRNy4SvFhAwhEAoBSGUitgMUNChgUSMxss3K3ukekq1paG7Fv1v5mBmDCZVPt2NCTnjUxrjTp4");
+                "Aj7WAAQ-jgALLgkAQUJDRCNBQkNEDi4FAAABAQEADy4gAHwyJAEX8t1b2wOxbaKOC5ZL7ACqbLo_TtiQfK3DzDsHCi4gAFwCUz"
+                        + "-dOuafXKXJLbkUrIzjAU6oDbP8B9iLQRmCf58fEC4AAAkuIABkwI"
+                        + "-f3bIe_Uin6IKIFvqLgAOrpk6_nr0oVAK9hIl82A0uBAACAAAABi5AADwDOcBvPslX2bRNy4SvFhAwhEAoBSGUitgMUNChgUSMxss3K3ukekq1paG7Fv1v5mBmDCZVPt2NCTnjUxrjTp4");
 
         AuthenticatorSignAssertion[] assertions = new AuthenticatorSignAssertion[1];
-		assertions[0] = assertion;
+        assertions[0] = assertion;
         response.setAssertions(assertions);
     }
 
-	private void setAppId(AuthenticationRequest request,
-			AuthenticationResponse response) {
-        if (request.getHeader().getAppID() == null && request.getHeader().getAppID().isEmpty()) {
-            response.getHeader().setAppID(Constants.APP_ID);
+    private void setAppId(AuthenticationRequest request,
+                          AuthenticationResponse response) {
+        if (request.getOperationHeader().getAppId() == null && request.getOperationHeader().getAppId().isEmpty()) {
+            response.getOperationHeader().setAppId(Constants.APP_ID);
         } else {
-			setAppID(request, response);
-		}
-	}
+            setAppID(request, response);
+        }
+    }
 
-	private void setAppID(AuthenticationRequest request,
-			AuthenticationResponse response) {
-		// TODO Auto-generated method stub
+    private void setAppID(AuthenticationRequest request,
+                          AuthenticationResponse response) {
+        // TODO Auto-generated method stub
 
-	}
+    }
 }

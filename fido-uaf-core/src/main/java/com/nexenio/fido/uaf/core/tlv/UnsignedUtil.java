@@ -20,18 +20,17 @@ import java.io.IOException;
 
 public class UnsignedUtil {
 
-	public static int read_UAFV1_UINT16(ByteInputStream bytes)
-			throws IOException {
-		int a = bytes.readUnsignedByte();
-		int b = bytes.readUnsignedByte();
-		return a + b * 256;
-	}
+    public static int read_UAFV1_UINT16(ByteInputStream inputStream) throws IOException {
+        int a = inputStream.readUnsignedByte();
+        int b = inputStream.readUnsignedByte();
+        return a + b * 256;
+    }
 
-	public static byte[] encodeInt(int id) {
+    public static byte[] encodeInt(int id) {
+        byte[] bytes = new byte[2];
+        bytes[0] = (byte) (id & 0x00ff);
+        bytes[1] = (byte) ((id & 0xff00) >> 8);
+        return bytes;
+    }
 
-		byte[] bytes = new byte[2];
-		bytes[0] = (byte) (id & 0x00ff);
-		bytes[1] = (byte) ((id & 0xff00) >> 8);
-		return bytes;
-	}
 }

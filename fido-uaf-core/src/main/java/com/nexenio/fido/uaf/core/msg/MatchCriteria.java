@@ -16,21 +16,18 @@
 
 package com.nexenio.fido.uaf.core.msg;
 
+import com.google.gson.annotations.SerializedName;
 import lombok.Data;
 
 @Data
 public class MatchCriteria {
-    private String[] aaid;
-	//public String[] vendorID;
-//	public String[] keyIDs;
-//	public long userVerification;
-//	public int keyProtection;
-	//public int matcherProtection;
-//	public long attachmentHint;
-	//public int tcDisplay;
-	//public int[] authenticationAlgorithms;
-	//public String[] assertionSchemes;
-	//public int[] attestationTypes;
-//	public int authenticatorVersion;
-//	public Extension[] exts;
+
+    /**
+     * List of AAIDs, causing matching to be restricted to certain AAIDs.
+     * The match succeeds if at least one AAID entry in this array matches AuthenticatorInfo.aaids [UAFASM].
+     * Note: This field corresponds to MetadataStatement.aaids [UAFAuthnrMetadata].
+     */
+    @SerializedName("aaid")
+    private String[] aaids;
+
 }

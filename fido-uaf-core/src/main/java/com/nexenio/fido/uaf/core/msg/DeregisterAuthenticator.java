@@ -16,10 +16,22 @@
 
 package com.nexenio.fido.uaf.core.msg;
 
+import com.google.gson.annotations.SerializedName;
 import lombok.Data;
 
 @Data
 public class DeregisterAuthenticator {
+
+    /**
+     * AAID of the authenticator to deregister.
+     */
+    @SerializedName("aaid")
     private String aaid;
-	private String keyID;
+
+    /**
+     * The unique KeyID related to UAuth.priv. KeyID is assumed to be unique within the scope of an AAID only.
+     */
+    @SerializedName("keyID")
+    private String keyId;
+
 }

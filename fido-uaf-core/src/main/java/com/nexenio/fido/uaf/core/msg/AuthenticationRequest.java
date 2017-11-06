@@ -16,12 +16,35 @@
 
 package com.nexenio.fido.uaf.core.msg;
 
+import com.google.gson.annotations.SerializedName;
 import lombok.Data;
 
 @Data
 public class AuthenticationRequest {
-	private OperationHeader header;
-	private String challenge;
-	private Transaction[] transaction;
-	private Policy policy;
+
+    /**
+     * Must be "AUTHENTICATION"
+     */
+    @SerializedName("header")
+    private OperationHeader operationHeader;
+
+    /**
+     * Server-provided challenge value
+     */
+    @SerializedName("challenge")
+    private String challenge;
+
+    /**
+     * Transaction data to be explicitly confirmed by the user.
+     * The list contains the same transactions content in various content types and various image sizes. Refer to UAFAuthnrMetadata for more information about Transaction Confirmation Display characteristics.
+     */
+    @SerializedName("transaction")
+    private Transaction[] transactions;
+
+    /**
+     * Server-provided policy defining what types of authenticators are acceptable for this authentication operation.
+     */
+    @SerializedName("policy")
+    private Policy policy;
+
 }

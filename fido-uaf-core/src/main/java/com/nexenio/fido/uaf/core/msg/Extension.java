@@ -16,11 +16,33 @@
 
 package com.nexenio.fido.uaf.core.msg;
 
+import com.google.gson.annotations.SerializedName;
 import lombok.Data;
 
 @Data
 public class Extension {
-	private String id;
-	private String data;
-	private boolean fail_if_unknown;
+
+    /**
+     * Identifies the extension.
+     */
+    @SerializedName("id")
+    private String id;
+
+    /**
+     * Contains arbitrary data with a semantics agreed between server and client. The data is base64url-encoded.
+     * This field may be empty.
+     */
+    @SerializedName("data")
+    private String data;
+
+    /**
+     * Indicates whether unknown extensions must be ignored (false) or must lead to an error (true).
+     * <li>
+     * <ul>A value of false indicates that unknown extensions must be ignored</ul>
+     * <ul>A value of true indicates that unknown extensions must result in an error</ul>
+     * </li>
+     */
+    @SerializedName("fail_if_unknown")
+    private boolean failIfUnknown;
+
 }

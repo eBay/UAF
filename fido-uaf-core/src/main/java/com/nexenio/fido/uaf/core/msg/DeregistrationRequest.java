@@ -16,10 +16,22 @@
 
 package com.nexenio.fido.uaf.core.msg;
 
+import com.google.gson.annotations.SerializedName;
 import lombok.Data;
 
 @Data
 public class DeregistrationRequest {
-    private OperationHeader header;
-	private DeregisterAuthenticator[] authenticators;
+
+    /**
+     * Must be "DEREGISTRATION".
+     */
+    @SerializedName("header")
+    private OperationHeader operationHeader;
+
+    /**
+     * List of authenticators to be deregistered.
+     */
+    @SerializedName("authenticators")
+    private DeregisterAuthenticator[] authenticators;
+
 }
