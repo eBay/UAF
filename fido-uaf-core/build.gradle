@@ -27,6 +27,8 @@ dependencies {
     testCompile 'junit:junit:4.12'
 }
 
+def releaseVersionName = "${version}"
+
 bintray {
     user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
     key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_API_KEY')
@@ -43,10 +45,10 @@ bintray {
         githubRepo = 'neXenio/UAF/'
         githubReleaseNotesFile = 'fido-uaf-core/README.md'
         version {
-            name = "${version}"
-            desc = "UAF Core ${version}"
+            name = "${releaseVersionName}"
+            desc = "UAF Core ${releaseVersionName}"
             released = new Date()
-            vcsTag = "${version}"
+            vcsTag = "${releaseVersionName}"
             gpg {
                 sign = true
             }
@@ -100,7 +102,7 @@ publishing {
             artifact javadocJar
             groupId 'com.nexenio.fido'
             artifactId 'uaf-core'
-            version "${version}"
+            version "${releaseVersionName}"
             pom.withXml {
                 def root = asNode()
                 root.appendNode('description', 'Java implementation of the UAF protocol')
@@ -129,6 +131,8 @@ artifacts {
 
 // configure release plugin. See https://github.com/researchgate/gradle-release#configuration
 release {
+    failOnUnversionedFiles = false
+    failOnCommitNeeded = false
     git {
         requireBranch = 'release/publish'
     }
