@@ -16,41 +16,43 @@
 
 package com.nexenio.fido.uaf.core.crypto;
 
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public class SHA {
 
+    public static final String ALGORITHM_SHA_1 = "SHA-1";
+    public static final String ALGORITHM_SHA_256 = "SHA-256";
+
     public static String sha1(String base) {
-        return sha(base, "SHA-1");
+        return sha(base, ALGORITHM_SHA_1);
     }
 
     public static String sha256(String base) {
-        return sha(base, "SHA-256");
+        return sha(base, ALGORITHM_SHA_256);
     }
 
-    public static String sha(String base, String alg) {
+    public static String sha(String base, String algorithm) {
         try {
-            MessageDigest digest = MessageDigest.getInstance(alg);
-            byte[] hash = digest.digest(base.getBytes("UTF-8"));
-            StringBuffer hexString = new StringBuffer();
-
+            MessageDigest digest = MessageDigest.getInstance(algorithm);
+            byte[] hash = digest.digest(base.getBytes(StandardCharsets.UTF_8));
+            StringBuilder hexString = new StringBuilder();
             for (int i = 0; i < hash.length; i++) {
                 String hex = Integer.toHexString(0xff & hash[i]);
-                if (hex.length() == 1)
+                if (hex.length() == 1) {
                     hexString.append('0');
+                }
                 hexString.append(hex);
             }
-
             return hexString.toString();
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
     }
 
-    public static byte[] sha(byte[] base, String alg)
-            throws NoSuchAlgorithmException {
-        MessageDigest digest = MessageDigest.getInstance(alg);
+    public static byte[] sha(byte[] base, String algorithm) throws NoSuchAlgorithmException {
+        MessageDigest digest = MessageDigest.getInstance(algorithm);
         return digest.digest(base);
     }
 

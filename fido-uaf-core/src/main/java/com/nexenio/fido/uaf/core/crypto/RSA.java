@@ -16,6 +16,7 @@
 
 package com.nexenio.fido.uaf.core.crypto;
 
+import com.nexenio.fido.uaf.core.util.ProviderUtil;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import java.security.*;
@@ -26,13 +27,12 @@ import java.security.spec.PSSParameterSpec;
 
 public class RSA {
 
-    private static final Provider BC = new BouncyCastleProvider();
+    public static final String ALGORITHM_RSA = "RSA";
 
-    public static boolean verify(X509Certificate x509Certificate,
-                                 byte[] signedDate, byte[] sig) throws SignatureException,
-            InvalidKeyException, NoSuchAlgorithmException,
-            NoSuchProviderException, InvalidAlgorithmParameterException {
-        Signature signature = Signature.getInstance("SHA256withRSA", BC);
+    private static final Provider BC = ProviderUtil.getBouncyCastleProvider();
+
+    public static boolean verify(X509Certificate x509Certificate, byte[] signedDate, byte[] sig) throws SignatureException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
+        Signature signature = Signature.getInstance(KeyCodec.ALGORITHM_SHA256_RSA, BC);
         signature.initVerify(x509Certificate);
         signature.update(signedDate);
         signature.update(SHA.sha(signedDate, "SHA-256"));

@@ -43,8 +43,8 @@ import java.security.spec.*;
 public class KeyCodec {
 
     public static final String ALGORITHM_ECDSA = "ECDSA";
-    public static final String ALGORITHM_RSA = "RSA";
     public static final String ALGORITHM_SHA256_ECDSA = "SHA256withECDSA";
+    public static final String ALGORITHM_SHA256_RSA = "SHA256withRSA";
 
     public static final String CURVE_SECP256_R1 = "secp256r1";
 
@@ -62,7 +62,7 @@ public class KeyCodec {
     }
 
     public static KeyPair getRSAKeyPair() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
-        KeyPairGenerator g = KeyPairGenerator.getInstance(ALGORITHM_RSA, BouncyCastleProvider.PROVIDER_NAME);
+        KeyPairGenerator g = KeyPairGenerator.getInstance(RSA.ALGORITHM_RSA, BouncyCastleProvider.PROVIDER_NAME);
         g.initialize(KEY_SIZE);
         return g.generateKeyPair();
     }
@@ -177,7 +177,7 @@ public class KeyCodec {
         RSAPublicKey pubKey8 = RSAPublicKey.getInstance(encodedPubKey);
         SubjectPublicKeyInfo info = SubjectPublicKeyInfoFactory.createSubjectPublicKeyInfo(new RSAKeyParameters(false, pubKey8.getModulus(), pubKey8.getPublicExponent()));
         X509EncodedKeySpec spec = new X509EncodedKeySpec(info.getEncoded());
-        KeyFactory keyFactory = KeyFactory.getInstance(ALGORITHM_RSA);
+        KeyFactory keyFactory = KeyFactory.getInstance(RSA.ALGORITHM_RSA);
         return keyFactory.generatePublic(spec);
     }
 

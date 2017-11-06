@@ -56,11 +56,11 @@ public class NamedCurve {
         return signature;
     }
 
-    public static boolean verify(byte[] encodedPublicKey, byte[] data, BigInteger[] rs) throws Exception {
+    public static boolean verify(byte[] encodedPublicKey, byte[] data, BigInteger[] rs) {
         return verifyUsingSecp256k1(encodedPublicKey, data, rs);
     }
 
-    public static boolean verifyUsingSecp256k1(byte[] encodedPublicKey, byte[] data, BigInteger[] rs) throws Exception {
+    public static boolean verifyUsingSecp256k1(byte[] encodedPublicKey, byte[] data, BigInteger[] rs) {
         ECDSASigner signer = new ECDSASigner();
         X9ECParameters params = SECNamedCurves.getByName(KeyCodec.CURVE_SECP256_R1);
         ECDomainParameters ecParams = new ECDomainParameters(params.getCurve(), params.getG(), params.getN(), params.getH());

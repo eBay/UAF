@@ -18,4 +18,18 @@ public abstract class ProviderUtil {
         Security.addProvider(new BouncyCastleProvider());
     }
 
+    /**
+     * Checks if {@link Security#getProvider(String)} returns a provider
+     * named {@link BouncyCastleProvider#PROVIDER_NAME}. If not, a new
+     * {@link BouncyCastleProvider} instance will be returned.
+     */
+    public static Provider getBouncyCastleProvider() {
+        Provider provider = Security.getProvider(BouncyCastleProvider.PROVIDER_NAME);
+        if (provider != null) {
+            return provider;
+        } else {
+            return new BouncyCastleProvider();
+        }
+    }
+
 }
