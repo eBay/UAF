@@ -79,13 +79,13 @@ public class X509Test {
         KeyPair keyPair = KeyCodec.getKeyPair();
 
         byte[] signature2 = NamedCurve.sign(signedBytes, keyPair.getPrivate());
-        BigInteger[] signAndFromatToRS = NamedCurve.signAndFromatToRS(keyPair.getPrivate(), signedBytes);
+        BigInteger[] signAndFromatToRS = NamedCurve.signAndFormatToRS(keyPair.getPrivate(), signedBytes);
         byte[] rawSignatureBytes = Asn1.toRawSignatureBytes(signAndFromatToRS);
 
         //	Example: Using generated keys with signature SHA256withECSDA
-        assertTrue(NamedCurve.checkSignature(keyPair.getPublic(), signedBytes, signature2));
+        assertTrue(NamedCurve.verify(keyPair.getPublic(), signedBytes, signature2));
 
-        //assertTrue( NamedCurve.checkSignature(x509Certificate.getPublicKey(), signedBytes, signature.value));
+        //assertTrue( NamedCurve.verify(x509Certificate.getPublicKey(), signedBytes, signature.value));
         BigInteger[] transformRawSignature = Asn1.transformRawSignature(rawSignatureBytes);
 
         // Example: Key pair generated. Sig calculated as RS, then transformed to raw byte[64]. Pub key as 0x04 X Y
@@ -106,11 +106,11 @@ public class X509Test {
         /**
          * Example:
          * Pub Key - From X509 Cert
-         * Method: checkSignature - using SHA256withECDSA
-         * Signature: Method checkSignature needs signature in DER encoded SEQUENCE { r INTEGER, s INTEGER }
+         * Method: verify - using SHA256withECDSA
+         * Signature: Method verify needs signature in DER encoded SEQUENCE { r INTEGER, s INTEGER }
          * Signature: Was presented in raw byte[64] format => transform to RS format => transform to DER encoded SEQUENCE { r INTEGER, s INTEGER }
          */
-        assertTrue(NamedCurve.checkSignature(x509Certificate.getPublicKey(), signedBytes, Asn1.getEncoded(Asn1.transformRawSignature(signature.value))));
+        assertTrue(NamedCurve.verify(x509Certificate.getPublicKey(), signedBytes, Asn1.getEncoded(Asn1.transformRawSignature(signature.value))));
     }
 
     @Test

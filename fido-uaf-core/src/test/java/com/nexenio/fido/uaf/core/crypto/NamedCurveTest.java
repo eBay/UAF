@@ -37,7 +37,7 @@ public class NamedCurveTest {
         logger.info("pubByte : " + pubByte.length + " privByte : "
                 + privByte.length);
 
-        BigInteger[] signatureGen = NamedCurve.signAndFromatToRS(priv,
+        BigInteger[] signatureGen = NamedCurve.signAndFormatToRS(priv,
                 dataForSigning);
 
         logger.info("Signature : " + signatureGen);
@@ -71,7 +71,7 @@ public class NamedCurveTest {
         String dataForSigningStr = "BD6OAA==";
         byte[] dataForSigning = Base64.decodeBase64(dataForSigningStr);
 
-        BigInteger[] signatureGen = NamedCurve.signAndFromatToRS(priv,
+        BigInteger[] signatureGen = NamedCurve.signAndFormatToRS(priv,
                 dataForSigning);
 
         byte[] asn1EncodedSignature = Asn1.getEncoded(signatureGen);

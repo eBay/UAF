@@ -44,7 +44,9 @@ public class KeyCodec {
 
     public static final String ALGORITHM_ECDSA = "ECDSA";
     public static final String ALGORITHM_RSA = "RSA";
-    public static final String CURVE_SECP_256_R1 = "secp256r1";
+    public static final String ALGORITHM_SHA256_ECDSA = "SHA256withECDSA";
+
+    public static final String CURVE_SECP256_R1 = "secp256r1";
 
     public static final int KEY_SIZE = 2048;
 
@@ -53,7 +55,7 @@ public class KeyCodec {
     }
 
     public static KeyPair getKeyPair() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
-        ECGenParameterSpec ecGenSpec = new ECGenParameterSpec(CURVE_SECP_256_R1);
+        ECGenParameterSpec ecGenSpec = new ECGenParameterSpec(CURVE_SECP256_R1);
         KeyPairGenerator g = KeyPairGenerator.getInstance(ALGORITHM_ECDSA, BouncyCastleProvider.PROVIDER_NAME);
         g.initialize(ecGenSpec, new SecureRandom());
         return g.generateKeyPair();
@@ -145,7 +147,7 @@ public class KeyCodec {
 
     public static KeyPair generate() throws NoSuchAlgorithmException, InvalidAlgorithmParameterException {
         SecureRandom random = new SecureRandom();
-        ECParameterSpec ecSpec = ECNamedCurveTable.getParameterSpec(CURVE_SECP_256_R1);
+        ECParameterSpec ecSpec = ECNamedCurveTable.getParameterSpec(CURVE_SECP256_R1);
         KeyPairGenerator g = KeyPairGenerator.getInstance(ALGORITHM_ECDSA);
         g.initialize(ecSpec, random);
         return g.generateKeyPair();

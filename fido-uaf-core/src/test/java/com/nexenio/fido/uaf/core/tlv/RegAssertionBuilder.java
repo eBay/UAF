@@ -110,7 +110,7 @@ public class RegAssertionBuilder {
         logger.info(" : dataForSigning : "
                 + Base64.encodeBase64URLSafeString(dataForSigning));
 
-        BigInteger[] signatureGen = NamedCurve.signAndFromatToRS(priv,
+        BigInteger[] signatureGen = NamedCurve.signAndFormatToRS(priv,
                 dataForSigning);
 
         boolean verify = NamedCurve.verify(

@@ -24,14 +24,11 @@ import org.bouncycastle.crypto.params.ECPublicKeyParameters;
 import org.bouncycastle.crypto.signers.ECDSASigner;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
-import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.*;
 import java.security.interfaces.ECPrivateKey;
 
 public class NamedCurve {
-
-    private static final Provider BC = new BouncyCastleProvider();
 
     static {
         Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
@@ -42,75 +39,47 @@ public class NamedCurve {
      * NIST secp256r1 curve which MUST have raw R and S buffers, encoded in
      * big-endian order. I.e. [R (32 bytes), S (32 bytes)]
      *
-     * @param priv  - Private key
-     * @param input - Data to sign
+     * @param privateKey  - Private key
+     * @param data - Data to sign
      * @return BigInteger[] - [R,S]
      */
-    public static BigInteger[] signAndFromatToRS(PrivateKey priv, byte[] input) {
-        X9ECParameters params = SECNamedCurves.getByName("secp256r1");
-        ECDomainParameters ecParams = new ECDomainParameters(params.getCurve(),
-                params.getG(), params.getN(), params.getH());
-        if (priv == null)
-            throw new IllegalStateException(
-                    "This ECKey does not have the private key necessary for signing.");
+    public static BigInteger[] signAndFormatToRS(PrivateKey privateKey, byte[] data) {
+        X9ECParameters params = SECNamedCurves.getByName(KeyCodec.CURVE_SECP256_R1);
+        ECDomainParameters ecParams = new ECDomainParameters(params.getCurve(), params.getG(), params.getN(), params.getH());
+        if (privateKey == null) {
+            throw new IllegalStateException("This ECKey does not have the private key necessary for signing.");
+        }
         ECDSASigner signer = new ECDSASigner();
-        ECPrivateKeyParameters privKey = new ECPrivateKeyParameters(
-                ((ECPrivateKey) priv).getS(), ecParams);
-        signer.init(true, privKey);
-        BigInteger[] sigs = signer.generateSignature(input);
-        return sigs;
+        ECPrivateKeyParameters parameters = new ECPrivateKeyParameters(((ECPrivateKey) privateKey).getS(), ecParams);
+        signer.init(true, parameters);
+        BigInteger[] signature = signer.generateSignature(data);
+        return signature;
     }
 
-    public static boolean verify(byte[] pub, byte[] dataForSigning,
-                                 BigInteger[] rs) throws Exception {
+    public static boolean verify(byte[] encodedPublicKey, byte[] data, BigInteger[] rs) throws Exception {
+        return verifyUsingSecp256k1(encodedPublicKey, data, rs);
+    }
+
+    public static boolean verifyUsingSecp256k1(byte[] encodedPublicKey, byte[] data, BigInteger[] rs) throws Exception {
         ECDSASigner signer = new ECDSASigner();
-        X9ECParameters params = SECNamedCurves.getByName("secp256r1");
-        ECDomainParameters ecParams = new ECDomainParameters(params.getCurve(),
-                params.getG(), params.getN(), params.getH());
-        ECPublicKeyParameters pubKeyParams = new ECPublicKeyParameters(ecParams
-                .getCurve().decodePoint(pub), ecParams);
-        signer.init(false, pubKeyParams);
-
-        return signer.verifySignature(dataForSigning, rs[0].abs(), rs[1].abs());
+        X9ECParameters params = SECNamedCurves.getByName(KeyCodec.CURVE_SECP256_R1);
+        ECDomainParameters ecParams = new ECDomainParameters(params.getCurve(), params.getG(), params.getN(), params.getH());
+        ECPublicKeyParameters parameters = new ECPublicKeyParameters(ecParams.getCurve().decodePoint(encodedPublicKey), ecParams);
+        signer.init(false, parameters);
+        return signer.verifySignature(data, rs[0].abs(), rs[1].abs());
     }
 
-    public static boolean verifyUsingSecp256k1(byte[] pub, byte[] dataForSigning,
-                                               BigInteger[] rs) throws Exception {
-        ECDSASigner signer = new ECDSASigner();
-        X9ECParameters params = SECNamedCurves.getByName("secp256k1");
-        ECDomainParameters ecParams = new ECDomainParameters(params.getCurve(),
-                params.getG(), params.getN(), params.getH());
-        ECPublicKeyParameters pubKeyParams = new ECPublicKeyParameters(ecParams
-                .getCurve().decodePoint(pub), ecParams);
-        signer.init(false, pubKeyParams);
-
-        return signer.verifySignature(dataForSigning, rs[0].abs(), rs[1].abs());
-    }
-
-    public static boolean verify(PublicKey pub, byte[] dataForSigning,
-                                 byte[] signature) throws NoSuchAlgorithmException,
-            NoSuchProviderException, InvalidKeyException, SignatureException,
-            UnsupportedEncodingException {
-        Signature ecdsaVerify = Signature.getInstance("SHA256withECDSA", "BC");
-        ecdsaVerify.initVerify(pub);
-        ecdsaVerify.update(dataForSigning);
-        return ecdsaVerify.verify(signature);
-    }
-
-    public static boolean checkSignature(PublicKey publicKey,
-                                         byte[] signedBytes, byte[] signature) throws InvalidKeyException,
-            NoSuchAlgorithmException, SignatureException {
-        Signature ecdsaSignature = Signature.getInstance("SHA256withECDSA", BC);
-        ecdsaSignature.initVerify(publicKey);
-        ecdsaSignature.update(signedBytes);
-        return ecdsaSignature.verify(signature);
-    }
-
-    public static byte[] sign(byte[] signedData, PrivateKey privateKey)
-            throws Exception {
-        Signature signature = Signature.getInstance("SHA256withECDSA");
-        signature.initSign(privateKey);
+    public static boolean verify(PublicKey publicKey, byte[] signedData, byte[] encodedSignature) throws InvalidKeyException, NoSuchAlgorithmException, SignatureException, NoSuchProviderException {
+        Signature signature = Signature.getInstance(KeyCodec.ALGORITHM_SHA256_ECDSA, BouncyCastleProvider.PROVIDER_NAME);
+        signature.initVerify(publicKey);
         signature.update(signedData);
+        return signature.verify(encodedSignature);
+    }
+
+    public static byte[] sign(byte[] data, PrivateKey privateKey) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+        Signature signature = Signature.getInstance(KeyCodec.ALGORITHM_SHA256_ECDSA);
+        signature.initSign(privateKey);
+        signature.update(data);
         return signature.sign();
     }
 

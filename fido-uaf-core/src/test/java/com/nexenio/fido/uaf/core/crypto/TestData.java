@@ -41,7 +41,7 @@ public class TestData {
         dataForSigning[2] = (byte) (signedDataLength & 0x00ff);
         dataForSigning[3] = (byte) (signedDataLength & 0xff00);
         //signature = NamedCurve.sign(priv, dataForSigning);
-        rsSignature = NamedCurve.signAndFromatToRS(priv,
+        rsSignature = NamedCurve.signAndFormatToRS(priv,
                 SHA.sha(dataForSigning, "SHA-1"));
     }
 
