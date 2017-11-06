@@ -129,7 +129,7 @@ artifacts {
 // configure release plugin. See https://github.com/researchgate/gradle-release#configuration
 release {
     git {
-        requireBranch = 'master'
+        requireBranch = 'release/publish'
     }
 }
 
