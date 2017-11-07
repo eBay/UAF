@@ -27,13 +27,23 @@ public class CertificateValidatorImpl implements CertificateValidator {
         if (algorithmName.contains(RSA.ALGORITHM_RSA)) {
             return RSA.verify(certificate, signedDataBytes, signatureBytes);
         }
+
+        byte[] encodedPublicKey = KeyCodec.getKeyAsRawBytes((ECPublicKey) certificate.getPublicKey());
+        byte[] data = SHA.sha(signedDataBytes, SHA.ALGORITHM_SHA_256);
         BigInteger[] rs;
         if (signatureBytes.length == 64) {
             rs = Asn1.transformRawSignature(signatureBytes);
         } else {
             rs = Asn1.decodeToBigIntegerArray(signatureBytes);
         }
-        return NamedCurve.verifyUsingSecp256r1(KeyCodec.getKeyAsRawBytes((ECPublicKey) certificate.getPublicKey()), SHA.sha(signedDataBytes, SHA.ALGORITHM_SHA_256), rs);
+
+        boolean verified;
+        try {
+            verified = NamedCurve.verifyUsingSecp256r1(encodedPublicKey, data, rs);
+        } catch (Exception e) {
+            verified = NamedCurve.verifyUsingSecp256k1(encodedPublicKey, data, rs);
+        }
+        return verified;
     }
 
 }
