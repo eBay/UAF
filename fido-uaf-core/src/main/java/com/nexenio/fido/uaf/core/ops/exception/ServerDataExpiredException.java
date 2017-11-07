@@ -26,4 +26,5 @@ public class ServerDataExpiredException extends Exception {
     public ServerDataExpiredException(String message) {
         super(message);
     }
+
 }

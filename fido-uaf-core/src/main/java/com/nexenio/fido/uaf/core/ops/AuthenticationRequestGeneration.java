@@ -18,7 +18,11 @@ package com.nexenio.fido.uaf.core.ops;
 
 import com.nexenio.fido.uaf.core.crypto.BCrypt;
 import com.nexenio.fido.uaf.core.crypto.Notary;
-import com.nexenio.fido.uaf.core.msg.*;
+import com.nexenio.fido.uaf.core.msg.AuthenticationRequest;
+import com.nexenio.fido.uaf.core.msg.Operation;
+import com.nexenio.fido.uaf.core.msg.OperationHeader;
+import com.nexenio.fido.uaf.core.msg.Version;
+import com.nexenio.fido.uaf.core.util.PolicyUtil;
 import org.apache.commons.codec.binary.Base64;
 
 public class AuthenticationRequestGeneration {
@@ -47,9 +51,7 @@ public class AuthenticationRequestGeneration {
         authRequest.getOperationHeader().setOperation(Operation.AUTHENTICATION);
         authRequest.getOperationHeader().setAppId(appId);
         authRequest.getOperationHeader().setProtocolVersion(new Version(1, 0));
-
-        authRequest.setPolicy(constructAuthenticationPolicy());
-
+        authRequest.setPolicy(PolicyUtil.constructAuthenticationPolicy(acceptedAaids));
         return authRequest;
     }
 
@@ -58,32 +60,11 @@ public class AuthenticationRequestGeneration {
     }
 
     private String generateServerData(String challenge, Notary notary) {
-        String dataToSign = Base64.encodeBase64URLSafeString(("" + System
-                .currentTimeMillis()).getBytes())
-                + "."
-                + Base64.encodeBase64URLSafeString(challenge.getBytes());
+        String dataToSign = Base64.encodeBase64URLSafeString(("" + System.currentTimeMillis()).getBytes())
+                + "." + Base64.encodeBase64URLSafeString(challenge.getBytes());
         String signature = notary.sign(dataToSign);
 
-        return Base64.encodeBase64URLSafeString((signature + "." + dataToSign)
-                .getBytes());
-    }
-
-    public Policy constructAuthenticationPolicy() {
-        if (acceptedAaids == null) {
-            return null;
-        }
-        Policy p = new Policy();
-        MatchCriteria[][] accepted = new MatchCriteria[acceptedAaids.length][1];
-        for (int i = 0; i < accepted.length; i++) {
-            MatchCriteria[] a = new MatchCriteria[1];
-            MatchCriteria matchCriteria = new MatchCriteria();
-            matchCriteria.setAaids(new String[1]);
-            matchCriteria.getAaids()[0] = acceptedAaids[i];
-            a[0] = matchCriteria;
-            accepted[i] = a;
-        }
-        p.setAccepted(accepted);
-        return p;
+        return Base64.encodeBase64URLSafeString((signature + "." + dataToSign).getBytes());
     }
 
 }

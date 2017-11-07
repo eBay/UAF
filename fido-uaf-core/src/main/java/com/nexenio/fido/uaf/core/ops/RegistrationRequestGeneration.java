@@ -19,6 +19,7 @@ package com.nexenio.fido.uaf.core.ops;
 import com.nexenio.fido.uaf.core.crypto.BCrypt;
 import com.nexenio.fido.uaf.core.crypto.Notary;
 import com.nexenio.fido.uaf.core.msg.*;
+import com.nexenio.fido.uaf.core.util.PolicyUtil;
 import org.apache.commons.codec.binary.Base64;
 
 public class RegistrationRequestGeneration {
@@ -38,24 +39,6 @@ public class RegistrationRequestGeneration {
     public RegistrationRequestGeneration(String appId, String[] acceptedAaids) {
         this.appId = appId;
         this.acceptedAaids = acceptedAaids;
-    }
-
-    public Policy constructAuthenticationPolicy() {
-        if (acceptedAaids == null) {
-            return null;
-        }
-        Policy p = new Policy();
-        MatchCriteria[][] accepted = new MatchCriteria[acceptedAaids.length][1];
-        for (int i = 0; i < accepted.length; i++) {
-            MatchCriteria[] a = new MatchCriteria[1];
-            MatchCriteria matchCriteria = new MatchCriteria();
-            matchCriteria.setAaids(new String[1]);
-            matchCriteria.getAaids()[0] = acceptedAaids[i];
-            a[0] = matchCriteria;
-            accepted[i] = a;
-        }
-        p.setAccepted(accepted);
-        return p;
     }
 
     public RegistrationRequest createRegistrationRequest(String username,
@@ -90,7 +73,7 @@ public class RegistrationRequestGeneration {
         regRequest.getOperationHeader().setAppId(appId);
         regRequest.getOperationHeader().setProtocolVersion(new Version(1, 0));
         regRequest.setChallenge(challenge);
-        regRequest.setPolicy(constructAuthenticationPolicy());
+        regRequest.setPolicy(PolicyUtil.constructAuthenticationPolicy(acceptedAaids));
         regRequest.setUserName(username);
         return regRequest;
     }

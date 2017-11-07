@@ -26,4 +26,5 @@ public class ServerDataSignatureNotMatchException extends Exception {
     public ServerDataSignatureNotMatchException(String message) {
         super(message);
     }
+
 }
