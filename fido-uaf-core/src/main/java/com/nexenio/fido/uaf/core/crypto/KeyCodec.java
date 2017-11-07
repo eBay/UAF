@@ -45,6 +45,7 @@ public class KeyCodec {
     public static final String ALGORITHM_ECDSA = "ECDSA";
 
     public static final String CURVE_SECP256_R1 = "secp256r1";
+    public static final String CURVE_SECP256_K1 = "secp256k1";
 
     public static final int KEY_SIZE = 2048;
 

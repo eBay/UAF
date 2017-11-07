@@ -16,6 +16,7 @@
 
 package com.nexenio.fido.uaf.core.crypto;
 
+import com.nexenio.fido.uaf.core.util.ProviderUtil;
 import org.bouncycastle.asn1.sec.SECNamedCurves;
 import org.bouncycastle.asn1.x9.X9ECParameters;
 import org.bouncycastle.crypto.params.ECDomainParameters;
@@ -31,7 +32,7 @@ import java.security.interfaces.ECPrivateKey;
 public class NamedCurve {
 
     static {
-        Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
+        ProviderUtil.addBouncyCastleProvider();
     }
 
     /**
@@ -56,13 +57,17 @@ public class NamedCurve {
         return signature;
     }
 
-    public static boolean verify(byte[] encodedPublicKey, byte[] data, BigInteger[] rs) {
-        return verifyUsingSecp256k1(encodedPublicKey, data, rs);
+    public static boolean verifyUsingSecp256r1(byte[] encodedPublicKey, byte[] data, BigInteger[] rs) {
+        return verify(encodedPublicKey, data, rs, KeyCodec.CURVE_SECP256_R1);
     }
 
     public static boolean verifyUsingSecp256k1(byte[] encodedPublicKey, byte[] data, BigInteger[] rs) {
+        return verify(encodedPublicKey, data, rs, KeyCodec.CURVE_SECP256_K1);
+    }
+
+    public static boolean verify(byte[] encodedPublicKey, byte[] data, BigInteger[] rs, String curveName) {
         ECDSASigner signer = new ECDSASigner();
-        X9ECParameters params = SECNamedCurves.getByName(KeyCodec.CURVE_SECP256_R1);
+        X9ECParameters params = SECNamedCurves.getByName(curveName);
         ECDomainParameters ecParams = new ECDomainParameters(params.getCurve(), params.getG(), params.getN(), params.getH());
         ECPublicKeyParameters parameters = new ECPublicKeyParameters(ecParams.getCurve().decodePoint(encodedPublicKey), ecParams);
         signer.init(false, parameters);

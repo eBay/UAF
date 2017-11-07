@@ -13,7 +13,7 @@ public class CertificateValidatorImplTest {
     TlvAssertionParser p = new TlvAssertionParser();
 
     @Test
-    public void basic() throws NoSuchAlgorithmException, Exception {
+    public void basic() throws Exception {
         Tags t = getTags(TestAssertions.getExampleRegAssertions());
         CertificateValidatorImpl validator = new CertificateValidatorImpl();
         boolean validate = validator.validate(
@@ -24,7 +24,7 @@ public class CertificateValidatorImplTest {
     }
 
     @Test
-    public void d() throws NoSuchAlgorithmException, Exception {
+    public void d() throws Exception {
         Tags t = getTags(TestAssertions.getRegAssertionsFromD());
         CertificateValidatorImpl validator = new CertificateValidatorImpl();
         boolean validate = validator.validate(
@@ -42,7 +42,7 @@ public class CertificateValidatorImplTest {
      * @throws Exception
      */
     @Test
-    public void sValidateTrue() throws NoSuchAlgorithmException, Exception {
+    public void sValidateTrue() throws Exception {
         Tags t = getTags(TestAssertions.getRegAssertionsFromS());
         CertificateValidatorImpl validator = new CertificateValidatorImpl();
         boolean validate = validator.validate(
@@ -53,7 +53,7 @@ public class CertificateValidatorImplTest {
     }
 
     @Test
-    public void s2ValidateTrue() throws NoSuchAlgorithmException, Exception {
+    public void s2ValidateTrue() throws Exception {
         Tags t = getTags(TestAssertions.getRegAssertionsFromS2());
         CertificateValidatorImpl validator = new CertificateValidatorImpl();
         boolean validate = validator.validate(
@@ -64,7 +64,7 @@ public class CertificateValidatorImplTest {
     }
 
     @Test
-    public void rsaValidateFalse() throws NoSuchAlgorithmException, Exception {
+    public void rsaValidateFalse() throws Exception {
         Tags t = getTags(TestAssertions.regRequestAssertionsFromRaon());
         CertificateValidatorImpl validator = new CertificateValidatorImpl();
         boolean validate = validator.validate(

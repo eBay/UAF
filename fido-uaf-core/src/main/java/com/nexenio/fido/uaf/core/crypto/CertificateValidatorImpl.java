@@ -33,7 +33,7 @@ public class CertificateValidatorImpl implements CertificateValidator {
         } else {
             rs = Asn1.decodeToBigIntegerArray(signatureBytes);
         }
-        return NamedCurve.verify(KeyCodec.getKeyAsRawBytes((ECPublicKey) certificate.getPublicKey()), SHA.sha(signedDataBytes, SHA.ALGORITHM_SHA_256), rs);
+        return NamedCurve.verifyUsingSecp256r1(KeyCodec.getKeyAsRawBytes((ECPublicKey) certificate.getPublicKey()), SHA.sha(signedDataBytes, SHA.ALGORITHM_SHA_256), rs);
     }
 
 }

@@ -56,7 +56,7 @@ public class NamedCurveTest {
 
         signatureGen = Asn1.decodeToBigIntegerArray(signatureGenAsn1);
 
-        assertTrue(NamedCurve.verify(KeyCodec.getKeyAsRawBytes(pub),
+        assertTrue(NamedCurve.verifyUsingSecp256r1(KeyCodec.getKeyAsRawBytes(pub),
                 dataForSigning, signatureGen));
     }
 
@@ -77,7 +77,7 @@ public class NamedCurveTest {
         byte[] asn1EncodedSignature = Asn1.getEncoded(signatureGen);
         logger.info("asn1EncodedSignature="
                 + Base64.encodeBase64URLSafeString(asn1EncodedSignature));
-        assertTrue(NamedCurve.verify(
+        assertTrue(NamedCurve.verifyUsingSecp256r1(
                 KeyCodec.getKeyAsRawBytes((BCECPublicKey) pub), dataForSigning,
                 Asn1.decodeToBigIntegerArray(asn1EncodedSignature)));
     }
@@ -95,7 +95,7 @@ public class NamedCurveTest {
         byte[] dataForSigning = SHA.sha(Base64.decodeBase64(dataForSigningStr), "SHA-256");
 
         assertTrue(NamedCurve
-                .verify(KeyCodec.getKeyAsRawBytes(pubKeyB64), dataForSigning,
+                .verifyUsingSecp256r1(KeyCodec.getKeyAsRawBytes(pubKeyB64), dataForSigning,
                         Asn1.decodeToBigIntegerArray(Base64
                                 .decodeBase64(signatureB64))));
 
@@ -129,7 +129,7 @@ public class NamedCurveTest {
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         md.update(dataForSigning);
         dataForSigning = md.digest();
-        boolean verify = NamedCurve.verify(KeyCodec.getKeyAsRawBytes((BCECPublicKey) pub), dataForSigning, rs);
+        boolean verify = NamedCurve.verifyUsingSecp256r1(KeyCodec.getKeyAsRawBytes((BCECPublicKey) pub), dataForSigning, rs);
         assertTrue(verify);
     }
 }

@@ -143,7 +143,7 @@ public class X509Test {
         BigInteger[] transformRawSignature = Asn1.transformRawSignature(rawSignatureBytes);
 
         // Example: Key pair generated. Sig calculated as RS, then transformed to raw byte[64]. Pub key as 0x04 X Y
-        assertTrue(NamedCurve.verify(KeyCodec.getKeyAsRawBytes((ECPublicKey) keyPair.getPublic()), signedBytes, transformRawSignature));
+        assertTrue(NamedCurve.verifyUsingSecp256r1(KeyCodec.getKeyAsRawBytes((ECPublicKey) keyPair.getPublic()), signedBytes, transformRawSignature));
 
 
         /**
@@ -154,7 +154,7 @@ public class X509Test {
          * Signature: ECDSASigner - Needs raw signature from byte[64] to RS Big Integer representation
          *
          */
-        assertTrue(NamedCurve.verify(KeyCodec.getKeyAsRawBytes((ECPublicKey) x509Certificate.getPublicKey()), SHA.sha(signedBytes, "SHA256"), Asn1.transformRawSignature(signature.value)));
+        assertTrue(NamedCurve.verifyUsingSecp256r1(KeyCodec.getKeyAsRawBytes((ECPublicKey) x509Certificate.getPublicKey()), SHA.sha(signedBytes, "SHA256"), Asn1.transformRawSignature(signature.value)));
 
 
         /**

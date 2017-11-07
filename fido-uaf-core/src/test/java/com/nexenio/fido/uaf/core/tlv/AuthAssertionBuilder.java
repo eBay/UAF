@@ -97,7 +97,7 @@ public class AuthAssertionBuilder {
         BigInteger[] signatureGen = NamedCurve.signAndFormatToRS(priv,
                 dataForSigning);
 
-        boolean verify = NamedCurve.verify(
+        boolean verify = NamedCurve.verifyUsingSecp256r1(
                 KeyCodec.getKeyAsRawBytes(TestData.TEST_PUB_KEY),
                 dataForSigning,
                 Asn1.decodeToBigIntegerArray(Asn1.getEncoded(signatureGen)));

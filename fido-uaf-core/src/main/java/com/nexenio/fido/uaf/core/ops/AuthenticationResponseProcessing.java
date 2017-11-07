@@ -173,13 +173,13 @@ public class AuthenticationResponseProcessing {
             }
             if (algAndEncoding == AlgAndEncodingEnum.UAF_ALG_SIGN_SECP256R1_ECDSA_SHA256_DER) {
                 if (decodeBase64.length > 65) {
-                    return NamedCurve.verify(KeyCodec.getKeyAsRawBytes(pubKey),
+                    return NamedCurve.verifyUsingSecp256r1(KeyCodec.getKeyAsRawBytes(pubKey),
                             SHA.sha(dataForSigning, "SHA-256"),
                             Asn1.decodeToBigIntegerArray(signature.value));
                 } else {
                     ECPublicKey decodedPub = (ECPublicKey) KeyCodec.getPubKeyFromCurve(
                             decodeBase64, "secp256r1");
-                    return NamedCurve.verify(KeyCodec.getKeyAsRawBytes(decodedPub),
+                    return NamedCurve.verifyUsingSecp256r1(KeyCodec.getKeyAsRawBytes(decodedPub),
                             SHA.sha(dataForSigning, "SHA-256"),
                             Asn1.decodeToBigIntegerArray(signature.value));
                 }
@@ -187,18 +187,18 @@ public class AuthenticationResponseProcessing {
             if (signature.value.length == 64) {
                 ECPublicKey decodedPub = (ECPublicKey) KeyCodec.getPubKeyFromCurve(
                         decodeBase64, "secp256r1");
-                return NamedCurve.verify(KeyCodec.getKeyAsRawBytes(decodedPub),
+                return NamedCurve.verifyUsingSecp256r1(KeyCodec.getKeyAsRawBytes(decodedPub),
                         SHA.sha(dataForSigning, "SHA-256"),
                         Asn1.transformRawSignature(signature.value));
             } else if (65 == decodeBase64.length
                     && AlgAndEncodingEnum.UAF_ALG_SIGN_SECP256R1_ECDSA_SHA256_DER == algAndEncoding) {
                 ECPublicKey decodedPub = (ECPublicKey) KeyCodec.getPubKeyFromCurve(
                         decodeBase64, "secp256r1");
-                return NamedCurve.verify(KeyCodec.getKeyAsRawBytes(decodedPub),
+                return NamedCurve.verifyUsingSecp256r1(KeyCodec.getKeyAsRawBytes(decodedPub),
                         SHA.sha(dataForSigning, "SHA-256"),
                         Asn1.decodeToBigIntegerArray(signature.value));
             } else {
-                return NamedCurve.verify(KeyCodec.getKeyAsRawBytes(pubKey),
+                return NamedCurve.verifyUsingSecp256r1(KeyCodec.getKeyAsRawBytes(pubKey),
                         SHA.sha(dataForSigning, "SHA-256"),
                         Asn1.decodeToBigIntegerArray(signature.value));
             }
