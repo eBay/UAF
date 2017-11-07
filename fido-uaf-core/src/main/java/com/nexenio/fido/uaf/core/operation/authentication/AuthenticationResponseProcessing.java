@@ -33,14 +33,11 @@ import org.bouncycastle.jce.interfaces.ECPublicKey;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.security.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.security.spec.InvalidKeySpecException;
 
 public class AuthenticationResponseProcessing {
 
-    private Logger logger = Logger.getLogger(this.getClass().getName());
     private long serverDataExpiryInMs;
     private Notary notary;
 
@@ -48,17 +45,13 @@ public class AuthenticationResponseProcessing {
 
     }
 
-    public AuthenticationResponseProcessing(long serverDataExpiryInMs,
-                                            Notary notary) {
+    public AuthenticationResponseProcessing(long serverDataExpiryInMs, Notary notary) {
         this.serverDataExpiryInMs = serverDataExpiryInMs;
         this.notary = notary;
-
     }
 
-    public AuthenticatorRecord[] verify(AuthenticationResponse response,
-                                        StorageInterface serverData) throws Exception {
+    public AuthenticatorRecord[] verify(AuthenticationResponse response, StorageInterface serverData) throws Exception {
         AuthenticatorRecord[] result = new AuthenticatorRecord[response.getAssertions().length];
-
         checkVersion(response.getOperationHeader().getProtocolVersion());
         checkServerData(response.getOperationHeader().getServerData(), result);
         FinalChallengeParams fcp = getFcp(response);
@@ -69,41 +62,29 @@ public class AuthenticationResponseProcessing {
         return result;
     }
 
-    private AuthenticatorRecord processAssertions(
-            AuthenticatorSignAssertion authenticatorSignAssertion,
-            StorageInterface storage) {
+    private AuthenticatorRecord processAssertions(AuthenticatorSignAssertion authenticatorSignAssertion, StorageInterface storage) {
         TlvAssertionParser parser = new TlvAssertionParser();
         AuthenticatorRecord authRecord = new AuthenticatorRecord();
-        RegistrationRecord registrationRecord = null;
+        RegistrationRecord registrationRecord;
 
         try {
             Tags tags = parser.parse(authenticatorSignAssertion.getAssertion());
-            authRecord.setAaid(new String(tags.getTags().get(
-                    TagsEnum.TAG_AAID.id).value));
-            authRecord.setKeyId(Base64.encodeBase64URLSafeString(tags.getTags()
-                    .get(TagsEnum.TAG_KEYID.id).value));
+            authRecord.setAaid(new String(tags.getTags().get(TagsEnum.TAG_AAID.id).value));
+            authRecord.setKeyId(Base64.encodeBase64URLSafeString(tags.getTags().get(TagsEnum.TAG_KEYID.id).value));
             // authRecord.KeyID = new String(
             // tags.getTags().get(TagsEnum.TAG_KEYID.id).value);
             registrationRecord = getRegistration(authRecord, storage);
-            Tag signnedData = tags.getTags().get(
-                    TagsEnum.TAG_UAFV1_SIGNED_DATA.id);
+            Tag signnedData = tags.getTags().get(TagsEnum.TAG_UAFV1_SIGNED_DATA.id);
             Tag signature = tags.getTags().get(TagsEnum.TAG_SIGNATURE.id);
             Tag info = tags.getTags().get(TagsEnum.TAG_ASSERTION_INFO.id);
             AlgAndEncodingEnum algAndEncoding = getAlgAndEncoding(info);
             String pubKey = registrationRecord.getPublicKey();
             try {
-                if (!verifySignature(signnedData, signature, pubKey,
-                        algAndEncoding)) {
-                    logger.log(Level.INFO,
-                            "Signature verification failed for authenticator: "
-                                    + authRecord.toString());
+                if (!verifySignature(signnedData, signature, pubKey, algAndEncoding)) {
                     authRecord.setStatus("FAILED_SIGNATURE_NOT_VALID");
                     return authRecord;
                 }
             } catch (Exception e) {
-                logger.log(Level.INFO,
-                        "Signature verification failed for authenticator: "
-                                + authRecord.toString(), e);
                 authRecord.setStatus("FAILED_SIGNATURE_VERIFICATION");
                 return authRecord;
             }
@@ -112,8 +93,6 @@ public class AuthenticationResponseProcessing {
             authRecord.setStatus("SUCCESS");
             return authRecord;
         } catch (IOException e) {
-            logger.log(Level.INFO, "Fail to parse assertion: "
-                    + authenticatorSignAssertion.getAssertion(), e);
             authRecord.setStatus("FAILED_ASSERTION_VERIFICATION");
             return authRecord;
         }
@@ -129,23 +108,11 @@ public class AuthenticationResponseProcessing {
                 break;
             }
         }
-        logger.info(" : SignatureAlgAndEncoding : " + ret);
         return ret;
     }
 
-    private boolean verifySignature(Tag signedData, Tag signature,
-                                    String pubKey, AlgAndEncodingEnum algAndEncoding)
-            throws InvalidKeyException, NoSuchAlgorithmException,
-            NoSuchProviderException, SignatureException,
-            UnsupportedEncodingException, Exception {
-
+    private boolean verifySignature(Tag signedData, Tag signature, String pubKey, AlgAndEncodingEnum algAndEncoding) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException, IOException, InvalidKeySpecException, InvalidAlgorithmParameterException {
         byte[] dataForSigning = getDataForSigning(signedData);
-
-        logger.info(" : pub 		   : " + pubKey);
-        logger.info(" : dataForSigning : "
-                + Base64.encodeBase64URLSafeString(dataForSigning));
-        logger.info(" : signature 	   : "
-                + Base64.encodeBase64URLSafeString(signature.value));
 
         // This works
         // return NamedCurve.verify(KeyCodec.getKeyAsRawBytes(pubKey),
@@ -214,25 +181,26 @@ public class AuthenticationResponseProcessing {
     }
 
     private byte[] encodeInt(int id) {
-
         byte[] bytes = new byte[2];
         bytes[0] = (byte) (id & 0x00ff);
         bytes[1] = (byte) ((id & 0xff00) >> 8);
         return bytes;
     }
 
-    private RegistrationRecord getRegistration(AuthenticatorRecord authRecord,
-                                               StorageInterface serverData) {
+    private RegistrationRecord getRegistration(AuthenticatorRecord authRecord, StorageInterface serverData) {
         return serverData.readRegistrationRecord(authRecord.toString());
     }
 
     private FinalChallengeParams getFcp(AuthenticationResponse response) {
-        // TODO Auto-generated method stub
+        // TODO: implement?
         return null;
     }
 
-    private void checkServerData(String serverDataB64,
-                                 AuthenticatorRecord[] records) throws Exception {
+    private void checkFcp(FinalChallengeParams fcp) {
+        // TODO: implement?
+    }
+
+    private void checkServerData(String serverDataB64, AuthenticatorRecord[] records) throws Exception {
         if (notary == null) {
             return;
         }
@@ -264,8 +232,7 @@ public class AuthenticationResponseProcessing {
     }
 
     private boolean isExpired(String timeStamp) {
-        return Long.parseLong(new String(Base64.decodeBase64(timeStamp)))
-                + serverDataExpiryInMs < System.currentTimeMillis();
+        return Long.parseLong(new String(Base64.decodeBase64(timeStamp))) + serverDataExpiryInMs < System.currentTimeMillis();
     }
 
     private void setErrorStatus(AuthenticatorRecord[] records, String status) {
@@ -281,17 +248,9 @@ public class AuthenticationResponseProcessing {
     }
 
     private void checkVersion(Version upv) throws Exception {
-        if (upv.getMajor() == 1 && upv.getMinor() == 0) {
-            return;
-        } else {
-            throw new Exception("Invalid version: " + upv.getMajor() + "."
-                    + upv.getMinor());
+        if (upv.getMajor() != 1 || upv.getMinor() != 0) {
+            throw new Exception("Invalid version: " + upv.getMajor() + "." + upv.getMinor());
         }
-    }
-
-    private void checkFcp(FinalChallengeParams fcp) {
-        // TODO Auto-generated method stub
-
     }
 
 }
