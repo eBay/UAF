@@ -14,10 +14,17 @@
  * limitations under the License.
  */
 
-package com.nexenio.fido.uaf.core.storage;
+package com.nexenio.fido.uaf.core.operation;
 
-public class SystemErrorException extends Exception {
+import lombok.NoArgsConstructor;
 
-    // TODO: remove this class?
+@NoArgsConstructor
+public class ServerDataExpiredException extends Exception {
+
+    private static final long serialVersionUID = 1L;
+
+    public ServerDataExpiredException(String message) {
+        super(message);
+    }
 
 }

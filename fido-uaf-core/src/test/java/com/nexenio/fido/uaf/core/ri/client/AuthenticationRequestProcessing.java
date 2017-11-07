@@ -17,7 +17,7 @@
 package com.nexenio.fido.uaf.core.ri.client;
 
 import com.google.gson.Gson;
-import com.nexenio.fido.uaf.core.msg.*;
+import com.nexenio.fido.uaf.core.message.*;
 import org.apache.commons.codec.binary.Base64;
 
 public class AuthenticationRequestProcessing {

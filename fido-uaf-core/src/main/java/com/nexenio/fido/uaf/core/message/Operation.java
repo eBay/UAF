@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package com.nexenio.fido.uaf.core.storage;
+package com.nexenio.fido.uaf.core.message;
 
-public class SystemErrorException extends Exception {
-
-    // TODO: remove this class?
-
+public enum Operation {
+    REGISTRATION,
+    DEREGISTRATION,
+    AUTHENTICATION
 }

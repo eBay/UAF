@@ -1,8 +1,9 @@
 package com.nexenio.fido.uaf.core.ops;
 
 import com.google.gson.Gson;
+import com.nexenio.fido.uaf.core.operation.authentication.AuthenticationRequestGeneration;
 import com.nexenio.fido.uaf.core.crypto.Notary;
-import com.nexenio.fido.uaf.core.msg.AuthenticationRequest;
+import com.nexenio.fido.uaf.core.message.AuthenticationRequest;
 import org.junit.Test;
 
 import java.util.logging.Logger;

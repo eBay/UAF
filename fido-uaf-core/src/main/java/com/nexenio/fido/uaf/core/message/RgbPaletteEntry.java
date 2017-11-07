@@ -14,27 +14,15 @@
  * limitations under the License.
  */
 
-package com.nexenio.fido.uaf.core.storage;
+package com.nexenio.fido.uaf.core.message;
 
-import com.nexenio.fido.uaf.core.message.RecordStatus;
 import lombok.Data;
 
 @Data
-public class RegistrationRecord {
+public class RgbPaletteEntry {
 
-    private AuthenticatorRecord authenticator;
-    private String publicKey;
-    private String signCounter;
-    private String authenticatorVersion;
-    private String displayPngCharacteristics;
-    private String userName;
-    private String userId;
-    private String deviceId;
-    private String timestamp;
-    private RecordStatus status;
-    private String attestCert;
-    private String attestDataToSign;
-    private String attestSignature;
-    private String attestVerifiedStatus;
+    private short r;
+    private short g;
+    private short b;
 
 }

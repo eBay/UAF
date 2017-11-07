@@ -2,7 +2,8 @@ package com.nexenio.fido.uaf.core.ops;
 
 import com.google.gson.Gson;
 import com.nexenio.fido.uaf.core.crypto.Notary;
-import com.nexenio.fido.uaf.core.msg.RegistrationRequest;
+import com.nexenio.fido.uaf.core.message.RegistrationRequest;
+import com.nexenio.fido.uaf.core.operation.registration.RegistrationRequestGeneration;
 import org.bouncycastle.util.encoders.Base64;
 import org.junit.Test;
 

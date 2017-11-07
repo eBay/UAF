@@ -1,7 +1,7 @@
 package com.nexenio.fido.uaf.core.util;
 
-import com.nexenio.fido.uaf.core.msg.MatchCriteria;
-import com.nexenio.fido.uaf.core.msg.Policy;
+import com.nexenio.fido.uaf.core.message.MatchCriteria;
+import com.nexenio.fido.uaf.core.message.Policy;
 
 public abstract class PolicyUtil {
 

@@ -17,9 +17,9 @@
 package com.nexenio.fido.uaf.core.ri.client;
 
 import com.google.gson.Gson;
-import com.nexenio.fido.uaf.core.msg.*;
-import com.nexenio.fido.uaf.core.ops.AuthenticationResponseProcessing;
-import com.nexenio.fido.uaf.core.ops.RegistrationResponseProcessing;
+import com.nexenio.fido.uaf.core.message.*;
+import com.nexenio.fido.uaf.core.operation.authentication.AuthenticationResponseProcessing;
+import com.nexenio.fido.uaf.core.operation.registration.RegistrationResponseProcessing;
 import com.nexenio.fido.uaf.core.storage.AuthenticatorRecord;
 import com.nexenio.fido.uaf.core.storage.RegistrationRecord;
 import com.nexenio.fido.uaf.core.storage.StorageInterface;
