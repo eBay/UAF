@@ -43,8 +43,6 @@ import java.security.spec.*;
 public class KeyCodec {
 
     public static final String ALGORITHM_ECDSA = "ECDSA";
-    public static final String ALGORITHM_SHA256_ECDSA = "SHA256withECDSA";
-    public static final String ALGORITHM_SHA256_RSA = "SHA256withRSA";
 
     public static final String CURVE_SECP256_R1 = "secp256r1";
 

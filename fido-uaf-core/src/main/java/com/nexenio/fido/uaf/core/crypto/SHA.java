@@ -24,6 +24,8 @@ public class SHA {
 
     public static final String ALGORITHM_SHA_1 = "SHA-1";
     public static final String ALGORITHM_SHA_256 = "SHA-256";
+    public static final String ALGORITHM_SHA256_ECDSA = "SHA256withECDSA";
+    public static final String ALGORITHM_SHA256_RSA = "SHA256withRSA";
 
     public static String sha1(String base) {
         return sha(base, ALGORITHM_SHA_1);

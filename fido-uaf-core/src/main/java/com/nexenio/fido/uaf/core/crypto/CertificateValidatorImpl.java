@@ -22,20 +22,18 @@ public class CertificateValidatorImpl implements CertificateValidator {
     }
 
     public boolean validate(byte[] certBytes, byte[] signedDataBytes, byte[] signatureBytes) throws NoSuchAlgorithmException, IOException, CertificateException, NoSuchProviderException, InvalidAlgorithmParameterException, SignatureException, InvalidKeyException {
-        X509Certificate x509Certificate = X509.parseDer(certBytes);
-        String sigAlgOID = x509Certificate.getSigAlgName();
-
-        if (sigAlgOID.contains(RSA.ALGORITHM_RSA)) {
-            return RSA.verify(x509Certificate, signedDataBytes, signatureBytes);
+        X509Certificate certificate = X509.parseDer(certBytes);
+        String algorithmName = certificate.getSigAlgName();
+        if (algorithmName.contains(RSA.ALGORITHM_RSA)) {
+            return RSA.verify(certificate, signedDataBytes, signatureBytes);
         }
-
         BigInteger[] rs;
         if (signatureBytes.length == 64) {
             rs = Asn1.transformRawSignature(signatureBytes);
         } else {
             rs = Asn1.decodeToBigIntegerArray(signatureBytes);
         }
-        return NamedCurve.verify(KeyCodec.getKeyAsRawBytes((ECPublicKey) x509Certificate.getPublicKey()), SHA.sha(signedDataBytes, "SHA-256"), rs);
+        return NamedCurve.verify(KeyCodec.getKeyAsRawBytes((ECPublicKey) certificate.getPublicKey()), SHA.sha(signedDataBytes, SHA.ALGORITHM_SHA_256), rs);
     }
 
 }

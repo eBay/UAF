@@ -70,14 +70,14 @@ public class NamedCurve {
     }
 
     public static boolean verify(PublicKey publicKey, byte[] signedData, byte[] encodedSignature) throws InvalidKeyException, NoSuchAlgorithmException, SignatureException, NoSuchProviderException {
-        Signature signature = Signature.getInstance(KeyCodec.ALGORITHM_SHA256_ECDSA, BouncyCastleProvider.PROVIDER_NAME);
+        Signature signature = Signature.getInstance(SHA.ALGORITHM_SHA256_ECDSA, BouncyCastleProvider.PROVIDER_NAME);
         signature.initVerify(publicKey);
         signature.update(signedData);
         return signature.verify(encodedSignature);
     }
 
     public static byte[] sign(byte[] data, PrivateKey privateKey) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
-        Signature signature = Signature.getInstance(KeyCodec.ALGORITHM_SHA256_ECDSA);
+        Signature signature = Signature.getInstance(SHA.ALGORITHM_SHA256_ECDSA);
         signature.initSign(privateKey);
         signature.update(data);
         return signature.sign();
