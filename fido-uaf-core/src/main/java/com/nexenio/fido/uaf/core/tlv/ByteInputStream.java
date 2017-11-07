@@ -13,8 +13,8 @@ import java.io.IOException;
 
 /**
  * Provides an easy way to read a byte array in chunks.
+ * ByteArrayInputStream cannot throw IOExceptions, so this class is converting checked exceptions to unchecked.
  */
-//  ByteArrayInputStream cannot throw IOExceptions, so this class is converting checked exceptions to unchecked.
 public class ByteInputStream extends DataInputStream {
 
     public ByteInputStream(byte[] data) {
@@ -64,4 +64,5 @@ public class ByteInputStream extends DataInputStream {
             throw new AssertionError();
         }
     }
+
 }
