@@ -52,7 +52,7 @@ public class AuthenticationResponseProcessing {
         this.notary = notary;
     }
 
-    public AuthenticatorRecord[] verify(AuthenticationResponse response, StorageInterface serverData) throws Exception {
+    public AuthenticatorRecord[] verify(AuthenticationResponse response, StorageInterface serverData) throws VersionException, ServerDataExpiredException, ServerDataSignatureNotMatchException, ServerDataCheckFailedException {
         AuthenticatorRecord[] result = new AuthenticatorRecord[response.getAssertions().length];
         checkVersion(response.getOperationHeader().getProtocolVersion());
         checkServerData(response.getOperationHeader().getServerData(), result);
@@ -216,13 +216,13 @@ public class AuthenticationResponseProcessing {
             }
         } catch (ServerDataExpiredException e) {
             setErrorStatus(records, "INVALID_SERVER_DATA_EXPIRED");
-            throw new ServerDataExpiredException("Invalid server data - Expired data");
+            throw new ServerDataExpiredException("Server data expired", e);
         } catch (ServerDataSignatureNotMatchException e) {
             setErrorStatus(records, "INVALID_SERVER_DATA_SIGNATURE_NO_MATCH");
-            throw new ServerDataSignatureNotMatchException("Invalid server data - Signature not match");
+            throw new ServerDataSignatureNotMatchException("Server data signature did not match", e);
         } catch (Exception e) {
             setErrorStatus(records, "INVALID_SERVER_DATA_CHECK_FAILED");
-            throw new ServerDataCheckFailedException("Server data check failed");
+            throw new ServerDataCheckFailedException("Server data check failed", e);
         }
 
     }

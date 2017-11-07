@@ -27,4 +27,8 @@ public class ServerDataCheckFailedException extends Exception {
         super(message);
     }
 
+    public ServerDataCheckFailedException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
 }
