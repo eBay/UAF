@@ -19,12 +19,10 @@ package com.nexenio.fido.uaf.core.operation.registration;
 import com.google.gson.Gson;
 import com.nexenio.fido.uaf.core.crypto.CertificateValidator;
 import com.nexenio.fido.uaf.core.crypto.CertificateValidatorImpl;
+import com.nexenio.fido.uaf.core.crypto.CertificateVerificationException;
 import com.nexenio.fido.uaf.core.crypto.Notary;
 import com.nexenio.fido.uaf.core.message.*;
-import com.nexenio.fido.uaf.core.operation.AssertionException;
-import com.nexenio.fido.uaf.core.operation.ServerDataExpiredException;
-import com.nexenio.fido.uaf.core.operation.ServerDataSignatureNotMatchException;
-import com.nexenio.fido.uaf.core.operation.VersionException;
+import com.nexenio.fido.uaf.core.operation.*;
 import com.nexenio.fido.uaf.core.storage.AuthenticatorRecord;
 import com.nexenio.fido.uaf.core.storage.RegistrationRecord;
 import com.nexenio.fido.uaf.core.tlv.*;
@@ -105,7 +103,7 @@ public class RegistrationResponseProcessing {
         return record;
     }
 
-    private void verifyAttestationSignature(Tags tags, RegistrationRecord record) throws NoSuchAlgorithmException, IOException, CertificateException, SignatureException, NoSuchProviderException, InvalidKeyException, InvalidAlgorithmParameterException {
+    private void verifyAttestationSignature(Tags tags, RegistrationRecord record) throws AttestationVerificationException {
         byte[] certBytes = tags.getTags().get(TagsEnum.TAG_ATTESTATION_CERT.id).value;
         record.setAttestCert(Base64.encodeBase64URLSafeString(certBytes));
 
@@ -121,10 +119,14 @@ public class RegistrationResponseProcessing {
         record.setAttestSignature(Base64.encodeBase64URLSafeString(signature.value));
         record.setAttestVerifiedStatus("FAILED_VALIDATION_ATTEMPT");
 
-        if (certificateValidator.validate(certBytes, signedBytes, signature.value)) {
-            record.setAttestVerifiedStatus("VALID");
-        } else {
-            record.setAttestVerifiedStatus("NOT_VERIFIED");
+        try {
+            if (certificateValidator.validate(certBytes, signedBytes, signature.value)) {
+                record.setAttestVerifiedStatus("VALID");
+            } else {
+                record.setAttestVerifiedStatus("NOT_VERIFIED");
+            }
+        } catch (CertificateVerificationException e) {
+            throw new AttestationVerificationException("Certificate validation failed", e);
         }
     }
 
