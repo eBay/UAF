@@ -36,4 +36,16 @@ public class AuthenticatorRegistrationAssertion {
     @SerializedName("assertion")
     private String assertion;
 
+    /**
+     * Transaction content PNG characteristics. For the definition of the DisplayPNGCharacteristicsDescriptor structure See [UAFAuthnrMetadata]. This field must be present if the contentType is "image/png".
+     */
+    @SerializedName("tcDisplayPNGCharacteristics")
+    private DisplayPngCharacteristicsDescriptor displayPngCharacteristics;
+
+    /**
+     * Any extensions prepared by the Authenticator.
+     */
+    @SerializedName("exts")
+    private Extension[] extensions;
+
 }
