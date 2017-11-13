@@ -21,7 +21,7 @@ repositories {
     }
 }
 dependencies {
-    compile 'com.nexenio.fido:uaf-core:1.1.0'
+    compile 'com.nexenio.fido:uaf-core:1.2.0'
 }
 ```
 
@@ -30,7 +30,7 @@ dependencies {
 <dependency>
   <groupId>com.nexenio.fido</groupId>
   <artifactId>uaf-core</artifactId>
-  <version>1.1.0</version>
+  <version>1.2.0</version>
 </dependency>
 ```
 
