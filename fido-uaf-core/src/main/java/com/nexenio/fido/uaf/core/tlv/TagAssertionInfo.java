@@ -27,14 +27,13 @@ public class TagAssertionInfo {
     private int signatureAlgAndEncoding = 0;
     private int publicKeyAlgAndEncoding = 0;
 
-    public TagAssertionInfo(Tag tag) throws InvalidArgumentException, IOException {
+    public TagAssertionInfo(Tag tag) throws IllegalArgumentException, IOException {
         this.tag = tag;
         if (tag.id != TagsEnum.TAG_ASSERTION_INFO.id) {
-            throw new InvalidArgumentException("Not TAG_ASSERTION_INFO tag");
+            throw new IllegalArgumentException("Not TAG_ASSERTION_INFO tag");
         }
         if (tag.length != 5 && tag.length != 7) {
-            throw new InvalidArgumentException(
-                    "Unrecognized tag structure. Length=" + tag.length);
+            throw new IllegalArgumentException("Unrecognized tag structure. Length=" + tag.length);
         }
         if (tag.length == 7) {
             isReg = true;

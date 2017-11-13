@@ -18,7 +18,8 @@ package com.nexenio.fido.uaf.core.crypto;
 
 public interface Notary {
 
-    public String sign(String dataToSign);
+    String sign(String dataToSign);
 
-    public boolean verify(String dataToSign, String signature);
+    boolean verify(String dataToSign, String signature);
+
 }

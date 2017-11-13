@@ -18,4 +18,6 @@ package com.nexenio.fido.uaf.core.storage;
 
 public class SystemErrorException extends Exception {
 
+    // TODO: remove this class?
+
 }

@@ -16,7 +16,7 @@
 
 package com.nexenio.fido.uaf.core.storage;
 
-import com.nexenio.fido.uaf.core.msg.RecordStatus;
+import com.nexenio.fido.uaf.core.message.RecordStatus;
 import lombok.Data;
 
 @Data

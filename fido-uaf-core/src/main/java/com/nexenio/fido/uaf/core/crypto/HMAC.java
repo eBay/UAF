@@ -21,6 +21,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.InvalidParameterException;
 import java.security.NoSuchAlgorithmException;
@@ -28,23 +29,20 @@ import java.security.spec.InvalidKeySpecException;
 
 public class HMAC {
 
+    public static final String ALGORITHM_HMAC_SHA265 = "HmacSHA256";
+
     public static byte[] sign(String toSign, String secret) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, UnsupportedEncodingException {
         validateParameters(toSign, secret);
-        String password = secret;
-        PBEKeySpec keySpec = new PBEKeySpec(password.toCharArray());
-        SecretKeyFactory kf = SecretKeyFactory
-                .getInstance("PBEWithMD5AndDES");
-        SecretKey passwordKey = kf.generateSecret(keySpec);
-
-        Mac mac = Mac.getInstance("HmacSHA256");
-        mac.init(passwordKey);
-        byte[] text = toSign.getBytes("UTF-8");
-        byte[] signatureBytes = mac.doFinal(text);
-
-        return signatureBytes;
+        PBEKeySpec keySpec = new PBEKeySpec(secret.toCharArray());
+        SecretKeyFactory keyFactory = SecretKeyFactory.getInstance("PBEWithMD5AndDES");
+        SecretKey key = keyFactory.generateSecret(keySpec);
+        Mac mac = Mac.getInstance(ALGORITHM_HMAC_SHA265);
+        mac.init(key);
+        byte[] text = toSign.getBytes(StandardCharsets.UTF_8);
+        return mac.doFinal(text);
     }
 
-    private static void validateParameters(String toSign, String secret) {
+    private static void validateParameters(String toSign, String secret) throws InvalidParameterException {
         if (toSign == null || toSign.isEmpty()) {
             throw new InvalidParameterException("Empty string for signing");
         }

@@ -14,7 +14,7 @@ public class TagAssertionInfoTest {
     TlvAssertionParser p = new TlvAssertionParser();
 
     @Test
-    public void parserForRegAssertion() throws IOException, InvalidArgumentException {
+    public void parserForRegAssertion() throws IOException, IllegalArgumentException {
         String raw = null;
         Tags list = null;
 
@@ -30,7 +30,7 @@ public class TagAssertionInfoTest {
     }
 
     @Test
-    public void parserForRegAssertionFromCertTool() throws IOException, InvalidArgumentException {
+    public void parserForRegAssertionFromCertTool() throws IOException, IllegalArgumentException {
         String raw = null;
         Tags list = null;
 
@@ -46,7 +46,7 @@ public class TagAssertionInfoTest {
     }
 
     @Test
-    public void parserForRegAssertionFromTestClient() throws IOException, InvalidArgumentException {
+    public void parserForRegAssertionFromTestClient() throws IOException, IllegalArgumentException {
         String raw = null;
         Tags list = null;
 
@@ -62,7 +62,7 @@ public class TagAssertionInfoTest {
     }
 
     @Test
-    public void parserForAuthAssertion() throws IOException, InvalidArgumentException {
+    public void parserForAuthAssertion() throws IOException, IllegalArgumentException {
         String raw = null;
         Tags list = null;
 
@@ -77,7 +77,7 @@ public class TagAssertionInfoTest {
     }
 
     @Test
-    public void parserForAuthAssertionFromClient() throws IOException, InvalidArgumentException {
+    public void parserForAuthAssertionFromClient() throws IOException, IllegalArgumentException {
         String raw = null;
         Tags list = null;
 
@@ -92,7 +92,7 @@ public class TagAssertionInfoTest {
     }
 
     @Test
-    public void parserForAuthAssertionFromCertTool() throws IOException, InvalidArgumentException {
+    public void parserForAuthAssertionFromCertTool() throws IOException, IllegalArgumentException {
         String raw = null;
         Tags list = null;
 

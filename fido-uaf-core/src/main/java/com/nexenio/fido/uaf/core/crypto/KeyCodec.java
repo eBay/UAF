@@ -16,6 +16,7 @@
 
 package com.nexenio.fido.uaf.core.crypto;
 
+import com.nexenio.fido.uaf.core.util.ProviderUtil;
 import org.apache.commons.codec.binary.Base64;
 import org.bouncycastle.asn1.pkcs.RSAPublicKey;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
@@ -38,53 +39,48 @@ import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPrivateCrtKey;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.spec.*;
-import java.util.logging.Logger;
 
 public class KeyCodec {
 
-    private static Logger logger = Logger.getLogger(KeyCodec.class.getName());
+    public static final String ALGORITHM_ECDSA = "ECDSA";
+
+    public static final String CURVE_SECP256_R1 = "secp256r1";
+    public static final String CURVE_SECP256_K1 = "secp256k1";
+
+    public static final int KEY_SIZE = 2048;
 
     static {
-        Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
+        ProviderUtil.addBouncyCastleProvider();
     }
 
-    public static KeyPair getKeyPair()
-            throws InvalidAlgorithmParameterException,
-            NoSuchAlgorithmException, NoSuchProviderException {
-        // ECGenParameterSpec ecGenSpec = new ECGenParameterSpec("prime192v1");
-        ECGenParameterSpec ecGenSpec = new ECGenParameterSpec("secp256r1");
-        KeyPairGenerator g = KeyPairGenerator.getInstance("ECDSA", "BC");
+    public static KeyPair getKeyPair() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
+        ECGenParameterSpec ecGenSpec = new ECGenParameterSpec(CURVE_SECP256_R1);
+        KeyPairGenerator g = KeyPairGenerator.getInstance(ALGORITHM_ECDSA, BouncyCastleProvider.PROVIDER_NAME);
         g.initialize(ecGenSpec, new SecureRandom());
         return g.generateKeyPair();
     }
 
-    public static KeyPair getRSAKeyPair()
-            throws InvalidAlgorithmParameterException,
-            NoSuchAlgorithmException, NoSuchProviderException {
-        KeyPairGenerator g = KeyPairGenerator.getInstance("RSA", "BC");
-        g.initialize(2048);
+    public static KeyPair getRSAKeyPair() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
+        KeyPairGenerator g = KeyPairGenerator.getInstance(RSA.ALGORITHM_RSA, BouncyCastleProvider.PROVIDER_NAME);
+        g.initialize(KEY_SIZE);
         return g.generateKeyPair();
     }
 
-    static public RSAKeyParameters generatePrivateKeyParameter(RSAPrivateKey key) {
-        if (key instanceof RSAPrivateCrtKey) {
-            RSAPrivateCrtKey k = (RSAPrivateCrtKey) key;
+    static public RSAKeyParameters generatePrivateKeyParameter(RSAPrivateKey privateKey) {
+        if (privateKey instanceof RSAPrivateCrtKey) {
+            RSAPrivateCrtKey k = (RSAPrivateCrtKey) privateKey;
             return new RSAPrivateCrtKeyParameters(k.getModulus(),
                     k.getPublicExponent(), k.getPrivateExponent(),
                     k.getPrimeP(), k.getPrimeQ(), k.getPrimeExponentP(),
                     k.getPrimeExponentQ(), k.getCrtCoefficient());
         } else {
-            RSAPrivateKey k = key;
-            return new RSAKeyParameters(true, k.getModulus(),
-                    k.getPrivateExponent());
+            RSAPrivateKey k = privateKey;
+            return new RSAKeyParameters(true, k.getModulus(), k.getPrivateExponent());
         }
     }
 
-    public static byte[] getKeyAsRawBytes(String base64EncodedPubKey)
-            throws InvalidKeySpecException, NoSuchAlgorithmException,
-            NoSuchProviderException, IOException {
-        return getKeyAsRawBytes((BCECPublicKey) getPubKey(Base64
-                .decodeBase64(base64EncodedPubKey)));
+    public static byte[] getKeyAsRawBytes(String base64EncodedPubKey) throws InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException, IOException {
+        return getKeyAsRawBytes((BCECPublicKey) getPubKey(Base64.decodeBase64(base64EncodedPubKey)));
     }
 
     /**
@@ -94,33 +90,30 @@ public class KeyCodec {
      * I.e. [0x04, X (32 bytes), Y (32 bytes)]. Where the byte 0x04 denotes the
      * uncompressed point compression method.
      *
-     * @param pub - Public Key
+     * @param publicKey - Public Key
      * @return bytes
      * @throws IOException
      */
-    public static byte[] getKeyAsRawBytes(BCECPublicKey pub) throws IOException {
+    public static byte[] getKeyAsRawBytes(BCECPublicKey publicKey) throws IOException {
         byte[] raw;
         ByteArrayOutputStream bos = new ByteArrayOutputStream(65);
 
         bos.write(0x04);
-        bos.write(pub.getQ().getXCoord().getEncoded());
-        bos.write(pub.getQ().getYCoord().getEncoded());
+        bos.write(publicKey.getQ().getXCoord().getEncoded());
+        bos.write(publicKey.getQ().getYCoord().getEncoded());
         raw = bos.toByteArray();
-        logger.info("Raw key length:" + raw.length);
         return raw;
     }
 
     @SuppressWarnings("deprecation")
-    public static byte[] getKeyAsRawBytes(
-            org.bouncycastle.jce.interfaces.ECPublicKey pub) throws IOException {
+    public static byte[] getKeyAsRawBytes(org.bouncycastle.jce.interfaces.ECPublicKey publicKey) throws IOException {
         byte[] raw;
         ByteArrayOutputStream bos = new ByteArrayOutputStream(65);
 
         bos.write(0x04);
-        bos.write(asUnsignedByteArray(pub.getQ().getX().toBigInteger()));
-        bos.write(asUnsignedByteArray(pub.getQ().getY().toBigInteger()));
+        bos.write(asUnsignedByteArray(publicKey.getQ().getX().toBigInteger()));
+        bos.write(asUnsignedByteArray(publicKey.getQ().getY().toBigInteger()));
         raw = bos.toByteArray();
-        logger.info("Raw key length:" + raw.length);
         return raw;
     }
 
@@ -133,38 +126,28 @@ public class KeyCodec {
      */
     public static byte[] asUnsignedByteArray(BigInteger value) {
         byte[] bytes = value.toByteArray();
-
         if (bytes[0] == 0) {
             byte[] tmp = new byte[bytes.length - 1];
-
             System.arraycopy(bytes, 1, tmp, 0, tmp.length);
-
             return tmp;
         }
-
         return bytes;
     }
 
-    public static PublicKey getPubKey(byte[] bytes)
-            throws InvalidKeySpecException, NoSuchAlgorithmException,
-            NoSuchProviderException {
-        KeyFactory kf = KeyFactory.getInstance("ECDSA", "BC");
+    public static PublicKey getPubKey(byte[] bytes) throws InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException {
+        KeyFactory kf = KeyFactory.getInstance(ALGORITHM_ECDSA, BouncyCastleProvider.PROVIDER_NAME);
         return kf.generatePublic(new X509EncodedKeySpec(bytes));
     }
 
-    public static PrivateKey getPrivKey(byte[] bytes)
-            throws NoSuchAlgorithmException, InvalidKeySpecException,
-            NoSuchProviderException {
-        KeyFactory kf = KeyFactory.getInstance("ECDSA", "BC");
+    public static PrivateKey getPrivKey(byte[] bytes) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException {
+        KeyFactory kf = KeyFactory.getInstance(ALGORITHM_ECDSA, BouncyCastleProvider.PROVIDER_NAME);
         return kf.generatePrivate(new PKCS8EncodedKeySpec(bytes));
     }
 
-    public static KeyPair generate() throws NoSuchAlgorithmException,
-            InvalidAlgorithmParameterException {
+    public static KeyPair generate() throws NoSuchAlgorithmException, InvalidAlgorithmParameterException {
         SecureRandom random = new SecureRandom();
-        ECParameterSpec ecSpec = ECNamedCurveTable
-                .getParameterSpec("secp256r1");
-        KeyPairGenerator g = KeyPairGenerator.getInstance("ECDSA");
+        ECParameterSpec ecSpec = ECNamedCurveTable.getParameterSpec(CURVE_SECP256_R1);
+        KeyPairGenerator g = KeyPairGenerator.getInstance(ALGORITHM_ECDSA);
         g.initialize(ecSpec, random);
         return g.generateKeyPair();
     }
@@ -179,16 +162,10 @@ public class KeyCodec {
      * @throws NoSuchAlgorithmException
      * @throws NoSuchProviderException
      */
-    public static PublicKey getPubKeyFromCurve(byte[] pubKey, String curveName)
-            throws InvalidKeySpecException, NoSuchAlgorithmException,
-            NoSuchProviderException {
-
-        ECNamedCurveParameterSpec spec = ECNamedCurveTable
-                .getParameterSpec(curveName);
-        KeyFactory kf = KeyFactory.getInstance("ECDSA",
-                new BouncyCastleProvider());
-        ECNamedCurveSpec params = new ECNamedCurveSpec(curveName,
-                spec.getCurve(), spec.getG(), spec.getN());
+    public static PublicKey getPubKeyFromCurve(byte[] pubKey, String curveName) throws InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException {
+        ECNamedCurveParameterSpec spec = ECNamedCurveTable.getParameterSpec(curveName);
+        KeyFactory kf = KeyFactory.getInstance(ALGORITHM_ECDSA, new BouncyCastleProvider());
+        ECNamedCurveSpec params = new ECNamedCurveSpec(curveName, spec.getCurve(), spec.getG(), spec.getN());
         ECPoint point = ECPointUtil.decodePoint(params.getCurve(), pubKey);
         ECPublicKeySpec pubKeySpec = new ECPublicKeySpec(point, params);
         ECPublicKey pk = (ECPublicKey) kf.generatePublic(pubKeySpec);
@@ -199,7 +176,7 @@ public class KeyCodec {
         RSAPublicKey pubKey8 = RSAPublicKey.getInstance(encodedPubKey);
         SubjectPublicKeyInfo info = SubjectPublicKeyInfoFactory.createSubjectPublicKeyInfo(new RSAKeyParameters(false, pubKey8.getModulus(), pubKey8.getPublicExponent()));
         X509EncodedKeySpec spec = new X509EncodedKeySpec(info.getEncoded());
-        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        KeyFactory keyFactory = KeyFactory.getInstance(RSA.ALGORITHM_RSA);
         return keyFactory.generatePublic(spec);
     }
 
@@ -213,18 +190,11 @@ public class KeyCodec {
      * @throws NoSuchAlgorithmException
      * @throws NoSuchProviderException
      */
-    public static PrivateKey getPrivKeyFromCurve(byte[] privKey,
-                                                 String curveName) throws InvalidKeySpecException,
-            NoSuchAlgorithmException, NoSuchProviderException {
-
-        ECNamedCurveParameterSpec spec = ECNamedCurveTable
-                .getParameterSpec(curveName);
-        KeyFactory kf = KeyFactory.getInstance("ECDSA",
-                new BouncyCastleProvider());
-        ECNamedCurveSpec params = new ECNamedCurveSpec(curveName,
-                spec.getCurve(), spec.getG(), spec.getN());
-        ECPrivateKeySpec priKey = new ECPrivateKeySpec(new BigInteger(privKey), // d
-                params);
+    public static PrivateKey getPrivKeyFromCurve(byte[] privKey, String curveName) throws InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException {
+        ECNamedCurveParameterSpec spec = ECNamedCurveTable.getParameterSpec(curveName);
+        KeyFactory kf = KeyFactory.getInstance(ALGORITHM_ECDSA, new BouncyCastleProvider());
+        ECNamedCurveSpec params = new ECNamedCurveSpec(curveName, spec.getCurve(), spec.getG(), spec.getN());
+        ECPrivateKeySpec priKey = new ECPrivateKeySpec(new BigInteger(privKey), params);
         return kf.generatePrivate(priKey);
     }
 

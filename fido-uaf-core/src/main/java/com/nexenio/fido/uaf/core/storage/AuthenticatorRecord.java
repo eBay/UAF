@@ -32,4 +32,5 @@ public class AuthenticatorRecord {
     public String toString() {
         return getAaid() + DELIMITER + getKeyId();
     }
+
 }
