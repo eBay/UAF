@@ -1,17 +1,142 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath "org.jfrog.buildinfo:build-info-extractor-gradle:latest.release"
+    }
+}
+
+plugins {
+    id 'net.researchgate.release' version '2.4.0'
+    id "com.jfrog.bintray" version "1.7.3"
+}
 apply plugin: 'java'
 apply plugin: 'maven'
-
-group = 'org.ebayopensource'
-version = '0.0.1-SNAPSHOT'
+apply plugin: 'maven-publish'
 
 repositories {
-	mavenCentral()
+    mavenCentral()
 }
 
 dependencies {
-	compile 'com.google.code.gson:gson:2.3.1'
-	compile 'commons-codec:commons-codec:1.9'
-	compile 'org.bouncycastle:bcprov-jdk15on:1.51'
-
-	testCompile 'junit:junit:4.12'
+    compile 'com.google.code.gson:gson:2.3.1'
+    compile 'commons-codec:commons-codec:1.9'
+    compile 'org.bouncycastle:bcprov-jdk15on:1.51'
+    compileOnly 'org.projectlombok:lombok:1.16.18'
+    testCompile 'junit:junit:4.12'
 }
+
+def releaseVersionName = "${version}"
+
+bintray {
+    user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
+    key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_API_KEY')
+    publications = ['BintrayPublication']
+    override = true
+    pkg {
+        repo = 'UAF-Java'
+        name = 'UAF-Core'
+        userOrg = 'nexenio'
+        licenses = ['Apache-2.0']
+        labels = ['FIDO', 'UAF']
+        vcsUrl = 'https://github.com/neXenio/UAF.git'
+        websiteUrl = 'https://github.com/neXenio/UAF/'
+        githubRepo = 'neXenio/UAF/'
+        githubReleaseNotesFile = 'fido-uaf-core/README.md'
+        version {
+            name = "${releaseVersionName}"
+            desc = "UAF Core ${releaseVersionName}"
+            released = new Date()
+            vcsTag = "${releaseVersionName}"
+            gpg {
+                sign = true
+            }
+            mavenCentralSync {
+                sync = true
+                user = project.hasProperty('mavenCentralUser') ? project.property('mavenCentralUser') : System.getenv('MAVEN_CENTRAL_USER')
+                password = project.hasProperty('mavenCentralPassword') ? project.property('mavenCentralPassword') : System.getenv('MAVEN_CENTRAL_PASSWORD')
+                close = '1'
+            }
+        }
+    }
+    filesSpec {
+        from 'build/libs'
+        into 'libs/'
+    }
+}
+
+def pomConfig = {
+    licenses {
+        license {
+            name "The Apache Software License, Version 2.0"
+            url "http://www.apache.org/licenses/LICENSE-2.0.txt"
+            distribution "repo"
+        }
+    }
+    developers {
+        developer {
+            id "neXenio"
+            name "neXenio"
+            email "info@nexenio.com"
+        }
+    }
+    scm {
+        connection 'https://github.com/neXenio/UAF.git'
+        developerConnection 'https://github.com/neXenio/UAF.git'
+        url "https://github.com/neXenio/UAF.git"
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            groupId "${project.groupId}"
+            artifactId "${artifactId}"
+            from components.java
+            artifact sourcesJar
+        }
+        BintrayPublication(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+            artifact javadocJar
+            groupId 'com.nexenio.fido'
+            artifactId 'uaf-core'
+            version "${releaseVersionName}"
+            pom.withXml {
+                def root = asNode()
+                root.appendNode('description', 'Java implementation of the UAF protocol')
+                root.appendNode('name', 'UAF Java')
+                root.appendNode('url', 'https://github.com/neXenio/UAF/')
+                root.children().last() + pomConfig
+            }
+        }
+    }
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allJava
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives sourcesJar
+    archives javadocJar
+}
+
+// configure release plugin. See https://github.com/researchgate/gradle-release#configuration
+release {
+    failOnUnversionedFiles = false
+    failOnCommitNeeded = false
+    git {
+        requireBranch = 'release/publish'
+    }
+}
+
+// deploy artifacts when releasing
+afterReleaseBuild.dependsOn bintrayUpload
