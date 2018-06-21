@@ -140,7 +140,7 @@ public class MainActivity extends Activity {
 
     public void regRequest(View view) {
 //        String username = Preferences.getSettingsParam("username");
-        String username = ((EditText) findViewById(R.id.editTextName)).getText().toString();
+        String username = ((EditText) findViewById(R.id.editTextName)).getText().toString().trim();
         if (username.equals ("")) {
             msg.setText("Username cannot be empty.");
             return;
