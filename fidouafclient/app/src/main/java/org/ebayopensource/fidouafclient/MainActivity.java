@@ -250,13 +250,14 @@ public class MainActivity extends Activity {
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.d(TAG, String.format("onActivityResult: requestCode=%d, resultCode=%d, data=%s",
-                requestCode, resultCode, new ArrayList<>(data.getExtras().keySet())));
-
         if (data == null){
             msg.setText("UAF Client didn't return any data. resultCode="+resultCode);
             return;
         }
+        //java.lang.NullPointerException may happened in data.getExtras()
+        Log.d(TAG, String.format("onActivityResult: requestCode=%d, resultCode=%d, data=%s",
+                requestCode, resultCode, new ArrayList<>(data.getExtras().keySet())));
+
 
         Object[] array = data.getExtras().keySet().toArray();
         StringBuffer extras = new StringBuffer();
