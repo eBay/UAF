@@ -214,7 +214,7 @@ public class FidoUafResource {
 			Properties props = new Properties();
 			props.load(in);
 			facetVal = props.getProperty("facetId");
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		} 
 		return facetVal.toString();
