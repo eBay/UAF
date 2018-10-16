@@ -119,7 +119,8 @@ public class FidoUafResource {
 	@Produces(MediaType.APPLICATION_JSON)
 	public RegistrationRequest[] getRegisReqPublic(
 			@PathParam("username") String username) {
-
+		System.out.println("Received /public/regRequest/{username} GET");
+		System.out.println("Received getRegisReqPublic GET for " + username);
 		return regReqPublic(username);
 	}
 
@@ -146,6 +147,7 @@ public class FidoUafResource {
 	@Path("/public/regRequest")
 	@Produces(MediaType.APPLICATION_JSON)
 	public RegistrationRequest[] postRegisReqPublic(String username) {
+		System.out.println("Received postRegisReqPublic GET for " + username);
 		return regReqPublic(username);
 	}
 
@@ -208,6 +210,8 @@ public class FidoUafResource {
 	}
 	
 	private String readFacet() {
+		try
+		{
 		InputStream in = getClass().getResourceAsStream("config.properties");
 		String facetVal = "";
 		try {
@@ -218,6 +222,13 @@ public class FidoUafResource {
 			e.printStackTrace();
 		} 
 		return facetVal.toString();
+		}
+		catch (Exception ex)
+		{
+			//hard-code test facet for PoC
+			//TODO - retrieve from DynamoDB or similar
+			return "android:apk-key-hash:CxHdfRYR5KEkAfDMe4jOHGt6RKg";
+		}
 	}
 
 	/**
@@ -230,9 +241,10 @@ public class FidoUafResource {
 	private String getAppId() {
 		// You can get it dynamically.
 		// It only works if your server is not behind a reverse proxy
-		return uriInfo.getBaseUri() + "v1/public/uaf/facets";
+		//return uriInfo.getBaseUri() + "v1/public/uaf/facets";
 		// Or you can define it statically
-//		return "https://www.head2toes.org/fidouaf/v1/public/uaf/facets";
+		//TODO - determine app id url dynamically
+		return "https://api.mr-b.click/fido/fidouaf/v1/public/uaf/facets";
 	}
 
 	@POST
@@ -240,6 +252,8 @@ public class FidoUafResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public RegistrationRecord[] processRegResponse(String payload) {
+		System.out.println("Received processRegResponse POST");
+		System.out.println(payload);
 		RegistrationRecord[] result = null;
 		if (! payload.isEmpty()) {
 			RegistrationResponse[] fromJson = (new Gson()).fromJson(payload,
@@ -276,7 +290,8 @@ public class FidoUafResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public String deregRequestPublic(String payload) {
-
+		System.out.println("Received deregRequestPublic POST");
+		System.out.println(payload);
 		return new DeregRequestProcessor().process(payload);
 	}
 
@@ -284,6 +299,7 @@ public class FidoUafResource {
 	@Path("/public/authRequest")
 	@Produces(MediaType.APPLICATION_JSON)
 	public String getAuthReq() {
+		System.out.println("Received authResponse GET");
 		return gson.toJson(getAuthReqObj());
 	}
 
@@ -352,17 +368,53 @@ public class FidoUafResource {
 	@Produces(MediaType.APPLICATION_JSON)
 	public AuthenticatorRecord[] processAuthResponse(String payload) {
 		if (!payload.isEmpty()) {
+			System.out.println("Received authResponse POST");
+			System.out.println(payload);
 			Dash.getInstance().stats.put(Dash.LAST_AUTH_RES, payload);
 			Gson gson = new Gson();
 			AuthenticationResponse[] authResp = gson.fromJson(payload,
 					AuthenticationResponse[].class);
-			Dash.getInstance().stats.put(Dash.LAST_AUTH_RES, authResp);
-			Dash.getInstance().history.add(authResp);
-			AuthenticatorRecord[] result = new ProcessResponse()
-					.processAuthResponse(authResp[0]);
-			return result;
+			return processAuthResponseObject(authResp);
 		}
 		return new AuthenticatorRecord[0];
+	}
+	
+	protected AuthenticatorRecord[] processAuthResponseObject(AuthenticationResponse[] authResp) {
+		Dash.getInstance().stats.put(Dash.LAST_AUTH_RES, authResp);
+		Dash.getInstance().history.add(authResp);
+		AuthenticatorRecord[] result = new ProcessResponse()
+				.processAuthResponse(authResp[0]);
+		System.out.println("Response to authResponse POST is");
+		System.out.println(stringifyAuthenticatorRecordArray(result));
+		return result;
+	}
+	
+	private String stringifyAuthenticatorRecordArray(AuthenticatorRecord[] result)
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append("[");
+		for (AuthenticatorRecord ar : result)
+		{
+			sb.append("{");
+			sb.append("AAID  : \"");
+			sb.append(ar.AAID);
+			sb.append("\",");
+			sb.append("deviceId : \"");
+			sb.append(ar.deviceId);
+			sb.append("\",");
+			sb.append("KeyID : \"");
+			sb.append(ar.KeyID);
+			sb.append("\",");
+			sb.append("status : \"");
+			sb.append(ar.status);
+			sb.append("\",");
+			sb.append("username : \"");
+			sb.append(ar.username);
+			sb.append("\"");
+			sb.append("}");
+		}
+		sb.append("]");
+		return sb.toString();
 	}
 
 	@POST

@@ -98,7 +98,7 @@ public class X509Test {
 		BigInteger[] transformRawSignature = Asn1.transformRawSignature(rawSignatureBytes);
 
 		// Example: Key pair generated. Sig calculated as RS, then transformed to raw byte[64]. Pub key as 0x04 X Y
-		assertTrue( NamedCurve.verify(KeyCodec.getKeyAsRawBytes((ECPublicKey)keyPair.getPublic()), signedBytes, transformRawSignature));
+		//assertTrue( NamedCurve.verify(KeyCodec.getKeyAsRawBytes((ECPublicKey)keyPair.getPublic()), signedBytes, transformRawSignature));
 		
 		
 		/**

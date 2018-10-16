@@ -1,4 +1,4 @@
-apply plugin: 'war'
+apply plugin: 'jar'
 apply plugin: 'maven'
 
 sourceCompatibility = 1.6
